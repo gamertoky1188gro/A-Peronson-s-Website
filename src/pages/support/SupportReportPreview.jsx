@@ -54,10 +54,19 @@ const REPORT_MARKDOWN_COMPONENTS = {
 		if (!url) {
 			return null;
 		}
+		// An image with no alt falls back to the file name so a screen reader
+		// can still announce *something* meaningful.
+		const fileName = (() => {
+			try {
+				return new URL(url).pathname.split("/").filter(Boolean).at(-1) ?? "image";
+			} catch {
+				return "image";
+			}
+		})();
 		return (
 			<img
 				src={url}
-				alt={alt || ""}
+				alt={alt && String(alt).trim() ? alt : fileName}
 				width={640}
 				height={360}
 				loading="lazy"
@@ -176,7 +185,7 @@ export default function SupportReportPreview() {
 	}
 
 	return (
-		<div class="relative min-h-dvh overflow-hidden bg-[#0b0714] text-[#f4eeff]">
+		<main class="relative min-h-dvh overflow-hidden bg-[#0b0714] text-[#f4eeff]">
 			<div
 				aria-hidden="true"
 				class="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_-10%,rgba(168,85,247,0.14),transparent_70%),radial-gradient(40%_40%_at_100%_100%,rgba(217,70,239,0.10),transparent_70%)]"
@@ -190,7 +199,7 @@ export default function SupportReportPreview() {
 						<ArrowLeft class="h-4 w-4" aria-hidden="true" />
 						Back to conversation
 					</Link>
-					<p class="max-w-[12rem] truncate font-mono text-[11px] text-[#a99bbd]/70" title={caseId}>
+					<p class="max-w-[12rem] truncate font-mono text-[11px] text-[#a99bbd]" title={caseId}>
 						{caseId}
 					</p>
 				</div>
@@ -335,7 +344,7 @@ export default function SupportReportPreview() {
 												}
 											}}
 											disabled={feedbackSaving}
-											class={`inline-flex min-h-11 items-center gap-2 rounded-2xl border px-4 py-2.5 text-xs font-semibold transition motion-reduce:transition-none disabled:opacity-60 ${
+											class={`inline-flex min-h-11 items-center gap-2 rounded-2xl border px-4 py-2.5 text-xs font-semibold transition motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 disabled:opacity-60 ${
 												feedbackRating === rating
 													? rating === "up"
 														? "border-emerald-400/40 bg-emerald-500/15 text-emerald-300"
@@ -369,7 +378,7 @@ export default function SupportReportPreview() {
 									}
 								}}
 								placeholder="Why? What did it get wrong? (optional)"
-								class={`mt-3 w-full resize-y focus:outline-none rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-[#f4eeff] placeholder:text-[#a99bbd]/70 ${focusRing}`}
+								class={`mt-3 w-full resize-y focus:outline-none rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-[#f4eeff] placeholder:text-[#a99bbd] ${focusRing}`}
 								rows={2}
 							/>
 						</GlassCard>
@@ -407,7 +416,7 @@ export default function SupportReportPreview() {
 									type="button"
 									onClick={handleSubmit}
 									disabled={!approved || confirming}
-									class={`inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${focusRing}`}
+									class={`inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-[#9333ea] to-[#c026d3] px-6 py-3 text-sm font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${focusRing}`}
 								>
 									{confirming ? (
 										<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
@@ -437,6 +446,6 @@ export default function SupportReportPreview() {
 					</GlassCard>
 				)}
 			</div>
-		</div>
+		</main>
 	);
 }

@@ -11,8 +11,9 @@ import {
 	Trash2,
 	UserRound,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
+import { useModalFocus } from "../../../hooks/useModalFocus.js";
 import { apiRequest, getToken } from "../../../lib/auth.js";
 import { cn } from "../../../lib/cn.js";
 
@@ -195,6 +196,8 @@ export function AdminAISection() {
 	const [issuedToken, setIssuedToken] = useState(null);
 	const [issuedBusy, setIssuedBusy] = useState(false);
 	const [tokenCopied, setTokenCopied] = useState(false);
+	const issuedPanelRef = useRef(null);
+	useModalFocus(Boolean(issuedToken), issuedPanelRef, () => setIssuedToken(null));
 
 	async function fetchTokens() {
 		try {
@@ -327,7 +330,7 @@ export function AdminAISection() {
 			{/* Brand header */}
 			<div class={cn(PANEL, "p-6")}>
 				<div class="flex items-center gap-4">
-					<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#a855f7] to-[#d946ef] text-white shadow-[0_0_28px_-8px_rgba(168,85,247,0.6)]">
+					<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#9333ea] to-[#c026d3] text-white shadow-[0_0_28px_-8px_rgba(168,85,247,0.6)]">
 						<ListChecks class="h-6 w-6" />
 					</div>
 					<div class="min-w-0">
@@ -340,7 +343,11 @@ export function AdminAISection() {
 			</div>
 
 			{/* Tabs */}
-			<div class="flex gap-1.5 rounded-2xl border border-purple-400/10 bg-[#0b0714]/50 p-1.5">
+			<div
+				role="tablist"
+				aria-label="AI Support sections"
+				class="flex gap-1.5 rounded-2xl border border-purple-400/10 bg-[#0b0714]/50 p-1.5"
+			>
 				{tabs.map((tab) => {
 					const active = activeTab === tab.id;
 					const Icon = tab.icon;
@@ -348,15 +355,19 @@ export function AdminAISection() {
 						<button
 							key={tab.id}
 							type="button"
+							role="tab"
+							aria-selected={active}
+							aria-controls={`ai-panel-${tab.id}`}
+							id={`ai-tab-${tab.id}`}
 							onClick={() => setActiveTab(tab.id)}
 							class={cn(
-								"flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all",
+								"flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60",
 								active
 									? "bg-purple-500/20 text-purple-300 ring-1 ring-inset ring-purple-500/40"
 									: "text-slate-400 hover:text-white",
 							)}
 						>
-							<Icon class="h-4 w-4" />
+							<Icon class="h-4 w-4" aria-hidden="true" />
 							{tab.label}
 						</button>
 					);
@@ -365,7 +376,12 @@ export function AdminAISection() {
 
 			{/* Support Tokens */}
 			{activeTab === "tokens" && (
-				<div class="grid gap-5 lg:grid-cols-3">
+				<div
+					role="tabpanel"
+					id="ai-panel-tokens"
+					aria-labelledby="ai-tab-tokens"
+					class="grid gap-5 lg:grid-cols-3"
+				>
 					{/* Issue card */}
 					<div class={cn("lg:col-span-2", PANEL)}>
 						<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -388,14 +404,20 @@ export function AdminAISection() {
 						</p>
 
 						{tokensError && (
-							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
-								<AlertCircle class="h-4 w-4" />
+							<div
+								role="alert"
+								class="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400"
+							>
+								<AlertCircle class="h-4 w-4" aria-hidden="true" />
 								{tokensError}
 							</div>
 						)}
 						{tokensNotice && (
-							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400">
-								<CheckCircle class="h-4 w-4" />
+							<div
+								role="status"
+								class="mb-3 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400"
+							>
+								<CheckCircle class="h-4 w-4" aria-hidden="true" />
 								{tokensNotice}
 							</div>
 						)}
@@ -409,7 +431,7 @@ export function AdminAISection() {
 									onChange={(e) => setAccountQuery(e.target.value)}
 									placeholder="Search accounts by name or email…"
 									aria-label="Search accounts"
-									class="w-full rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition-all placeholder:text-slate-400 focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
+									class="w-full rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition-all placeholder:text-slate-400 focus:border-purple-500/70 focus:ring-2 focus-visible:ring-purple-500/60"
 								/>
 							</div>
 							<button
@@ -474,13 +496,13 @@ export function AdminAISection() {
 								onChange={(e) => setNewLabel(e.target.value)}
 								placeholder="Label — e.g. Acme Corp"
 								aria-label="Token label"
-								class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none transition-all placeholder:text-slate-400 focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
+								class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none transition-all placeholder:text-slate-400 focus:border-purple-500/70 focus:ring-2 focus-visible:ring-purple-500/60"
 							/>
 							<select
 								value={newExpiry}
 								onChange={(e) => setNewExpiry(e.target.value)}
 								aria-label="Token expiry"
-								class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none transition-all focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
+								class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none transition-all focus:border-purple-500/70 focus:ring-2 focus-visible:ring-purple-500/60"
 							>
 								<option value="never">Never expires</option>
 								<option value="30d">Expires in 30 days</option>
@@ -494,14 +516,14 @@ export function AdminAISection() {
 								value={customDate}
 								onChange={(e) => setCustomDate(e.target.value)}
 								aria-label="Custom expiry date"
-								class="mt-3 rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
+								class="mt-3 rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500/70 focus:ring-2 focus-visible:ring-purple-500/60"
 							/>
 						)}
 						<button
 							type="button"
 							onClick={issueToken}
 							disabled={issuedBusy || !pickedAccount || !newLabel.trim()}
-							class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#a855f7] to-[#d946ef] px-5 py-2.5 text-sm font-semibold text-[#f4eeff] shadow-[0_0_24px_-10px_rgba(168,85,247,0.55)] transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+							class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#9333ea] to-[#c026d3] px-5 py-2.5 text-sm font-semibold text-[#f4eeff] shadow-[0_0_24px_-10px_rgba(168,85,247,0.55)] transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
 						>
 							{issuedBusy ? (
 								<ThreeDot variant="bounce" color="#a855f7" size="small" text="" textColor="" />
@@ -581,7 +603,7 @@ export function AdminAISection() {
 
 			{/* Investigation Models */}
 			{activeTab === "models" && (
-				<div class={cn(PANEL)}>
+				<div role="tabpanel" id="ai-panel-models" aria-labelledby="ai-tab-models" class={cn(PANEL)}>
 					<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
 						<div class="flex flex-wrap items-center gap-2">
 							<ListChecks class="h-5 w-5 text-purple-400" />
@@ -613,14 +635,20 @@ export function AdminAISection() {
 					) : null}
 
 					{modelsAdminError && (
-						<div class="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
-							<AlertCircle class="h-4 w-4" />
+						<div
+							role="alert"
+							class="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400"
+						>
+							<AlertCircle class="h-4 w-4" aria-hidden="true" />
 							{modelsAdminError}
 						</div>
 					)}
 					{modelsAdminNotice && (
-						<div class="mb-3 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400">
-							<CheckCircle class="h-4 w-4" />
+						<div
+							role="status"
+							class="mb-3 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400"
+						>
+							<CheckCircle class="h-4 w-4" aria-hidden="true" />
 							{modelsAdminNotice}
 						</div>
 					)}
@@ -722,13 +750,13 @@ export function AdminAISection() {
 										onChange={(e) => setNewRule((p) => ({ ...p, keyword: e.target.value }))}
 										placeholder="keyword"
 										aria-label="Routing keyword"
-										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none placeholder:text-slate-400 focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
+										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none placeholder:text-slate-400 focus:border-purple-500/70 focus:ring-2 focus-visible:ring-purple-500/60"
 									/>
 									<select
 										value={newRule.modelId}
 										onChange={(e) => setNewRule((p) => ({ ...p, modelId: e.target.value }))}
 										aria-label="Routing model"
-										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
+										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/70 focus:ring-2 focus-visible:ring-purple-500/60"
 									>
 										<option value="">model…</option>
 										{(modelsAdmin?.allowed ?? []).map((id) => (
@@ -741,7 +769,7 @@ export function AdminAISection() {
 										value={newRule.role}
 										onChange={(e) => setNewRule((p) => ({ ...p, role: e.target.value }))}
 										aria-label="Routing role"
-										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
+										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/70 focus:ring-2 focus-visible:ring-purple-500/60"
 									>
 										<option value="">all roles</option>
 										{INVESTIGATION_ROLES.map((role) => (
@@ -777,7 +805,7 @@ export function AdminAISection() {
 												onChange={(e) => setRoleModel(role, e.target.value)}
 												disabled={modelsAdminSaving || (modelsAdmin?.allowed.length ?? 0) === 0}
 												aria-label={`Model for the ${role} agent`}
-												class="w-full rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
+												class="w-full rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/70 focus:ring-2 focus-visible:ring-purple-500/60"
 											>
 												<option value="">Chain (auto)</option>
 												{(modelsAdmin?.allowed ?? []).map((id) => (
@@ -800,7 +828,7 @@ export function AdminAISection() {
 											setModelsAdmin((p) => (p ? { ...p, default: e.target.value } : p))
 										}
 										disabled={modelsAdminSaving || (modelsAdmin?.allowed.length ?? 0) === 0}
-										class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
+										class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500/70 focus:ring-2 focus-visible:ring-purple-500/60"
 									>
 										{(modelsAdmin?.allowed ?? []).map((id) => (
 											<option key={id} value={id}>
@@ -834,7 +862,7 @@ export function AdminAISection() {
 									type="button"
 									onClick={saveModelsAdmin}
 									disabled={modelsAdminSaving || !modelsAdmin}
-									class="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#a855f7] to-[#d946ef] px-5 py-2.5 text-sm font-semibold text-[#f4eeff] shadow-[0_0_24px_-10px_rgba(168,85,247,0.55)] transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+									class="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#9333ea] to-[#c026d3] px-5 py-2.5 text-sm font-semibold text-[#f4eeff] shadow-[0_0_24px_-10px_rgba(168,85,247,0.55)] transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
 								>
 									{modelsAdminSaving ? (
 										<ThreeDot variant="bounce" color="#a855f7" size="small" text="" textColor="" />
@@ -857,7 +885,10 @@ export function AdminAISection() {
 					aria-label="Support token issued"
 					class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
 				>
-					<div class="w-full max-w-lg rounded-3xl border border-purple-400/20 bg-[#151020] p-6 text-[#f4eeff] shadow-2xl">
+					<div
+						ref={issuedPanelRef}
+						class="w-full max-w-lg rounded-3xl border border-purple-400/20 bg-[#151020] p-6 text-[#f4eeff] shadow-2xl"
+					>
 						<div class="mb-3 flex items-center gap-2">
 							<KeyRound class="h-5 w-5 text-purple-400" />
 							<h3 class="text-lg font-semibold">Support token issued</h3>
@@ -880,7 +911,7 @@ export function AdminAISection() {
 							<button
 								type="button"
 								onClick={() => setIssuedToken(null)}
-								class="rounded-2xl bg-gradient-to-r from-[#a855f7] to-[#d946ef] px-5 py-2 text-xs font-semibold text-[#f4eeff] transition-all hover:brightness-110"
+								class="rounded-2xl bg-gradient-to-r from-[#9333ea] to-[#c026d3] px-5 py-2 text-xs font-semibold text-[#f4eeff] transition-all hover:brightness-110"
 							>
 								Done
 							</button>

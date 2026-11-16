@@ -59,7 +59,8 @@ function deliveryPill(caseRow) {
 	return null;
 }
 
-const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60";
+const focusRing =
+	"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60";
 
 export default function SupportSubmitted() {
 	const { caseId } = useParams();
@@ -69,7 +70,7 @@ export default function SupportSubmitted() {
 
 	// Best-effort only: the reference renders regardless of this call.
 	useEffect(() => {
-		if (!jwt && !supportToken) {
+		if (!(jwt || supportToken)) {
 			return;
 		}
 		let cancelled = false;
@@ -98,40 +99,40 @@ export default function SupportSubmitted() {
 			.trim() === "failed";
 
 	return (
-		<div className="relative min-h-dvh overflow-hidden bg-[#0b0714] text-[#f4eeff]">
+		<main class="relative min-h-dvh overflow-hidden bg-[#0b0714] text-[#f4eeff]">
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_-10%,rgba(168,85,247,0.16),transparent_70%),radial-gradient(40%_40%_at_100%_100%,rgba(217,70,239,0.10),transparent_70%)]"
+				class="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_-10%,rgba(168,85,247,0.16),transparent_70%),radial-gradient(40%_40%_at_100%_100%,rgba(217,70,239,0.10),transparent_70%)]"
 			/>
-			<div className="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col items-center justify-center px-4 py-12 text-center sm:px-6">
-				<div className="flex h-20 w-20 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-400/10 shadow-[0_0_40px_-8px_rgba(52,211,153,0.4)]">
-					<Check className="h-10 w-10 text-emerald-400" aria-hidden="true" />
+			<div class="relative mx-auto flex min-h-dvh w-full max-w-lg flex-col items-center justify-center px-4 py-12 text-center sm:px-6">
+				<div class="flex h-20 w-20 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-400/10 shadow-[0_0_40px_-8px_rgba(52,211,153,0.4)]">
+					<Check class="h-10 w-10 text-emerald-400" aria-hidden="true" />
 				</div>
-				<h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#f4eeff] sm:text-4xl">
+				<h1 class="mt-6 text-3xl font-semibold tracking-tight text-[#f4eeff] sm:text-4xl">
 					Report submitted!
 				</h1>
-				<p className="mt-2 text-sm leading-6 text-[#a99bbd]">
+				<p class="mt-2 text-sm leading-6 text-[#a99bbd]">
 					Your investigation report is on its way to the support team.
 				</p>
 
-				<GlassCard className="mt-8 w-full p-5">
-					<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a99bbd]">
+				<GlassCard class="mt-8 w-full p-5">
+					<p class="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a99bbd]">
 						CASE REFERENCE
 					</p>
-					<p className="mt-2 break-all font-mono text-base font-semibold text-cyan-200 sm:text-lg">
+					<p class="mt-2 break-all font-mono text-base font-semibold text-cyan-200 sm:text-lg">
 						{caseId}
 					</p>
 					{pill ? (
-						<div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-							<p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a99bbd]">
+						<div class="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
+							<p class="text-[10px] font-semibold uppercase tracking-[0.28em] text-[#a99bbd]">
 								Email report
 							</p>
 							<span
-								className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${PILL_TONES[pill.tone]}`}
+								class={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider ${PILL_TONES[pill.tone]}`}
 							>
 								<span
 									aria-hidden="true"
-									className={`h-1.5 w-1.5 rounded-full ${DOT_TONES[pill.tone]}`}
+									class={`h-1.5 w-1.5 rounded-full ${DOT_TONES[pill.tone]}`}
 								/>
 								{pill.label}
 							</span>
@@ -139,8 +140,8 @@ export default function SupportSubmitted() {
 					) : null}
 				</GlassCard>
 
-				<p className="mt-6 inline-flex items-center gap-2 text-sm text-[#a99bbd]">
-					<Mail className="h-4 w-4 text-cyan-400" aria-hidden="true" />
+				<p class="mt-6 inline-flex items-center gap-2 text-sm text-[#a99bbd]">
+					<Mail class="h-4 w-4 text-cyan-400" aria-hidden="true" />
 					{failed
 						? "We couldn't send the report yet — we'll retry."
 						: "A copy will be sent to your email"}
@@ -148,11 +149,11 @@ export default function SupportSubmitted() {
 
 				<Link
 					to="/support"
-					className={`mt-8 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-8 py-3 text-sm font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 ${focusRing}`}
+					class={`mt-8 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-[#9333ea] to-[#c026d3] px-8 py-3 text-sm font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:brightness-110 ${focusRing}`}
 				>
 					Back to Support
 				</Link>
 			</div>
-		</div>
+		</main>
 	);
 }

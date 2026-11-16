@@ -67,13 +67,13 @@ export function Composer({
 		setAttachments([]);
 	}, [draft, attachments, disabled, sending, onSend]);
 
-	const canSend = !disabled && !sending && (draft.trim().length > 0 || attachments.length > 0);
+	const canSend = !(disabled || sending) && (draft.trim().length > 0 || attachments.length > 0);
 	const iconButton =
-		"rounded-xl border p-2 transition disabled:cursor-not-allowed disabled:opacity-40";
+		"rounded-xl border p-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 disabled:cursor-not-allowed disabled:opacity-40";
 
 	return (
 		<div
-			className={cn(
+			class={cn(
 				"rounded-2xl border bg-[#151020]/85 backdrop-blur-md transition-colors",
 				dragActive ? "border-cyan-400/50" : "border-white/10",
 				className,
@@ -90,16 +90,16 @@ export function Composer({
 			}}
 		>
 			{attachments.length > 0 ? (
-				<ul className="flex flex-wrap gap-1.5 border-b border-white/5 px-3 pt-3">
+				<ul class="flex flex-wrap gap-1.5 border-b border-white/5 px-3 pt-3">
 					{attachments.map((file, index) => (
 						<li
 							key={`${file.name}-${file.size}-${index}`}
-							className="flex max-w-[220px] items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 py-1 pl-2 pr-1 text-xs text-[#f4eeff]"
+							class="flex max-w-[220px] items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 py-1 pl-2 pr-1 text-xs text-[#f4eeff]"
 						>
-							<FileText aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-cyan-300" />
-							<span className="truncate">{file.name}</span>
+							<FileText aria-hidden="true" class="h-3.5 w-3.5 shrink-0 text-cyan-300" />
+							<span class="truncate">{file.name}</span>
 							{file.size ? (
-								<span className="shrink-0 text-[10px] tabular-nums text-[#a99bbd]">
+								<span class="shrink-0 text-[10px] tabular-nums text-[#a99bbd]">
 									{formatBytes(file.size)}
 								</span>
 							) : null}
@@ -107,16 +107,16 @@ export function Composer({
 								type="button"
 								onClick={() => setAttachments((prev) => prev.filter((_, i) => i !== index))}
 								aria-label={`Remove ${file.name}`}
-								className="shrink-0 rounded p-0.5 text-[#a99bbd] transition hover:bg-white/10 hover:text-[#f4eeff]"
+								class="flex min-h-6 min-w-6 shrink-0 items-center justify-center rounded text-[#a99bbd] transition hover:bg-white/10 hover:text-[#f4eeff]"
 							>
-								<X aria-hidden="true" className="h-3.5 w-3.5" />
+								<X aria-hidden="true" class="h-3.5 w-3.5" />
 							</button>
 						</li>
 					))}
 				</ul>
 			) : null}
 
-			<div className="flex items-end gap-2 p-2">
+			<div class="flex items-end gap-2 p-2">
 				{attachVisible ? (
 					<>
 						<button
@@ -124,18 +124,18 @@ export function Composer({
 							onClick={() => fileInputRef.current?.click()}
 							disabled={disabled}
 							aria-label="Attach files"
-							className={cn(
+							class={cn(
 								iconButton,
 								"border-white/10 bg-white/5 text-[#a99bbd] hover:bg-white/10 hover:text-[#f4eeff]",
 							)}
 						>
-							<Paperclip aria-hidden="true" className="h-4 w-4" />
+							<Paperclip aria-hidden="true" class="h-4 w-4" />
 						</button>
 						<input
 							ref={fileInputRef}
 							type="file"
-							multiple
-							className="hidden"
+							multiple={true}
+							class="hidden"
 							onChange={(event) => {
 								addFiles(event.target.files);
 								event.target.value = "";
@@ -159,7 +159,7 @@ export function Composer({
 						}
 					}}
 					onPaste={(event) => addFiles(event.clipboardData?.files)}
-					className="max-h-40 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-sm leading-6 text-[#f4eeff] outline-none placeholder:text-[#a99bbd]/60 focus:bg-white/5 focus:rounded-lg focus-visible:ring-2 focus-visible:ring-purple-500/60 disabled:cursor-not-allowed disabled:opacity-50"
+					class="max-h-40 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-sm leading-6 text-[#f4eeff] outline-none placeholder:text-[#a99bbd]/60 focus:bg-white/5 focus:rounded-lg focus-visible:ring-2 focus-visible:ring-purple-500/60 disabled:cursor-not-allowed disabled:opacity-50"
 				/>
 
 				{sending ? (
@@ -167,12 +167,12 @@ export function Composer({
 						type="button"
 						onClick={onStop}
 						aria-label="Stop generating"
-						className={cn(
+						class={cn(
 							iconButton,
 							"border-rose-400/30 bg-rose-400/10 text-rose-300 hover:bg-rose-400/20",
 						)}
 					>
-						<Square aria-hidden="true" className="h-4 w-4" />
+						<Square aria-hidden="true" class="h-4 w-4" />
 					</button>
 				) : (
 					<button
@@ -180,12 +180,12 @@ export function Composer({
 						onClick={send}
 						disabled={!canSend}
 						aria-label="Send message"
-						className={cn(
+						class={cn(
 							iconButton,
 							"border-purple-500/40 bg-gradient-to-r from-purple-500/20 to-fuchsia-500/20 text-purple-300 hover:from-purple-500/30 hover:to-fuchsia-500/30",
 						)}
 					>
-						<SendHorizontal aria-hidden="true" className="h-4 w-4" />
+						<SendHorizontal aria-hidden="true" class="h-4 w-4" />
 					</button>
 				)}
 			</div>

@@ -43,6 +43,7 @@ import { Composer } from "../../components/support/Composer.jsx";
 import { EvidenceViewerModal } from "../../components/support/EvidenceViewerModal.jsx";
 import InvestigationModelPicker from "../../components/support/InvestigationModelPicker.jsx";
 import { StageRail } from "../../components/support/StageRail.jsx";
+import { useModalFocus } from "../../hooks/useModalFocus.js";
 import { useSupportCase } from "../../hooks/useSupportCase.js";
 import { apiRequest, getToken } from "../../lib/auth.js";
 import { cn } from "../../lib/cn.js";
@@ -202,8 +203,8 @@ function MessageBubble({ message }) {
 
 	if (isNotice) {
 		return (
-			<div className="flex justify-center">
-				<p className="max-w-[85%] rounded-full border border-white/10 bg-white/5 px-4 py-2 text-center text-xs text-[#a99bbd]">
+			<div class="flex justify-center">
+				<p class="max-w-[85%] rounded-full border border-white/10 bg-white/5 px-4 py-2 text-center text-xs text-[#a99bbd]">
 					{body}
 				</p>
 			</div>
@@ -211,13 +212,13 @@ function MessageBubble({ message }) {
 	}
 
 	return (
-		<div className={`flex ${isClient ? "justify-end" : "justify-start"}`}>
-			<div className={cn("max-w-[85%] rounded-2xl border px-4 py-3", bubbleClass)}>
-				<p className={cn("text-xs font-semibold", isClient ? "text-purple-400" : "text-[#a99bbd]")}>
+		<div class={`flex ${isClient ? "justify-end" : "justify-start"}`}>
+			<div class={cn("max-w-[85%] rounded-2xl border px-4 py-3", bubbleClass)}>
+				<p class={cn("text-xs font-semibold", isClient ? "text-purple-400" : "text-[#a99bbd]")}>
 					{label}
 					{message?.agent ? ` · ${message.agent}` : ""}
 				</p>
-				<p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6">{body}</p>
+				<p class="mt-1 whitespace-pre-wrap break-words text-sm leading-6">{body}</p>
 			</div>
 		</div>
 	);
@@ -226,9 +227,9 @@ function MessageBubble({ message }) {
 /** The findings that arrived while the investigation ran. */
 function FindingsPanel({ findingRows }) {
 	return (
-		<section aria-label="Findings" className="rounded-2xl border border-white/10 bg-white/5 p-4">
-			<h3 className="text-sm font-semibold text-[#f4eeff]">Findings</h3>
-			<ul className="mt-3 space-y-3">
+		<section aria-label="Findings" class="rounded-2xl border border-white/10 bg-white/5 p-4">
+			<h3 class="text-sm font-semibold text-[#f4eeff]">Findings</h3>
+			<ul class="mt-3 space-y-3">
 				{findingRows.map(({ key, entry }) => {
 					const finding = entry?.finding || {};
 					const confidence = String(finding.confidence || "speculative");
@@ -240,39 +241,39 @@ function FindingsPanel({ findingRows }) {
 						tone = "bg-amber-500/15 text-amber-300";
 					}
 					return (
-						<li key={key} className="rounded-xl border border-white/10 bg-[#0b0714]/60 p-3">
-							<div className="flex flex-wrap items-center gap-2">
-								<span className={cn("rounded-full px-2.5 py-1 text-[11px] font-semibold", tone)}>
+						<li key={key} class="rounded-xl border border-white/10 bg-[#0b0714]/60 p-3">
+							<div class="flex flex-wrap items-center gap-2">
+								<span class={cn("rounded-full px-2.5 py-1 text-[11px] font-semibold", tone)}>
 									{CONFIDENCE_LABELS[confidence] || confidence}
 								</span>
 								{entry?.role ? (
-									<span className="rounded-full bg-white/5 px-2.5 py-1 text-[11px] text-[#a99bbd]">
+									<span class="rounded-full bg-white/5 px-2.5 py-1 text-[11px] text-[#a99bbd]">
 										{entry.role}
 									</span>
 								) : null}
 							</div>
-							<p className="mt-2 text-sm leading-6 text-[#f4eeff]">{finding.detail || ""}</p>
+							<p class="mt-2 text-sm leading-6 text-[#f4eeff]">{finding.detail || ""}</p>
 							{evidence.length > 0 ? (
-								<ul className="mt-2 space-y-1">
+								<ul class="mt-2 space-y-1">
 									{evidence.map((item) => {
 										const href = safeExternalUrl(item?.url);
 										const label = item?.file || item?.commit || "evidence";
 										const suffix = item?.lines ? ` (lines ${item.lines})` : "";
 										return (
-											<li key={`${label}${suffix}`} className="text-xs">
+											<li key={`${label}${suffix}`} class="text-xs">
 												{href ? (
 													<a
 														href={href}
 														target="_blank"
 														rel="noopener noreferrer"
-														className="inline-flex items-center gap-1 text-cyan-300 underline underline-offset-2"
+														class="inline-flex items-center gap-1 text-cyan-300 underline underline-offset-2"
 													>
 														{label}
 														{suffix}
-														<ExternalLink className="h-3 w-3" />
+														<ExternalLink class="h-3 w-3" aria-hidden="true" />
 													</a>
 												) : (
-													<span className="text-[#a99bbd]">
+													<span class="text-[#a99bbd]">
 														{label}
 														{suffix}
 													</span>
@@ -314,7 +315,7 @@ const REPORT_MARKDOWN_COMPONENTS = {
 				width={640}
 				height={360}
 				loading="lazy"
-				className="max-w-full rounded-2xl"
+				class="max-w-full rounded-2xl"
 			/>
 		);
 	},
@@ -325,37 +326,37 @@ function ReportPanel({ report, confirming, confirmed, onConfirm }) {
 	return (
 		<section
 			aria-label="Investigation report"
-			className="rounded-2xl border border-emerald-400/20 bg-emerald-500/5 p-4"
+			class="rounded-2xl border border-emerald-400/20 bg-emerald-500/5 p-4"
 		>
-			<div className="flex flex-wrap items-center justify-between gap-3">
-				<h3 className="text-sm font-semibold text-[#f4eeff]">Investigation report</h3>
+			<div class="flex flex-wrap items-center justify-between gap-3">
+				<h3 class="text-sm font-semibold text-[#f4eeff]">Investigation report</h3>
 				{report?.reportStatus ? (
-					<span className="rounded-full bg-white/5 px-3 py-1 text-[11px] font-semibold text-[#a99bbd]">
+					<span class="rounded-full bg-white/5 px-3 py-1 text-[11px] font-semibold text-[#a99bbd]">
 						{report.reportStatus}
 					</span>
 				) : null}
 			</div>
-			<div className="mt-3 max-h-80 overflow-y-auto break-words text-sm leading-6 text-[#f4eeff]">
+			<div class="mt-3 max-h-80 overflow-y-auto break-words text-sm leading-6 text-[#f4eeff]">
 				<ReactMarkdown remarkPlugins={[remarkGfm]} components={REPORT_MARKDOWN_COMPONENTS}>
 					{String(report?.report ?? "")}
 				</ReactMarkdown>
 			</div>
-			<div className="mt-4 flex flex-wrap items-center gap-3">
+			<div class="mt-4 flex flex-wrap items-center gap-3">
 				<button
 					type="button"
 					onClick={onConfirm}
 					disabled={confirming || confirmed}
-					className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-4 py-2.5 text-xs font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+					class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#9333ea] to-[#c026d3] px-4 py-2.5 text-xs font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					{confirming ? (
 						<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
 					) : (
-						<Check className="h-4 w-4" />
+						<Check class="h-4 w-4" />
 					)}
 					Confirm this is accurate
 				</button>
 				{confirmed ? (
-					<p className="text-xs text-emerald-300">Thanks — your confirmation was recorded.</p>
+					<p class="text-xs text-emerald-300">Thanks — your confirmation was recorded.</p>
 				) : null}
 			</div>
 		</section>
@@ -392,6 +393,8 @@ export default function SupportWorkspace() {
 	const [capabilities, setCapabilities] = useState(null);
 
 	const transcriptRef = useRef(null);
+	const leftDrawerRef = useRef(null);
+	const rightDrawerRef = useRef(null);
 	const descriptorsRef = useRef(new Map()); // File -> uploaded descriptor
 	const inflightRef = useRef(new Set()); // Files whose upload has started
 	const signedRef = useRef(new Set()); // Paths a signature was asked for
@@ -443,9 +446,11 @@ export default function SupportWorkspace() {
 
 	// Escape closes either mobile drawer.
 	const anyDrawerOpen = leftDrawerOpen || rightDrawerOpen;
+	useModalFocus(leftDrawerOpen, leftDrawerRef, () => setLeftDrawerOpen(false));
+	useModalFocus(rightDrawerOpen, rightDrawerRef, () => setRightDrawerOpen(false));
 	useEffect(() => {
 		if (!anyDrawerOpen) {
-			return undefined;
+			return;
 		}
 		const onKeyDown = (event) => {
 			if (event.key === "Escape") {
@@ -560,7 +565,7 @@ export default function SupportWorkspace() {
 	}, []);
 
 	async function startCase() {
-		if (!jwt && !supportToken) {
+		if (!(jwt || supportToken)) {
 			setProblem("Please sign in again to start an investigation.");
 			return;
 		}
@@ -663,24 +668,24 @@ export default function SupportWorkspace() {
 
 	const leftRail = (
 		<>
-			<div className="flex items-center gap-3">
-				<div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 text-[#f4eeff]">
-					<Bot className="h-5 w-5" aria-hidden="true" />
+			<div class="flex items-center gap-3">
+				<div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#9333ea] to-[#c026d3] text-[#f4eeff]">
+					<Bot class="h-5 w-5" aria-hidden="true" />
 				</div>
-				<div className="min-w-0">
-					<p className="text-sm font-semibold text-[#f4eeff]">Support</p>
-					<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-purple-400">
+				<div class="min-w-0">
+					<p class="text-sm font-semibold text-[#f4eeff]">Support</p>
+					<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-purple-400">
 						AI Investigation
 					</p>
 				</div>
 			</div>
 
-			<div className="rounded-xl border border-white/10 bg-white/5 p-3">
-				<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+			<div class="rounded-xl border border-white/10 bg-white/5 p-3">
+				<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 					Case reference
 				</p>
 				<p
-					className="mt-1 truncate font-mono text-[11px] text-[#f4eeff]"
+					class="mt-1 truncate font-mono text-[11px] text-[#f4eeff]"
 					title={caseId ?? "not opened yet"}
 				>
 					{caseId ?? "not opened yet"}
@@ -688,20 +693,20 @@ export default function SupportWorkspace() {
 			</div>
 
 			<div>
-				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+				<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 					Case progress
 				</p>
 				<StageRail status={caseStatus} />
 			</div>
 
-			<div className="min-h-0">
-				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+			<div class="min-h-0">
+				<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 					Evidence ({attachments.length})
 				</p>
 				{attachments.length === 0 ? (
-					<p className="text-[11px] text-[#a99bbd]">No evidence yet.</p>
+					<p class="text-[11px] text-[#a99bbd]">No evidence yet.</p>
 				) : (
-					<ul className="space-y-1.5">
+					<ul class="space-y-1.5">
 						{attachments.map((attachment, index) => {
 							const name = fileNameOf(attachment?.file_path);
 							const Icon = attachmentIcon(attachment);
@@ -711,14 +716,12 @@ export default function SupportWorkspace() {
 										type="button"
 										onClick={() => openViewer(index)}
 										aria-label={`Open evidence ${name}`}
-										className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2 text-left transition hover:border-cyan-400/30 hover:bg-white/10"
+										class="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-2 text-left transition hover:border-cyan-400/30 hover:bg-white/10"
 									>
-										<Icon className="h-4 w-4 shrink-0 text-cyan-300" aria-hidden="true" />
-										<span className="min-w-0 flex-1 truncate text-[11px] text-[#f4eeff]">
-											{name}
-										</span>
+										<Icon class="h-4 w-4 shrink-0 text-cyan-300" aria-hidden="true" />
+										<span class="min-w-0 flex-1 truncate text-[11px] text-[#f4eeff]">{name}</span>
 										{attachment?.byte_size ? (
-											<span className="shrink-0 text-[10px] tabular-nums text-[#a99bbd]">
+											<span class="shrink-0 text-[10px] tabular-nums text-[#a99bbd]">
 												{formatBytes(attachment.byte_size)}
 											</span>
 										) : null}
@@ -730,9 +733,9 @@ export default function SupportWorkspace() {
 				)}
 			</div>
 
-			<div className="flex gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-3">
-				<Lock className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" aria-hidden="true" />
-				<p className="text-[11px] leading-5 text-[#f4eeff]">
+			<div class="flex gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/5 p-3">
+				<Lock class="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" aria-hidden="true" />
+				<p class="text-[11px] leading-5 text-[#f4eeff]">
 					Private session. Evidence is visible only to you and the support team. Nothing is shared
 					publicly.
 				</p>
@@ -741,9 +744,9 @@ export default function SupportWorkspace() {
 			<button
 				type="button"
 				onClick={endSession}
-				className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-[#f4eeff] transition hover:border-rose-400/30 hover:bg-white/10"
+				class="mt-auto inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-[#f4eeff] transition hover:border-rose-400/30 hover:bg-white/10"
 			>
-				<LogOut className="h-4 w-4" aria-hidden="true" />
+				<LogOut class="h-4 w-4" aria-hidden="true" />
 				End session
 			</button>
 		</>
@@ -752,8 +755,8 @@ export default function SupportWorkspace() {
 	const rightRail = (
 		<>
 			<div>
-				<p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-purple-400">
-					<Activity className="h-3.5 w-3.5" aria-hidden="true" />
+				<p class="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-purple-400">
+					<Activity class="h-3.5 w-3.5" aria-hidden="true" />
 					Investigation
 				</p>
 				<ol>
@@ -768,21 +771,22 @@ export default function SupportWorkspace() {
 						return (
 							<li
 								key={step}
-								className="flex items-center gap-2 border-b border-white/5 py-2 last:border-0"
+								class="flex items-center gap-2 border-b border-white/5 py-2 last:border-0"
 							>
 								<span
 									aria-hidden="true"
-									className={cn(
+									class={cn(
 										"flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
-										resolvedState === "done" && "border-purple-500/60 bg-purple-500/20 text-purple-400",
+										resolvedState === "done" &&
+											"border-purple-500/60 bg-purple-500/20 text-purple-400",
 										resolvedState === "active" && "border-cyan-400/60 bg-cyan-400/20",
 										resolvedState === "idle" && "border-white/15 bg-white/5",
 									)}
 								>
-									{resolvedState === "done" ? <Check className="h-2.5 w-2.5" /> : null}
+									{resolvedState === "done" ? <Check class="h-2.5 w-2.5" /> : null}
 								</span>
 								<span
-									className={cn(
+									class={cn(
 										"min-w-0 flex-1 text-[11px] leading-4",
 										resolvedState === "idle" ? "text-[#a99bbd]" : "text-[#f4eeff]",
 									)}
@@ -790,7 +794,7 @@ export default function SupportWorkspace() {
 									{step}
 								</span>
 								<span
-									className={cn(
+									class={cn(
 										"shrink-0 rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider",
 										chip,
 									)}
@@ -806,27 +810,27 @@ export default function SupportWorkspace() {
 					})}
 				</ol>
 				{caseStatus === "failed" ? (
-					<p className="mt-2 text-[11px] leading-4 text-rose-300">
+					<p class="mt-2 text-[11px] leading-4 text-rose-300">
 						The investigation reported a failure — see the conversation.
 					</p>
 				) : null}
 			</div>
 
 			<div>
-				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+				<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 					Resources
 				</p>
-				<ul className="space-y-1.5">
+				<ul class="space-y-1.5">
 					{CAPABILITY_ROWS.map(({ label, key }) => {
 						const pill = capabilityPill(capabilities, key);
 						return (
 							<li
 								key={key}
-								className="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5"
+								class="flex items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5"
 							>
-								<span className="text-[11px] text-[#f4eeff]">{label}</span>
+								<span class="text-[11px] text-[#f4eeff]">{label}</span>
 								<span
-									className={cn(
+									class={cn(
 										"inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider",
 										pill.className,
 									)}
@@ -840,13 +844,13 @@ export default function SupportWorkspace() {
 			</div>
 
 			<div>
-				<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+				<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 					Evidence collected
 				</p>
 				{attachments.length === 0 ? (
-					<p className="text-[11px] text-[#a99bbd]">Nothing collected yet.</p>
+					<p class="text-[11px] text-[#a99bbd]">Nothing collected yet.</p>
 				) : (
-					<ul className="space-y-1.5">
+					<ul class="space-y-1.5">
 						{attachments.map((attachment, index) => {
 							const name = fileNameOf(attachment?.file_path);
 							return (
@@ -855,14 +859,12 @@ export default function SupportWorkspace() {
 										type="button"
 										onClick={() => openViewer(index)}
 										aria-label={`Open evidence ${name}`}
-										className="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-left transition hover:border-cyan-400/30 hover:bg-white/10"
+										class="flex w-full items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-left transition hover:border-cyan-400/30 hover:bg-white/10"
 									>
-										<FileText className="h-3.5 w-3.5 shrink-0 text-cyan-300" aria-hidden="true" />
-										<span className="min-w-0 flex-1 truncate text-[11px] text-[#f4eeff]">
-											{name}
-										</span>
+										<FileText class="h-3.5 w-3.5 shrink-0 text-cyan-300" aria-hidden="true" />
+										<span class="min-w-0 flex-1 truncate text-[11px] text-[#f4eeff]">{name}</span>
 										{attachment?.byte_size ? (
-											<span className="shrink-0 text-[10px] tabular-nums text-[#a99bbd]">
+											<span class="shrink-0 text-[10px] tabular-nums text-[#a99bbd]">
 												{formatBytes(attachment.byte_size)}
 											</span>
 										) : null}
@@ -874,12 +876,12 @@ export default function SupportWorkspace() {
 				)}
 			</div>
 
-			<div className="rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-fuchsia-500/5 p-3">
-				<p className="flex items-center gap-2 text-xs font-semibold text-purple-300">
-					<ShieldCheck className="h-4 w-4" aria-hidden="true" />
+			<div class="rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-fuchsia-500/5 p-3">
+				<p class="flex items-center gap-2 text-xs font-semibold text-purple-300">
+					<ShieldCheck class="h-4 w-4" aria-hidden="true" />
 					Read-only by design
 				</p>
-				<p className="mt-1.5 text-[11px] leading-5 text-[#f4eeff]">
+				<p class="mt-1.5 text-[11px] leading-5 text-[#f4eeff]">
 					The AI cannot modify source code, create files, run commands or deploy. It inspects
 					authorized sources only.
 				</p>
@@ -888,35 +890,35 @@ export default function SupportWorkspace() {
 	);
 
 	return (
-		<div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-[#0b0714] text-[#f4eeff]">
+		<div class="flex h-dvh min-h-0 flex-col overflow-hidden bg-[#0b0714] text-[#f4eeff]">
 			{/* Header row */}
-			<header className="relative z-10 flex flex-wrap items-center gap-2 border-b border-white/10 px-3 py-2.5 sm:gap-3 sm:px-4">
+			<header class="relative z-10 flex flex-wrap items-center gap-2 border-b border-white/10 px-3 py-2.5 sm:gap-3 sm:px-4">
 				<button
 					type="button"
 					onClick={() => setLeftDrawerOpen((value) => !value)}
 					aria-label="Toggle evidence panel"
 					aria-expanded={leftDrawerOpen}
-					className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff] lg:hidden"
+					class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff] lg:hidden"
 				>
-					<PanelLeft className="h-5 w-5" aria-hidden="true" />
+					<PanelLeft class="h-5 w-5" aria-hidden="true" />
 				</button>
 
-				<div className="flex h-10 w-10 items-center justify-center rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/25 to-fuchsia-500/15 text-purple-400">
-					<Bot className="h-5 w-5" aria-hidden="true" />
+				<div class="flex h-10 w-10 items-center justify-center rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/25 to-fuchsia-500/15 text-purple-400">
+					<Bot class="h-5 w-5" aria-hidden="true" />
 				</div>
-				<div className="min-w-0">
-					<h1 className="text-base font-semibold leading-tight text-[#f4eeff] sm:text-lg">
+				<div class="min-w-0">
+					<h1 class="text-base font-semibold leading-tight text-[#f4eeff] sm:text-lg">
 						AI Investigation
 					</h1>
 					<p
-						className="max-w-[10rem] truncate font-mono text-[10px] text-[#a99bbd] sm:max-w-[16rem]"
+						class="max-w-[10rem] truncate font-mono text-[10px] text-[#a99bbd] sm:max-w-[16rem]"
 						title={caseId ?? "new case"}
 					>
 						{caseId ? `case ${caseId}` : "new case"}
 					</p>
 				</div>
 				<span
-					className={cn(
+					class={cn(
 						"inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider",
 						isInvestigating
 							? "border-purple-500/40 bg-purple-500/10 text-purple-400"
@@ -926,14 +928,14 @@ export default function SupportWorkspace() {
 					{isInvestigating ? (
 						<span
 							aria-hidden="true"
-							className="h-1.5 w-1.5 animate-pulse motion-reduce:animate-none rounded-full bg-purple-500"
+							class="h-1.5 w-1.5 animate-pulse motion-reduce:animate-none rounded-full bg-purple-500"
 						/>
 					) : null}
 					{statusLabel}
 				</span>
 
-				<div className="ml-auto flex items-center gap-2">
-					<div className="hidden md:block">
+				<div class="ml-auto flex items-center gap-2">
+					<div class="hidden md:block">
 						<InvestigationModelPicker
 							caseId={caseId}
 							token={jwt ?? undefined}
@@ -944,9 +946,9 @@ export default function SupportWorkspace() {
 					<button
 						type="button"
 						onClick={endSession}
-						className="hidden h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-[#f4eeff] transition hover:border-rose-400/30 hover:text-rose-200 sm:inline-flex"
+						class="hidden h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 text-xs font-semibold text-[#f4eeff] transition hover:border-rose-400/30 hover:text-rose-200 sm:inline-flex"
 					>
-						<LogOut className="h-4 w-4" aria-hidden="true" />
+						<LogOut class="h-4 w-4" aria-hidden="true" />
 						End session
 					</button>
 					<button
@@ -954,9 +956,9 @@ export default function SupportWorkspace() {
 						onClick={() => setRightDrawerOpen((value) => !value)}
 						aria-label="Toggle investigation panel"
 						aria-expanded={rightDrawerOpen}
-						className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff] lg:hidden"
+						class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff] lg:hidden"
 					>
-						<PanelRight className="h-5 w-5" aria-hidden="true" />
+						<PanelRight class="h-5 w-5" aria-hidden="true" />
 					</button>
 				</div>
 			</header>
@@ -964,78 +966,58 @@ export default function SupportWorkspace() {
 			{/* Three columns above 1024px, single column + drawers below */}
 			<div
 				data-testid="workspace-grid"
-				className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_280px]"
+				class="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[260px_minmax(0,1fr)_280px]"
 			>
 				<aside
 					data-testid="workspace-left-rail"
+					aria-label="Evidence panel"
 					data-lenis-prevent={true}
-					className="hidden min-h-0 flex-col gap-5 overflow-y-auto border-r border-white/10 p-4 lg:flex"
+					class="hidden min-h-0 flex-col gap-5 overflow-y-auto border-r border-white/10 p-4 lg:flex"
 				>
 					{leftRail}
 				</aside>
 
-				<main data-testid="workspace-center" className="flex min-h-0 flex-col bg-[#0b0714]">
+				<main data-testid="workspace-center" class="flex min-h-0 flex-col bg-[#0b0714]">
 					{failure ? (
 						<div
 							role="alert"
-							className="flex items-center gap-2 border-b border-rose-400/20 bg-rose-500/10 px-4 py-2 text-xs text-rose-300"
+							class="flex items-center gap-2 border-b border-rose-400/20 bg-rose-500/10 px-4 py-2 text-xs text-rose-300"
 						>
-							<AlertTriangle className="h-4 w-4 shrink-0" aria-hidden="true" />
+							<AlertTriangle class="h-4 w-4 shrink-0" aria-hidden="true" />
 							{failure}
 						</div>
 					) : null}
 					{notice ? (
-						<div className="border-b border-emerald-400/20 bg-emerald-500/10 px-4 py-2 text-xs text-emerald-300">
+						<div
+							role="status"
+							class="border-b border-emerald-400/20 bg-emerald-500/10 px-4 py-2 text-xs text-emerald-300"
+						>
 							{notice}
 						</div>
 					) : null}
 
 					<div
 						ref={transcriptRef}
+						role="log"
+						aria-live="polite"
 						data-lenis-prevent={true}
-						className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6"
+						class="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6"
 					>
-						{!caseId ? (
-							<div className="flex h-full flex-col items-center justify-center gap-4 py-10 text-center">
-								<div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-500/20 to-fuchsia-500/10 text-purple-400">
-									<Sparkles className="h-7 w-7" aria-hidden="true" />
-								</div>
-								<div>
-									<h2 className="text-lg font-semibold text-[#f4eeff]">Start your investigation</h2>
-									<p className="mx-auto mt-1 max-w-sm text-sm leading-6 text-[#a99bbd]">
-										Open a case and describe the problem in plain language. The assistant asks for
-										what it needs, then investigators work on it and report back.
-									</p>
-								</div>
-								<button
-									type="button"
-									onClick={startCase}
-									disabled={creating}
-									className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-5 py-3 text-sm font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
-								>
-									{creating ? (
-										<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
-									) : (
-										<Sparkles className="h-4 w-4" aria-hidden="true" />
-									)}
-									{creating ? "Opening…" : "Open an investigation"}
-								</button>
-							</div>
-						) : (
+						{caseId ? (
 							<>
 								{supportCase.caseRow?.summary ? (
-									<div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-										<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+									<div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+										<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 											Summary
 										</p>
-										<p className="mt-1 text-sm leading-6 text-[#f4eeff]">
+										<p class="mt-1 text-sm leading-6 text-[#f4eeff]">
 											{supportCase.caseRow.summary}
 										</p>
 									</div>
 								) : null}
 
 								{messages.length === 0 ? (
-									<p className="py-8 text-center text-sm text-[#a99bbd]">
+									<p class="py-8 text-center text-sm text-[#a99bbd]">
 										No messages yet. Describe the problem below and the assistant will take it from
 										there.
 									</p>
@@ -1061,20 +1043,20 @@ export default function SupportWorkspace() {
 										<Link
 											to={`/support/case/${caseId}/report`}
 											state={supportCase.report}
-											className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-purple-500/40 bg-purple-500/10 px-4 py-2.5 text-xs font-semibold text-purple-300 transition hover:border-purple-400/60 hover:bg-purple-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60"
+											class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-purple-500/40 bg-purple-500/10 px-4 py-2.5 text-xs font-semibold text-purple-300 transition hover:border-purple-400/60 hover:bg-purple-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60"
 										>
 											Review &amp; submit the report
-											<ArrowRight className="h-4 w-4" aria-hidden="true" />
+											<ArrowRight class="h-4 w-4" aria-hidden="true" />
 										</Link>
 									</>
 								) : null}
 
 								{attachments.length > 0 ? (
 									<div>
-										<p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+										<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 											Evidence from this case
 										</p>
-										<div className="flex gap-2 overflow-x-auto pb-1">
+										<div class="flex gap-2 overflow-x-auto pb-1">
 											{attachments.map((attachment, index) => {
 												const name = fileNameOf(attachment?.file_path);
 												const url = signedUrls[attachment?.file_path];
@@ -1085,21 +1067,21 @@ export default function SupportWorkspace() {
 														type="button"
 														onClick={() => openViewer(index)}
 														aria-label={`Open evidence ${name}`}
-														className="group w-24 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/5 text-left transition hover:border-cyan-400/40"
+														class="group w-24 shrink-0 overflow-hidden rounded-xl border border-white/10 bg-white/5 text-left transition hover:border-cyan-400/40"
 													>
-														<span className="flex h-16 w-full items-center justify-center overflow-hidden bg-[#0b0714]">
+														<span class="flex h-16 w-full items-center justify-center overflow-hidden bg-[#0b0714]">
 															{isImage && url ? (
 																<img
 																	src={url}
 																	alt={name}
 																	loading="lazy"
-																	className="h-full w-full object-cover"
+																	class="h-full w-full object-cover"
 																/>
 															) : (
-																<FileText className="h-6 w-6 text-cyan-300/80" aria-hidden="true" />
+																<FileText class="h-6 w-6 text-cyan-300/80" aria-hidden="true" />
 															)}
 														</span>
-														<span className="block truncate px-1.5 py-1 text-[9px] text-[#f4eeff]">
+														<span class="block truncate px-1.5 py-1 text-[9px] text-[#f4eeff]">
 															{name}
 														</span>
 													</button>
@@ -1109,17 +1091,43 @@ export default function SupportWorkspace() {
 									</div>
 								) : null}
 							</>
+						) : (
+							<div class="flex h-full flex-col items-center justify-center gap-4 py-10 text-center">
+								<div class="flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-500/20 to-fuchsia-500/10 text-purple-400">
+									<Sparkles class="h-7 w-7" aria-hidden="true" />
+								</div>
+								<div>
+									<h2 class="text-lg font-semibold text-[#f4eeff]">Start your investigation</h2>
+									<p class="mx-auto mt-1 max-w-sm text-sm leading-6 text-[#a99bbd]">
+										Open a case and describe the problem in plain language. The assistant asks for
+										what it needs, then investigators work on it and report back.
+									</p>
+								</div>
+								<button
+									type="button"
+									onClick={startCase}
+									disabled={creating}
+									class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#9333ea] to-[#c026d3] px-5 py-3 text-sm font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+								>
+									{creating ? (
+										<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
+									) : (
+										<Sparkles class="h-4 w-4" aria-hidden="true" />
+									)}
+									{creating ? "Opening…" : "Open an investigation"}
+								</button>
+							</div>
 						)}
 					</div>
 
 					{uploads.length > 0 ? (
-						<ul className="space-y-1.5 border-t border-white/5 px-4 py-2">
+						<ul class="space-y-1.5 border-t border-white/5 px-4 py-2">
 							{uploads.map((upload) => (
-								<li key={upload.key} className="flex items-center gap-2 text-[11px]">
-									<FileText className="h-3.5 w-3.5 shrink-0 text-cyan-300" aria-hidden="true" />
-									<span className="max-w-40 truncate text-[#f4eeff]">{upload.name}</span>
+								<li key={upload.key} class="flex items-center gap-2 text-[11px]">
+									<FileText class="h-3.5 w-3.5 shrink-0 text-cyan-300" aria-hidden="true" />
+									<span class="max-w-40 truncate text-[#f4eeff]">{upload.name}</span>
 									<span
-										className={cn(
+										class={cn(
 											"shrink-0",
 											upload.status === "error"
 												? "text-rose-300"
@@ -1133,12 +1141,9 @@ export default function SupportWorkspace() {
 										{upload.status === "done" && "Uploaded"}
 										{upload.status === "error" && "Failed"}
 									</span>
-									<div
-										aria-hidden="true"
-										className="h-1 w-20 overflow-hidden rounded-full bg-white/10"
-									>
+									<div aria-hidden="true" class="h-1 w-20 overflow-hidden rounded-full bg-white/10">
 										<div
-											className={cn(
+											class={cn(
 												"h-full rounded-full",
 												upload.status === "error" && "w-full bg-rose-400",
 												upload.status === "done" && "w-full bg-cyan-400",
@@ -1153,7 +1158,7 @@ export default function SupportWorkspace() {
 						</ul>
 					) : null}
 
-					<div className="border-t border-white/10 bg-[#151020]/60 p-3 sm:p-4">
+					<div class="border-t border-white/10 bg-[#151020]/60 p-3 sm:p-4">
 						<Composer
 							onSend={handleSend}
 							onFiles={handleFiles}
@@ -1161,14 +1166,14 @@ export default function SupportWorkspace() {
 							attachVisible={Boolean(jwt)}
 						/>
 						{caseId && caseStatus === "collecting" ? (
-							<div className="mt-2 flex justify-end">
+							<div class="mt-2 flex justify-end">
 								<button
 									type="button"
 									onClick={handleConfirm}
 									disabled={confirming}
-									className="inline-flex items-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/10 px-3 py-2 text-[11px] font-semibold text-purple-300 transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+									class="inline-flex items-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/10 px-3 py-2 text-[11px] font-semibold text-purple-300 transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-50"
 								>
-									<ShieldCheck className="h-4 w-4" aria-hidden="true" />
+									<ShieldCheck class="h-4 w-4" aria-hidden="true" />
 									{confirming ? "Starting…" : "Start the investigation"}
 								</button>
 							</div>
@@ -1178,8 +1183,9 @@ export default function SupportWorkspace() {
 
 				<aside
 					data-testid="workspace-right-rail"
+					aria-label="Investigation status"
 					data-lenis-prevent={true}
-					className="hidden min-h-0 flex-col gap-5 overflow-y-auto border-l border-white/10 p-4 lg:flex"
+					class="hidden min-h-0 flex-col gap-5 overflow-y-auto border-l border-white/10 p-4 lg:flex"
 				>
 					{rightRail}
 				</aside>
@@ -1190,22 +1196,25 @@ export default function SupportWorkspace() {
 				<>
 					<button
 						type="button"
-						aria-label="Close evidence panel"
-						className="fixed inset-0 z-30 bg-black/60"
+						aria-hidden="true"
+						tabIndex={-1}
+						class="fixed inset-0 z-30 bg-black/60"
 						onClick={() => setLeftDrawerOpen(false)}
 					/>
 					<div
+						ref={leftDrawerRef}
 						role="dialog"
+						aria-modal="true"
 						aria-label="Evidence panel"
-						className="fixed inset-y-0 left-0 z-40 flex w-80 max-w-[85vw] flex-col gap-5 overflow-y-auto border-r border-white/10 bg-[#151020] p-4"
+						class="fixed inset-y-0 left-0 z-40 flex w-80 max-w-[85vw] flex-col gap-5 overflow-y-auto border-r border-white/10 bg-[#151020] p-4"
 					>
 						<button
 							type="button"
 							onClick={() => setLeftDrawerOpen(false)}
 							aria-label="Close evidence panel"
-							className="inline-flex h-10 w-10 items-center justify-center self-end rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff]"
+							class="inline-flex h-10 w-10 items-center justify-center self-end rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff]"
 						>
-							<X className="h-5 w-5" aria-hidden="true" />
+							<X class="h-5 w-5" aria-hidden="true" />
 						</button>
 						{leftRail}
 					</div>
@@ -1216,22 +1225,25 @@ export default function SupportWorkspace() {
 				<>
 					<button
 						type="button"
-						aria-label="Close investigation panel"
-						className="fixed inset-0 z-30 bg-black/60"
+						aria-hidden="true"
+						tabIndex={-1}
+						class="fixed inset-0 z-30 bg-black/60"
 						onClick={() => setRightDrawerOpen(false)}
 					/>
 					<div
+						ref={rightDrawerRef}
 						role="dialog"
+						aria-modal="true"
 						aria-label="Investigation panel"
-						className="fixed inset-y-0 right-0 z-40 flex w-80 max-w-[85vw] flex-col gap-5 overflow-y-auto border-l border-white/10 bg-[#151020] p-4"
+						class="fixed inset-y-0 right-0 z-40 flex w-80 max-w-[85vw] flex-col gap-5 overflow-y-auto border-l border-white/10 bg-[#151020] p-4"
 					>
 						<button
 							type="button"
 							onClick={() => setRightDrawerOpen(false)}
 							aria-label="Close investigation panel"
-							className="inline-flex h-10 w-10 items-center justify-center self-end rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff]"
+							class="inline-flex h-10 w-10 items-center justify-center self-end rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:text-[#f4eeff]"
 						>
-							<X className="h-5 w-5" aria-hidden="true" />
+							<X class="h-5 w-5" aria-hidden="true" />
 						</button>
 						{rightRail}
 					</div>

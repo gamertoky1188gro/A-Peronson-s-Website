@@ -56,7 +56,7 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 		load();
 	}, [load]);
 
-	if (!caseId || !config) {
+	if (!(caseId && config)) {
 		return null;
 	}
 
@@ -95,9 +95,9 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 	}
 
 	return (
-		<div className="mt-2">
-			<div className="flex flex-wrap items-center gap-2">
-				<Cpu className={`h-4 w-4 ${muted}`} aria-hidden="true" />
+		<div class="mt-2">
+			<div class="flex flex-wrap items-center gap-2">
+				<Cpu class={`h-4 w-4 ${muted}`} aria-hidden="true" />
 				{config.buyerSelectEnabled ? (
 					config.allowed.length === 0 ? (
 						<ModelBadge darkMode={darkMode}>
@@ -109,7 +109,7 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 							onChange={handleChange}
 							disabled={saving}
 							aria-label="Investigation model"
-							className={`rounded-xl border px-3 py-1.5 text-xs outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${
+							class={`rounded-xl border px-3 py-1.5 text-xs outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${
 								darkMode
 									? "border-white/10 bg-slate-900/70 text-slate-100 focus:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400/60"
 									: "border-slate-200 bg-white text-slate-800 focus:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400/60"
@@ -127,10 +127,14 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 						Investigation model: {config.effectiveModelId}
 					</ModelBadge>
 				)}
-				{saving ? <span className={`text-xs ${muted}`}>Saving…</span> : null}
+				{saving ? <span class={`text-xs ${muted}`}>Saving…</span> : null}
 			</div>
-			{error ? <p className="mt-1 text-xs text-rose-400">{error}</p> : null}
-			<p className={`mt-1 text-[11px] ${muted}`}>
+			{error ? (
+				<p role="alert" class="mt-1 text-xs text-rose-400">
+					{error}
+				</p>
+			) : null}
+			<p class={`mt-1 text-[11px] ${muted}`}>
 				Applies to the clarifying chat and the investigation. Free models only.
 			</p>
 		</div>

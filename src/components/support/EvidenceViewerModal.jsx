@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Download, FileText, Minus, Plus, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useModalFocus } from "../../hooks/useModalFocus.js";
 import { cn } from "../../lib/cn.js";
 import { formatBytes } from "../../lib/formatBytes.js";
 
@@ -26,6 +27,8 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 	const [dragging, setDragging] = useState(false);
 	const dragRef = useRef(null);
 	const stageRef = useRef(null);
+	const panelRef = useRef(null);
+	useModalFocus(true, panelRef, onClose);
 	const item = items[index] ?? null;
 
 	const navigate = useCallback(
@@ -68,7 +71,7 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 	useEffect(() => {
 		const stage = stageRef.current;
 		if (!stage) {
-			return undefined;
+			return;
 		}
 		const onWheel = (event) => {
 			event.preventDefault();
@@ -97,65 +100,61 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 		setDragging(false);
 	};
 	const navButton =
-		"rounded-full border border-white/10 bg-white/5 p-2 text-[#f4eeff] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30";
+		"rounded-full border border-white/10 bg-white/5 p-2 text-[#f4eeff] transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 disabled:cursor-not-allowed disabled:opacity-30";
 
 	return (
 		<div
-			className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+			ref={panelRef}
+			class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
 			role="dialog"
 			aria-modal="true"
 			aria-label={`Evidence viewer: ${item.name}`}
 			onClick={onClose}
 		>
 			<div
-				className="relative flex h-full w-full max-w-6xl flex-col p-4"
+				class="relative flex h-full w-full max-w-6xl flex-col p-4"
 				onClick={(event) => event.stopPropagation()}
 			>
-				<div className="flex items-center justify-between gap-3 pb-3">
-					<div className="min-w-0">
-						<p className="truncate text-sm font-medium text-[#f4eeff]">{item.name}</p>
-						<p className="text-[11px] tabular-nums text-[#a99bbd]">
+				<div class="flex items-center justify-between gap-3 pb-3">
+					<div class="min-w-0">
+						<p class="truncate text-sm font-medium text-[#f4eeff]">{item.name}</p>
+						<p class="text-[11px] tabular-nums text-[#a99bbd]">
 							{index + 1} of {items.length}
 							{item.size ? ` · ${formatBytes(item.size)}` : ""}
 						</p>
 					</div>
-					<div className="flex items-center gap-1.5">
+					<div class="flex items-center gap-1.5">
 						<button
 							type="button"
 							onClick={() => setZoom((z) => clampZoom(z - ZOOM_STEP))}
 							aria-label="Zoom out"
-							className={navButton}
+							class={navButton}
 						>
-							<Minus aria-hidden="true" className="h-4 w-4" />
+							<Minus aria-hidden="true" class="h-4 w-4" />
 						</button>
-						<span className="w-12 text-center text-xs tabular-nums text-[#a99bbd]">
+						<span class="w-12 text-center text-xs tabular-nums text-[#a99bbd]">
 							{Math.round(zoom * 100)}%
 						</span>
 						<button
 							type="button"
 							onClick={() => setZoom((z) => clampZoom(z + ZOOM_STEP))}
 							aria-label="Zoom in"
-							className={navButton}
+							class={navButton}
 						>
-							<Plus aria-hidden="true" className="h-4 w-4" />
+							<Plus aria-hidden="true" class="h-4 w-4" />
 						</button>
-						<a
-							href={item.url}
-							download={item.name}
-							aria-label="Download file"
-							className={navButton}
-						>
-							<Download aria-hidden="true" className="h-4 w-4" />
+						<a href={item.url} download={item.name} aria-label="Download file" class={navButton}>
+							<Download aria-hidden="true" class="h-4 w-4" />
 						</a>
-						<button type="button" onClick={onClose} aria-label="Close" className={navButton}>
-							<X aria-hidden="true" className="h-4 w-4" />
+						<button type="button" onClick={onClose} aria-label="Close" class={navButton}>
+							<X aria-hidden="true" class="h-4 w-4" />
 						</button>
 					</div>
 				</div>
 
 				<div
 					ref={stageRef}
-					className="relative flex-1 touch-none overflow-hidden rounded-2xl border border-white/10 bg-[#0b0714]"
+					class="relative flex-1 touch-none overflow-hidden rounded-2xl border border-white/10 bg-[#0b0714]"
 					onPointerDown={onPointerDown}
 					onPointerMove={onPointerMove}
 					onPointerUp={onPointerUp}
@@ -163,7 +162,7 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 				>
 					<div
 						data-testid="evidence-viewer-stage"
-						className="flex h-full w-full items-center justify-center"
+						class="flex h-full w-full items-center justify-center"
 						style={{
 							transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
 							cursor: dragging ? "grabbing" : "grab",
@@ -173,19 +172,24 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 							<img
 								src={item.url}
 								alt={item.name}
-								className="h-full w-full object-contain select-none"
+								class="h-full w-full object-contain select-none"
 								draggable={false}
 							/>
 						) : type.startsWith("video/") ? (
-							<video src={item.url} controls className="h-full w-full object-contain" />
+							<video
+								src={item.url}
+								controls={true}
+								aria-label={item.name}
+								class="h-full w-full object-contain"
+							/>
 						) : (
-							<div className="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center">
-								<FileText aria-hidden="true" className="h-12 w-12 text-cyan-300/70" />
-								<p className="text-sm text-[#f4eeff]">{item.name}</p>
+							<div class="flex h-full w-full flex-col items-center justify-center gap-3 p-6 text-center">
+								<FileText aria-hidden="true" class="h-12 w-12 text-cyan-300/70" />
+								<p class="text-sm text-[#f4eeff]">{item.name}</p>
 								<a
 									href={item.url}
 									download={item.name}
-									className="text-xs text-cyan-300 underline-offset-2 hover:underline"
+									class="text-xs text-cyan-300 underline-offset-2 hover:underline"
 								>
 									Download to view
 								</a>
@@ -201,18 +205,18 @@ export function EvidenceViewerModal({ items = [], index = 0, onClose, onNavigate
 							onClick={() => navigate(-1)}
 							disabled={index === 0}
 							aria-label="Previous evidence"
-							className={cn(navButton, "absolute left-2 top-1/2 -translate-y-1/2")}
+							class={cn(navButton, "absolute left-2 top-1/2 -translate-y-1/2")}
 						>
-							<ChevronLeft aria-hidden="true" className="h-5 w-5" />
+							<ChevronLeft aria-hidden="true" class="h-5 w-5" />
 						</button>
 						<button
 							type="button"
 							onClick={() => navigate(1)}
 							disabled={index >= items.length - 1}
 							aria-label="Next evidence"
-							className={cn(navButton, "absolute right-2 top-1/2 -translate-y-1/2")}
+							class={cn(navButton, "absolute right-2 top-1/2 -translate-y-1/2")}
 						>
-							<ChevronRight aria-hidden="true" className="h-5 w-5" />
+							<ChevronRight aria-hidden="true" class="h-5 w-5" />
 						</button>
 					</>
 				) : null}
