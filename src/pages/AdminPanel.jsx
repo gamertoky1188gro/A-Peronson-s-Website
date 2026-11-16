@@ -48,7 +48,7 @@ import usePageChrome from "../hooks/usePageChrome.js";
 import { apiRequest, getCurrentUser, getToken, saveSession } from "../lib/auth.js";
 import { secureStorage } from "../lib/secureStorage.js";
 import { useTheme } from "../lib/ThemeProvider.jsx";
-import { accentClasses } from "../theme/theme-utils.js";
+import { accentClasses } from "../theme/theme-utils.ts";
 import * as Helpers from "./AdminPanel.helpers.js";
 import * as Utils from "./AdminPanel.utils.js";
 import { AdminAISection } from "./admin/sections/AdminAISection.jsx";
@@ -1228,6 +1228,15 @@ export default function AdminPanel() {
 		const headers = buildAdminHeaders();
 
 		try {
+			// The admin shell is useful even when individual endpoints answer 429/503/etc.
+			// Keep the shell renderable: each endpoint falls back to a neutral value on
+			// failure. A 401/403 is still fatal - it routes to the security handler, not the shell.
+			const fatal = [];
+			const load = (promise, fallback) =>
+				promise.catch((err) => {
+					if (err?.status === 401 || err?.status === 403) fatal.push(err);
+					return fallback;
+				});
 			const [
 				masterData,
 				userRows,
@@ -1254,31 +1263,32 @@ export default function AdminPanel() {
 				walletLedgerData,
 				disputeData,
 			] = await Promise.all([
-				apiRequest("/admin/master", { token, headers }),
-				apiRequest("/admin/users", { token, headers }),
-				apiRequest("/infra/overview", { token, headers }),
-				apiRequest("/infra/state", { token, headers }),
-				apiRequest("/network/overview", { token, headers }),
-				apiRequest("/network/inventory", { token, headers }),
-				apiRequest("/admin/audit?limit=40", { token, headers }),
-				apiRequest("/verification/admin/queue", { token, headers }),
-				apiRequest("/admin/contracts", { token, headers }),
-				apiRequest("/admin/disputes", { token, headers }),
-				apiRequest("/admin/partner-requests", { token, headers }),
-				apiRequest("/admin/payment-proofs", { token, headers }),
-				apiRequest("/admin/catalog", { token, headers }),
-				apiRequest("/admin/coupons/report", { token, headers }),
-				apiRequest("/admin/server-admin/state", { token, headers }),
-				apiRequest("/admin/cms/state", { token, headers }),
-				apiRequest("/admin/security/state", { token, headers }),
-				apiRequest("/admin/integrations/status", { token, headers }),
-				apiRequest("/admin/signups", { token, headers }),
-				apiRequest("/admin/strikes", { token, headers }),
-				apiRequest("/admin/fraud/verification", { token, headers }),
-				apiRequest("/admin/orgs/ownership", { token, headers }),
-				apiRequest("/admin/wallet/ledger", { token, headers }),
-				apiRequest("/join-requests/disputes/all", { token, headers }).catch(() => ({ items: [] })),
+				load(apiRequest("/admin/master", { token, headers }), null),
+				load(apiRequest("/admin/users", { token, headers }), []),
+				load(apiRequest("/infra/overview", { token, headers }), null),
+				load(apiRequest("/infra/state", { token, headers }), null),
+				load(apiRequest("/network/overview", { token, headers }), null),
+				load(apiRequest("/network/inventory", { token, headers }), null),
+				load(apiRequest("/admin/audit?limit=40", { token, headers }), { items: [] }),
+				load(apiRequest("/verification/admin/queue", { token, headers }), []),
+				load(apiRequest("/admin/contracts", { token, headers }), { items: [] }),
+				load(apiRequest("/admin/disputes", { token, headers }), { items: [] }),
+				load(apiRequest("/admin/partner-requests", { token, headers }), { items: [] }),
+				load(apiRequest("/admin/payment-proofs", { token, headers }), { items: [] }),
+				load(apiRequest("/admin/catalog", { token, headers }), null),
+				load(apiRequest("/admin/coupons/report", { token, headers }), null),
+				load(apiRequest("/admin/server-admin/state", { token, headers }), null),
+				load(apiRequest("/admin/cms/state", { token, headers }), null),
+				load(apiRequest("/admin/security/state", { token, headers }), null),
+				load(apiRequest("/admin/integrations/status", { token, headers }), null),
+				load(apiRequest("/admin/signups", { token, headers }), { items: [] }),
+				load(apiRequest("/admin/strikes", { token, headers }), { items: [] }),
+				load(apiRequest("/admin/fraud/verification", { token, headers }), null),
+				load(apiRequest("/admin/orgs/ownership", { token, headers }), { orgs: [], staff_list: [] }),
+				load(apiRequest("/admin/wallet/ledger", { token, headers }), { items: [] }),
+				load(apiRequest("/join-requests/disputes/all", { token, headers }), { items: [] }),
 			]);
+			if (fatal.length) throw fatal[0];
 			setMaster(masterData || null);
 			setUsers(Array.isArray(userRows) ? userRows : []);
 			setInfra(infraData || null);
@@ -1966,7 +1976,7 @@ export default function AdminPanel() {
 	}
 
 	function isValidEmail(v) {
-		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v).trim());
+		return /^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(String(v).trim());
 	}
 
 	async function saveEmailConfig() {
@@ -2020,7 +2030,7 @@ export default function AdminPanel() {
 			return;
 		}
 		const url = String(openSearchConfig.url || "").trim();
-		if (url && !/^https?:\/\/.+/.test(url)) {
+		if (url && !/^https?:\/\/.+/u.test(url)) {
 			setOpenSearchError("Please enter a valid URL (http://... or https://...)");
 			setOpenSearchConfigBusy(false);
 			return;
@@ -2275,7 +2285,7 @@ export default function AdminPanel() {
 					? ` (${detail?.products ?? 0} products, ${detail?.requirements ?? 0} requirements)`
 					: "";
 			setOpenSearchNotice(
-				`${safeAction.replace("opensearch.", "").replace(/_/g, " ")} ok${suffix}`,
+				`${safeAction.replace("opensearch.", "").replace(/_/gu, " ")} ok${suffix}`,
 			);
 			await refreshIntegrationStatus();
 			await refreshOpenSearchStatus();
