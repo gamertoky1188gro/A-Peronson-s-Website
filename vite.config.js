@@ -166,7 +166,15 @@ export default defineConfig({
 			},
 		},
 		watch: {
-			ignored: ["**/server/database/**", "**/server/uploads/**"],
+			ignored: [
+				"**/server/database/**",
+				"**/server/uploads/**",
+				"**/reports/**",
+				"**/dist/**",
+				"**/logs/**",
+				"**/.git/**",
+				"**/node_modules/**",
+			],
 		},
 	},
 });
