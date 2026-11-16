@@ -423,6 +423,7 @@ export default function SupportWorkspace() {
 		apiRequest("/support/capabilities", {
 			token: jwt ?? undefined,
 			headers: supportToken ? { "x-support-token": supportToken } : undefined,
+			skipSessionClear: Boolean(supportToken),
 		})
 			.then((data) => {
 				if (cancelled) {

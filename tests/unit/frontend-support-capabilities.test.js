@@ -103,6 +103,7 @@ describe("the right-rail capabilities card (src/pages/support/SupportWorkspace.j
 		expect(apiRequest).toHaveBeenCalledWith("/support/capabilities", {
 			token: "test-jwt",
 			headers: undefined,
+			skipSessionClear: false,
 		});
 		for (const label of [
 			"Repository inspection",
@@ -124,6 +125,7 @@ describe("the right-rail capabilities card (src/pages/support/SupportWorkspace.j
 		expect(apiRequest).toHaveBeenCalledWith("/support/capabilities", {
 			token: "test-jwt",
 			headers: { "x-support-token": "gtk_sup_buyer-123" },
+			skipSessionClear: true,
 		});
 	});
 
