@@ -292,3 +292,9 @@ before investigations are enabled or merged.
 - render.yaml plaintext secrets remain in git history (owner decision: leave as-is 2026-11-16).
 - Browser-based buyer/owner walk-through NOT performed (browser tooling is remote-device
   only; localhost unreachable). Workflow coverage is via integration tests and boot smoke test.
+
+## Phase 7 — main pushed, owner console, docs synced (2026-11-16 evening)
+
+- `main` now at `53a0846a` — purple portal live for Render auto-deploy; AI Support sidebar + minimal two-tab AdminAISection recreated; Support Tokens (both roles) work end-to-end; `.husky/pre-commit` repaired to be self-contained and executable; `core.filemode=true`.
+- B.3.1 verified by **code + unit test**, not a live drill-down: `/admin?case=<caseId>` toggles `AdminPlatformSection` to `activeCategory="platform"`; `openSupportCase(caseId)` fetches `/admin/support/cases/:caseId` and renders `CaseDetailTabs` (tabs: overview, conversation, evidence, code findings, activity, email report) with resend/re-run wired to `POST /admin/support/cases/:caseId/rerun`. **No live drill-down has been run** — zero rows in `support_cases` and no canary investigation has completed on production data; the tab renderer is pinned by `tests/unit/frontend-admin-case-tabs.test.js`.
+- Email notifications remain OFF (`notifications.email.enabled=false`) — enabling is owner-only.
