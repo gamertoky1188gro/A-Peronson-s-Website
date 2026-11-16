@@ -73,7 +73,6 @@ import {
 } from "./investigation/opencodeRuntime.js";
 import { redactFindingsSecrets, redactReportSecrets } from "./investigation/redaction.js";
 import { buildReport } from "./investigation/report.js";
-import { buildInvestigationConfig } from "./investigation/runtimeConfig.js";
 
 /** How many investigations may run at once when nothing says otherwise. */
 const DEFAULT_CONCURRENCY = 2;
@@ -381,7 +380,6 @@ async function runInvestigation(job) {
 
 		runtime = await startInvestigationRuntime({
 			cwd: REPOSITORY_ROOT,
-			config: buildInvestigationConfig(),
 			password: mintRuntimePassword(),
 		});
 

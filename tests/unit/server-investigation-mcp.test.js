@@ -1,57 +1,58 @@
-import { buildIsolatedRuntimeEnv } from "../../server/services/investigation/opencodeRuntime.js";
-import { buildInvestigationConfig } from "../../server/services/investigation/runtimeConfig.js";
+import fs from "node:fs";
+import path from "node:path";
 
-// Pin the ambient credential state per test.
-const KEYS = ["GITHUB_PERSONAL_ACCESS_TOKEN", "RENDER_API_KEY", "CONTEXT7_API_KEY"];
-const saved = {};
-beforeEach(() => {
-	for (const key of KEYS) {
-		saved[key] = process.env[key];
-		delete process.env[key];
-	}
+// The investigation MCP servers are declared in an OPT-IN block,
+// `.opencode/opencode.mcp.optional.json`, not in the repository's project
+// config: opencode v2 reads the project config for every opencode started in
+// this repo, including the operator's own session, and registering four
+// MCP servers there would bind them to it. Merging the block into
+// `.opencode/opencode.json` is a deliberate, documented decision
+// (see .opencode/README.md). These tests pin the block itself: when it is
+// merged in, the investigation runtime's servers stay read-only and expose
+// no inline credentials.
+
+const ROOT = process.cwd();
+const optionalPath = path.join(ROOT, ".opencode", "opencode.mcp.optional.json");
+const optional = JSON.parse(fs.readFileSync(optionalPath, "utf8"));
+
+describe("investigation MCP servers (.opencode/opencode.mcp.optional.json)", () => {
+	const servers = optional.mcp?.servers ?? {};
+
+	test("all four servers are declared", () => {
+		expect(Object.keys(servers).sort()).toEqual([
+			"context7",
+			"github",
+			"parallel-search",
+			"render",
+		]);
+	});
+
+	test("no server uses OAuth or codemode", () => {
+		for (const server of Object.values(servers)) {
+			expect(server.oauth).toBe(false);
+			expect(server.codemode).toBe(false);
+		}
+	});
+
+	test("github and render use env-interpolated bearer auth, never inline secrets", () => {
+		const ghHeaders = servers.github?.headers ?? {};
+		const rndHeaders = servers.render?.headers ?? {};
+		expect(ghHeaders.Authorization).toBe("Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}");
+		expect(rndHeaders.Authorization).toBe("Bearer {env:RENDER_API_KEY}");
+		expect(JSON.stringify(servers)).not.toMatch(/ghp_|rnd_|ctx7sk-|tvly-/);
+	});
+
+	test("context7 uses env-interpolated API key, never inline secrets", () => {
+		expect(servers.context7?.headers?.CONTEXT7_API_KEY).toBe("{env:CONTEXT7_API_KEY}");
+	});
 });
-afterAll(() => {
-	for (const key of KEYS) if (saved[key] !== undefined) process.env[key] = saved[key];
-});
 
-describe("investigation MCP wiring", () => {
-	test("parallel-search is always declared, GitHub/Render/Context7 only when keyed", () => {
-		const none = buildInvestigationConfig();
-		expect(Object.keys(none.mcp?.servers ?? {})).toEqual(["parallel-search"]);
-		process.env.GITHUB_PERSONAL_ACCESS_TOKEN = "ghp_x";
-		const withGh = buildInvestigationConfig();
-		expect(Object.keys(withGh.mcp.servers).sort()).toEqual(["github", "parallel-search"]);
-	});
+describe("the opt-in block is not merged into the project config", () => {
+	const projectConfig = JSON.parse(
+		fs.readFileSync(path.join(ROOT, ".opencode", "opencode.json"), "utf8"),
+	);
 
-	test("the allowlist is honored and everything else stays disabled", () => {
-		process.env.GITHUB_PERSONAL_ACCESS_TOKEN = "ghp_x";
-		const { tools, permission } = buildInvestigationConfig();
-		expect(tools["github_get_file_contents"]).toBe(true);
-		expect(tools["github_search_code"]).toBe(true);
-		expect(tools["github_*"]).toBe(false);           // the glob stays deny…
-		expect(tools["github_create_or_update_file"] ?? "undefined").not.toBe(true); // …and nothing unlisted turns on
-		expect(permission["github_get_file_contents"]).toBe("allow");
-		expect(permission["github_create_or_update_file"]).toBeUndefined();
-		expect(permission["*"]).toBe("deny");
-	});
-
-	test("mcp:false, skills:false, plugins:false restores the pre-Phase-4 config exactly", () => {
-		process.env.GITHUB_PERSONAL_ACCESS_TOKEN = "ghp_x";
-		const config = buildInvestigationConfig({ mcp: false, skills: false, plugins: false });
-		expect(config.mcp).toBeUndefined();
-		expect(config.skills).toBeUndefined();
-		expect(config.plugins).toBeUndefined();
-		expect(config.permission["github_get_file_contents"]).toBeUndefined();
-		expect(config.permission["parallel-search_web_search"]).toBeUndefined();
-		expect(config.tools["github_get_file_contents"]).toBeUndefined();
-		expect(config.tools["github_*"]).toBe(false);
-		expect(config.tools["parallel-search_*"]).toBe(false);
-		expect(config.tools["parallel-search_web_search"]).toBeUndefined();
-	});
-
-	test("skills and plugins are declared only when the directories exist", () => {
-		// The machine running tests has the skills dir; assert the shape, not existence.
-		const config = buildInvestigationConfig();
-		if (config.skills) expect(Array.isArray(config.skills)).toBe(true);
+	test("the project config declares no MCP servers", () => {
+		expect(projectConfig.mcp).toBeUndefined();
 	});
 });

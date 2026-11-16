@@ -1,13 +1,11 @@
 import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import net from "node:net";
-import os from "node:os";
 import path from "node:path";
 import { OpenCode } from "@opencode/client";
 import { logInfo, logWarn } from "../../utils/logger.js";
 import { formatToolError, waitForAssistantTurn } from "../opencodeTurns.js";
 import { parseModelChain } from "./modelChain.js";
-import { buildInvestigationConfig } from "./runtimeConfig.js";
 
 export const PORT_RANGE_START = 4200;
 export const PORT_RANGE_END = 4299;
@@ -186,52 +184,34 @@ export function resolveOpencodeBinary() {
 }
 
 /**
- * Create the isolated config directory the server is spawned with.
+ * The environment the spawned opencode server runs with.
  *
- * The developer's global opencode config normally declares MCP servers (and
- * plugins, and skills); inheriting them would hand the agent ambient
- * capabilities that the restrictive config cannot take away. A fresh
- * temporary directory holds nothing, so nothing is inherited.
+ * The runtime injects NO configuration at all. The spawned server discovers
+ * the agents committed in `.opencode/agents/` from cwd exactly as any other
+ * opencode process does. Read-only enforcement lives in the investigator
+ * agent's frontmatter and binds because the investigation session pins
+ * `agent: "investigator"` at creation - the project's
+ * `.opencode/opencode.json` declares nothing on purpose, since opencode v2
+ * reads it for EVERY opencode started in this repo, including the
+ * operator's own session. An earlier design that passed
+ * `OPENCODE_CONFIG_CONTENT` with an isolated temporary directory was
+ * silently IGNORED by opencode v2 - the server came up with the stock,
+ * unrestricted `build` agent. It is deleted, not deprecated.
  *
- * @param {string} [prefix] The temporary directory prefix.
- * @returns {string} The absolute path of the new directory.
- */
-export function createIsolatedConfigDir(prefix = "opencode-investigation-config-") {
-	return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-}
-
-/**
- * The environment an isolated opencode server is spawned with.
- *
- * The three keys that carry the isolation:
- *
- *  - `OPENCODE_CONFIG_DIR` - the server reads its configuration from a fresh
- *    temporary directory, so the operator's global config (and its MCP
- *    servers) is not in scope at all;
- *  - `OPENCODE_CONFIG_PROJECT_DISABLE` - a stray `opencode.json` in the
- *    repository cannot widen the rules;
- *  - `OPENCODE_CONFIG_CONTENT` - the restrictive configuration itself.
+ * Only the credential names the project config references are passed
+ * through. A missing key simply makes that MCP server unavailable, which is
+ * the designed fail-closed state.
  *
  * @param {Object} params
- * @param {Object} params.config The configuration the server runs with.
  * @param {string} params.password The server's basic-auth password.
- * @param {string} params.configDir The isolated configuration directory.
  * @param {Object} [params.baseEnv] The environment to build on.
  * @returns {Object} The environment for the spawned process.
  */
-export function buildIsolatedRuntimeEnv({
-	config,
-	password,
-	configDir,
-	baseEnv = process.env,
-} = {}) {
+export function buildRuntimeEnv({ password, baseEnv = process.env } = {}) {
 	const env = {
 		...baseEnv,
 		OPENCODE_SERVER_PASSWORD: password,
-		OPENCODE_CONFIG_CONTENT: JSON.stringify(config),
 		OPENCODE_LOG_LEVEL: "ERROR",
-		OPENCODE_CONFIG_DIR: configDir,
-		OPENCODE_CONFIG_PROJECT_DISABLE: "1",
 	};
 	for (const key of ["GITHUB_PERSONAL_ACCESS_TOKEN", "RENDER_API_KEY", "CONTEXT7_API_KEY"]) {
 		if (baseEnv[key]) env[key] = baseEnv[key];
@@ -240,27 +220,21 @@ export function buildIsolatedRuntimeEnv({
 }
 
 /**
- * The environment the ASSISTANT's opencode server is spawned with.
+ * The environment the ASSISTANT's opencode server runs with.
  *
- * The assistant reads the codebase to answer platform questions, so it runs
- * with the same read-only configuration the investigation runtime uses: it
- * may read, search and list, and it may not write, run commands or delegate
- * to a subagent. It gets its OWN isolated configuration directory, so it does
- * not inherit the operator's global opencode config either.
+ * The assistant may read the codebase to answer platform questions, exactly
+ * like the investigator, and may not write, run commands, or delegate. It
+ * runs the same repository's `.opencode/agents/assistant.md` definition as
+ * its trust boundary, pinned by `agent: "assistant"` at session creation;
+ * the spawned server discovers it from cwd.
  *
  * @param {Object} params
  * @param {string} params.password The server's basic-auth password.
- * @param {string} params.configDir The isolated configuration directory.
  * @param {Object} [params.baseEnv] The environment to build on.
  * @returns {Object} The environment for the spawned process.
  */
-export function buildAssistantRuntimeEnv({ password, configDir, baseEnv = process.env } = {}) {
-	return buildIsolatedRuntimeEnv({
-		config: buildInvestigationConfig({ mcp: false, skills: false, plugins: false }),
-		password,
-		configDir,
-		baseEnv,
-	});
+export function buildAssistantRuntimeEnv({ password, baseEnv = process.env } = {}) {
+	return buildRuntimeEnv({ password, baseEnv });
 }
 
 /**
@@ -290,13 +264,6 @@ export async function startInvestigationRuntime({
 		throw new Error("No free port for the investigation runtime");
 	}
 
-	// The runtime gets its OWN config directory. The developer's global
-	// opencode config normally declares MCP servers (and plugins, and skills);
-	// inheriting them would hand the investigator ambient capabilities that the
-	// restrictive config cannot take away. `OPENCODE_CONFIG_PROJECT_DISABLE`
-	// stops a stray `opencode.json` in the repository from widening the rules.
-	const isolatedConfigDir = createIsolatedConfigDir();
-
 	const binary = resolveBinary();
 	const child = spawn(
 		binary.command,
@@ -306,11 +273,7 @@ export async function startInvestigationRuntime({
 			stdio: ["ignore", "pipe", "pipe"],
 			shell: binary.shell,
 			windowsHide: true,
-			env: buildIsolatedRuntimeEnv({
-				config,
-				password,
-				configDir: isolatedConfigDir,
-			}),
+			env: buildRuntimeEnv({ password }),
 		},
 	);
 
@@ -361,11 +324,6 @@ export async function startInvestigationRuntime({
 		} catch {
 			// already gone
 		}
-		try {
-			fs.rmSync(isolatedConfigDir, { recursive: true, force: true });
-		} catch {
-			// best effort
-		}
 		const reason = lastError?.message ? ` (last error: ${lastError.message})` : "";
 		throw new Error(`Investigation runtime did not become ready on port ${chosenPort}${reason}`);
 	}
@@ -373,7 +331,6 @@ export async function startInvestigationRuntime({
 		port: chosenPort,
 		cwd,
 		binary: binary.command,
-		configDir: isolatedConfigDir,
 	});
 
 	return {
@@ -386,11 +343,6 @@ export async function startInvestigationRuntime({
 			} catch {
 				// already gone
 			}
-			try {
-				fs.rmSync(isolatedConfigDir, { recursive: true, force: true });
-			} catch {
-				// best effort
-			}
 		},
 	};
 }
@@ -401,6 +353,7 @@ export async function createInvestigationSession({ client, title, model, directo
 	const created = await client.session.create({
 		title,
 		model: { id: model.id, providerID: model.providerID },
+		agent: "investigator",
 		location: { directory: location },
 	});
 	const id = created?.data?.id || created?.id;

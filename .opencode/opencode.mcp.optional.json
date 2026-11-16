@@ -1,0 +1,44 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "github": {
+        "type": "remote",
+        "url": "https://api.githubcopilot.com/mcp/",
+        "oauth": false,
+        "codemode": false,
+        "timeout": 30000,
+        "headers": {
+          "Authorization": "Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}"
+        }
+      },
+      "parallel-search": {
+        "type": "remote",
+        "url": "https://search.parallel.ai/mcp",
+        "oauth": false,
+        "codemode": false,
+        "timeout": 30000
+      },
+      "render": {
+        "type": "remote",
+        "url": "https://mcp.render.com/mcp",
+        "oauth": false,
+        "codemode": false,
+        "timeout": 30000,
+        "headers": {
+          "Authorization": "Bearer {env:RENDER_API_KEY}"
+        }
+      },
+      "context7": {
+        "type": "remote",
+        "url": "https://mcp.context7.com/mcp",
+        "oauth": false,
+        "codemode": false,
+        "timeout": 30000,
+        "headers": {
+          "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
+        }
+      }
+    }
+  }
+}

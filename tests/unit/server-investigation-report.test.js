@@ -453,3 +453,31 @@ describe("buildReport — the final finding set is counted once", () => {
 		expect(md).toContain("**Findings rendered:** 2");
 	});
 });
+
+
+describe("buildReport — sources and audit events", () => {
+	let md = "";
+
+	beforeAll(() => {
+		md = buildReport({
+			caseRow: CASE_ROW,
+			messages: MESSAGES,
+			investigations: INVESTIGATIONS,
+		});
+	});
+
+	test("there is a Sources section listing files read and commits referenced", () => {
+		expect(md).toMatch(/## 7\. Sources/i);
+		expect(md).toContain("### Files read");
+		expect(md).toContain("### Commits referenced");
+		expect(md).toContain("server/routes/paymentRoutes.js");
+		expect(md).toContain("abc1234");
+	});
+
+	test("there is an audit events section with tool call totals", () => {
+		expect(md).toMatch(/### Audit events/i);
+		expect(md).toMatch(/Total tool calls/i);
+		expect(md).toMatch(/Failed tool calls/i);
+		expect(md).toMatch(/Reruns requested/i);
+	});
+});

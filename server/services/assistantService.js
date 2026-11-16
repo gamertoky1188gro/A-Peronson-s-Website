@@ -16,7 +16,6 @@ import {
 import { sanitizeString, unescapeHtml } from "../utils/validators.js";
 import {
 	buildAssistantRuntimeEnv,
-	createIsolatedConfigDir,
 	findFreeRuntimePort,
 	REPOSITORY_ROOT,
 	resolveOpencodeBinary,
@@ -1065,25 +1064,6 @@ async function promptOpencodeSession({
 }
 
 /**
- * Remove the isolated configuration directory.
- *
- * The directory holds nothing but the configuration the server was given, and
- * the server is gone, so the directory is just litter.
- *
- * @param {string|null} configDir
- */
-function removeAssistantConfigDir(configDir) {
-	if (!configDir) {
-		return;
-	}
-	try {
-		fs.rmSync(configDir, { recursive: true, force: true });
-	} catch {
-		// best effort
-	}
-}
-
-/**
  * How long to wait for the assistant's opencode server to become READY.
  *
  * The server binds its port early, but it is not ready until the location has
@@ -1142,20 +1122,25 @@ function sessionModel(meta, sessionId, activeId) {
 /**
  * The assistant's opencode server.
  *
- * The server is spawned with the SAME isolation the investigation runtime
- * uses, and that is the whole point of this function:
+ * The assistant is locked down by the agent definition committed in this
+ * repository (`.opencode/agents/assistant.md`), not by anything this spawn
+ * passes: the spawned server discovers that agent from cwd, exactly as any
+ * other opencode process does. Every assistant session is created with
+ * `agent: "assistant"` pinned at session creation time, so the frontmatter's
+ * deny-first permission set - no edits, no writes, no patches, no shell beyond
+ * read-only inspection, no subagents, no questions, no web, `.env` unreadable -
+ * is what the model actually runs under.
  *
- *  - its OWN configuration directory, so the operator's global opencode
- *    config - and every MCP server that config declares - is not in scope;
- *  - `OPENCODE_CONFIG_PROJECT_DISABLE`, so a stray `opencode.json` in the
- *    repository cannot widen the rules;
- *  - a read-only configuration: the assistant may read, search and list, and
- *    it may not write, run commands or delegate to a subagent.
- *
- * The server this process started is also the ONLY server it talks to. A
- * server somebody else started - the operator's own opencode, for instance -
- * runs with the operator's configuration, MCP servers and all, and its
- * sessions carry no permission restriction at all.
+ *  - the repository's `.opencode/opencode.json` declares `$schema` and
+ *    nothing else, by design: anything there would bind every opencode
+ *    started in this repo, including the operator's own session;
+ *  - MCP servers are declared only in `.opencode/opencode.mcp.optional.json`
+ *    (opt-in); until somebody merges them into `.opencode/opencode.json`,
+ *    assistant and investigator sessions have no MCP tools at all;
+ *  - a server somebody else started - the operator's own opencode, for
+ *    instance - runs with the operator's configuration, and its sessions
+ *    carry no permission restriction at all. That is not a fallback we
+ *    ever rely on.
  *
  * @returns {Promise<number|null>} The port, or null when there is no server.
  */
@@ -1268,15 +1253,10 @@ async function spawnOpencodeServer() {
 			opencodeServerPassword = crypto.randomBytes(24).toString("hex");
 		}
 
-		// The isolation. The configuration is the read-only one the
-		// investigation runtime uses, so the assistant cannot write, run
-		// commands or hand a denied action to a subagent.
-		const configDir = createIsolatedConfigDir("opencode-assistant-config-");
+		// The assistant is read-only by project configuration, not by spawn env.
 		const env = buildAssistantRuntimeEnv({
 			password: opencodeServerPassword,
-			configDir,
 		});
-
 		const child = spawn(
 			binary.command,
 			["serve", "--port", String(port), "--hostname", "127.0.0.1"],
@@ -1312,7 +1292,6 @@ async function spawnOpencodeServer() {
 			if (_opencodeServer === child) {
 				_opencodeServer = null;
 			}
-			removeAssistantConfigDir(configDir);
 		});
 
 		// Poll until healthy, spawn error, or timeout.
@@ -1344,14 +1323,13 @@ async function spawnOpencodeServer() {
 
 		if (!started) {
 			child.kill();
-			removeAssistantConfigDir(configDir);
 			logError("Opencode server failed to start within timeout", { port });
 			return null;
 		}
 
 		_opencodeServer = child;
 		opencodePort = port;
-		logInfo("Opencode server started", { port, configDir });
+		logInfo("Opencode server started", { port });
 		return opencodePort;
 	} catch (error) {
 		logError("Failed to start opencode on port", {
@@ -1380,7 +1358,7 @@ export async function initOpencodeServer() {
 		const testPrompt = "Hello";
 		const client = opencodeV2Client(`http://localhost:${port}`);
 
-		const created = await client.session.create({ title: "init-test" });
+		const created = await client.session.create({ title: "init-test", agent: "assistant" });
 		const sessionId = created?.id;
 		if (!sessionId) {
 			logError("Opencode session create failed", { port });
@@ -1458,6 +1436,7 @@ export async function createUserOpencodeSession(userId) {
 			// The investigation runtime names the model and works; this one did
 			// not, and the difference was the whole bug.
 			model: { id: active.id, providerID: active.providerID },
+			agent: "assistant",
 			location: { directory: REPOSITORY_ROOT },
 		});
 

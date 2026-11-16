@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import { jest } from "@jest/globals";
 import express from "express";
 import request from "supertest";
@@ -27,7 +26,7 @@ jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
 	},
 }));
 
-const { buildAssistantRuntimeEnv, createIsolatedConfigDir } = await import(
+const { buildAssistantRuntimeEnv } = await import(
 	"../../server/services/investigation/opencodeRuntime.js"
 );
 const assistantRoutes = (await import("../../server/routes/assistantRoutes.js")).default;
@@ -40,98 +39,32 @@ function buildApp() {
 	return app;
 }
 
-describe("the assistant's opencode isolation", () => {
-	test("the spawn env carries an isolated configuration directory", () => {
-		const env = buildAssistantRuntimeEnv({
-			password: "a-password",
-			configDir: "/tmp/isolated-config-dir",
-		});
-
-		expect(env.OPENCODE_CONFIG_DIR).toBe("/tmp/isolated-config-dir");
-	});
-
-	test("the spawn env disables the project configuration", () => {
-		const env = buildAssistantRuntimeEnv({
-			password: "a-password",
-			configDir: "/tmp/isolated-config-dir",
-		});
-
-		expect(env.OPENCODE_CONFIG_PROJECT_DISABLE).toBe("1");
-	});
-
-	test("the spawn env carries the server password", () => {
-		const env = buildAssistantRuntimeEnv({
-			password: "a-password",
-			configDir: "/tmp/isolated-config-dir",
-		});
-
+describe("the assistant's opencode spawn env", () => {
+	test("the spawn env carries only the password and the log level", () => {
+		const env = buildAssistantRuntimeEnv({ password: "a-password" });
 		expect(env.OPENCODE_SERVER_PASSWORD).toBe("a-password");
+		expect(env.OPENCODE_CONFIG_CONTENT).toBeUndefined();
+		expect(env.OPENCODE_CONFIG_DIR).toBeUndefined();
+		expect(env.OPENCODE_CONFIG_PROJECT_DISABLE).toBeUndefined();
 	});
 
-	test("the configuration denies everything first", () => {
-		const env = buildAssistantRuntimeEnv({
-			password: "a-password",
-			configDir: "/tmp/isolated-config-dir",
+	test("the MCP credentials pass through only when set", () => {
+		const without = buildAssistantRuntimeEnv({ password: "p", baseEnv: {} });
+		expect(without.GITHUB_PERSONAL_ACCESS_TOKEN).toBeUndefined();
+		expect(without.RENDER_API_KEY).toBeUndefined();
+		expect(without.CONTEXT7_API_KEY).toBeUndefined();
+
+		const withKeys = buildAssistantRuntimeEnv({
+			password: "p",
+			baseEnv: {
+				GITHUB_PERSONAL_ACCESS_TOKEN: "gh-key",
+				RENDER_API_KEY: "rnd-key",
+				CONTEXT7_API_KEY: "ctx-key",
+			},
 		});
-		const config = JSON.parse(env.OPENCODE_CONFIG_CONTENT);
-
-		expect(config.permission["*"]).toBe("deny");
-	});
-
-	test("the configuration allows only the read-only tools", () => {
-		const env = buildAssistantRuntimeEnv({
-			password: "a-password",
-			configDir: "/tmp/isolated-config-dir",
-		});
-		const config = JSON.parse(env.OPENCODE_CONFIG_CONTENT);
-
-		expect(config.permission.read["*"]).toBe("allow");
-		expect(config.permission.glob).toBe("allow");
-		expect(config.permission.grep).toBe("allow");
-		expect(config.permission.list).toBe("allow");
-	});
-
-	test("the configuration denies the mutating tools and the delegation path", () => {
-		const env = buildAssistantRuntimeEnv({
-			password: "a-password",
-			configDir: "/tmp/isolated-config-dir",
-		});
-		const config = JSON.parse(env.OPENCODE_CONFIG_CONTENT);
-
-		for (const tool of ["edit", "bash", "task"]) {
-			expect(config.permission[tool]).toBe("deny");
-		}
-	});
-
-	test("the configuration denies the .env files", () => {
-		const env = buildAssistantRuntimeEnv({
-			password: "a-password",
-			configDir: "/tmp/isolated-config-dir",
-		});
-		const config = JSON.parse(env.OPENCODE_CONFIG_CONTENT);
-
-		expect(config.permission.read["*.env"]).toBe("deny");
-		expect(config.permission.read["**/.env"]).toBe("deny");
-		expect(config.permission.read["**/.env.*"]).toBe("deny");
-	});
-
-	test("the configuration disables the MCP integrations", () => {
-		const env = buildAssistantRuntimeEnv({
-			password: "a-password",
-			configDir: "/tmp/isolated-config-dir",
-		});
-		const config = JSON.parse(env.OPENCODE_CONFIG_CONTENT);
-
-		expect(config.tools["render_*"]).toBe(false);
-		expect(config.tools["chrome-devtools_*"]).toBe(false);
-		expect(config.tools["github_*"]).toBe(false);
-	});
-
-	test("the isolated configuration directory is a fresh empty directory", () => {
-		const dir = createIsolatedConfigDir("opencode-assistant-isolation-test-");
-
-		expect(dir).toContain("opencode-assistant-isolation-test-");
-		expect(fs.readdirSync(dir)).toEqual([]);
+		expect(withKeys.GITHUB_PERSONAL_ACCESS_TOKEN).toBe("gh-key");
+		expect(withKeys.RENDER_API_KEY).toBe("rnd-key");
+		expect(withKeys.CONTEXT7_API_KEY).toBe("ctx-key");
 	});
 });
 

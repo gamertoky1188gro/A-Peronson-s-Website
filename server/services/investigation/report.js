@@ -687,18 +687,94 @@ function renderFindingsSection(grouped, runs) {
 	return lines;
 }
 
+/**
+ * Build the Sources section: everything the investigator consulted.
+ *
+ * Every file the investigator read, every commit it referenced, every search
+ * query it ran. The audit wants sources visible even when evidence is thin;
+ * an untouched list shows the investigator never opened any file.
+ *
+ * @param {Object[]} runs
+ * @returns {string[]}
+ */
+function renderSourcesSection(runs) {
+	const lines = ["## 7. Sources", ""];
+	lines.push(
+		"_Every file the investigator read, every commit it referenced, and every search query it ran._",
+		"",
+	);
+	const files = new Set();
+	const commits = new Set();
+	const queries = new Set();
+	const urls = new Set();
+	for (const run of runs) {
+		for (const file of run.files) files.add(file);
+		for (const commit of run.commits) commits.add(commit);
+		for (const query of run.queries) queries.add(query);
+		for (const finding of run.findings) {
+			for (const evidence of finding.evidence || []) {
+				if (evidence.url) urls.add(evidence.url);
+				if (evidence.file) files.add(evidence.file);
+			}
+		}
+	}
+	if (files.size === 0 && commits.size === 0 && queries.size === 0 && urls.size === 0) {
+		lines.push("_None recorded. The investigator did not read any evidence files._", "");
+		return lines;
+	}
+	if (files.size > 0) {
+		lines.push("### Files read", "");
+		for (const f of [...files].sort()) lines.push(`- ${f}`);
+		lines.push("");
+	}
+	if (commits.size > 0) {
+		lines.push("### Commits referenced", "");
+		for (const c of [...commits].sort()) lines.push(`- ${c}`);
+		lines.push("");
+	}
+	if (queries.size > 0) {
+		lines.push("### Search queries", "");
+		for (const q of [...queries].sort()) lines.push(`- ${q}`);
+		lines.push("");
+	}
+	if (urls.size > 0) {
+		lines.push("### Web sources", "");
+		for (const u of [...urls].sort()) lines.push(`- ${u}`);
+		lines.push("");
+	}
+	return lines;
+}
+
 function renderAuditSection(row, runs, grouped, generated) {
 	const { id, report_status, report_delivered_at, escalated } = row;
 	const failedRuns = runs.filter((run) => run.failed);
+	const toolCalls = runs.reduce(
+		(sum, run) => sum + (Array.isArray(run.toolLog) ? run.toolLog.length : 0),
+		0,
+	);
+	const failedCalls = runs.reduce(
+		(sum, run) =>
+			sum +
+			(Array.isArray(run.toolLog)
+				? run.toolLog.filter((call) => call.status === "error").length
+				: 0),
+		0,
+	);
+	const reruns = runs.reduce((sum, run) => sum + (Number(run.attempt) > 1 ? 1 : 0), 0);
 	const findingCount =
 		grouped.confirmed.length + grouped.probable.length + grouped.speculative.length;
 	return [
-		"## 7. Audit and delivery",
+		"## 8. Audit and delivery",
 		"",
 		"### Read-only safeguards in force",
 		"",
 		...renderSafeguards(),
+		"### Audit events",
 		"",
+		`- **Investigation runs shown:** ${runs.length} (${runs.length - failedRuns.length} completed, ${failedRuns.length} failed)`,
+		`- **Total tool calls:** ${toolCalls}`,
+		`- **Failed tool calls:** ${failedCalls}`,
+		`- **Reruns requested:** ${reruns}`,
 		"### Generation",
 		"",
 		`- **Report generated at:** ${generated}`,
@@ -794,6 +870,7 @@ export function buildReport({ caseRow, messages, investigations, generatedAt } =
 	lines.push(...renderFindingsSection(grouped, runs));
 	lines.push("## 6. Recommended next steps", "");
 	lines.push(...renderNextSteps(grouped, failedRuns));
+	lines.push(...renderSourcesSection(runs));
 	lines.push(...renderAuditSection(row, runs, grouped, generated));
 
 	return lines.join("\n");

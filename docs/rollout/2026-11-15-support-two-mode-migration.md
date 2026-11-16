@@ -127,3 +127,113 @@ plugin is simply not declared and the investigator behaves exactly as Phase 3.
 - Swarm: `opencode-swarm` (the separate application and its installer) is
   never referenced anywhere in phases 1–4 — not in the runtime config, the
   spawn path, this note, or any other doc added by this phase. Do not add it.
+
+## Phase 3 — premium UI (2026-11-16)
+
+`feat/support-premium-ui` merged to `main` (commit `357da193`). 1071 tests passing on merge;
+Vite build clean. Three verified gaps found and closed in the final fix wave:
+
+- `listCasesAdmin` joined `SupportTicket.priority` via `ticket_id` so the restyled inbox
+  `PRIORITY` column and filter render real values (previously: always `—` with a dead filter).
+- buyer-facing `GET /api/support/cases/:caseId` now returns `attachments` (same shape as the
+  admin endpoint) so the three evidence surfaces render correctly after reload.
+- `class=` → `className=` in the new table wrapper + `reporting` added to the inbox status chip filter.
+
+Aiven migration state: unchanged — `model_id` from Phase 2 is present, no new migration in Phase 3.
+
+## Phase 4 — MCP wiring and the opencode runtime reality check (2026-11-16)
+
+Commit `b5ba159f` on `feat/support-mcp-wiring`.
+
+**Critical finding from the live probe, 2026-11-16:** the spawned investigation runtime never
+ran inside the intended read-only boundary. `opencode serve` ignores `OPENCODE_CONFIG_CONTENT`
+and all its sibling env vars; the only configuration v2 honors is the **project** `.opencode/`
+directory. Every probe before 6 Jan 2026 that showed "read-only reflection" ran against the stock
+`build` agent with zero restrictions. The probe `what changed in the last commit` returned the
+correct SHA and message using `shell`, completely unchecked. The fix moved the boundary to
+`.opencode/opencode.json` (committed) and `.opencode/agents/investigator.md` + `assistant.md`:
+
+- `default_agent: investigator`; every global tool denied; investigation agent denies edit, write,
+  patch, bash, subagent/task, webfetch/websearch; `.env` unreadable through `read`; shell limited
+  to an explicit read-only allowlist (git log/show/diff/status, grep, rg, find, ls, cat, head,
+  tail, sed -n, wc, pwd, sort, diff, stat, file, uniq, cut, du, df, echo, whoami, uname, true).
+- `.opencode/opencode.json` declares all four MCP servers (context7, github, parallel-search,
+  render) with `oauth: false`, `codemode: false`, bearer keys ONLY via `{env:NAME}` interpolation,
+  never inline.
+- Assistant spawn pins `agent: "assistant"` so support and buyer questions run through a read-only
+  agent, not the stock default.
+- Investigator is read-only MCP-visible: github 25 read-only tools, render 20 read-only
+  operational tools, parallel-search web_search/web_fetch only, context7 query-docs/resolve-library-id.
+
+STATUS — **not proven live**:
+- The probe that exposed the unrestricted runtime could not be re-run inside this sandbox
+  (all external spawns blocked). The read-only guarantee is enforced by committed config and
+  pinned tests, **not** by a successful live probe against a running spawned server.
+- `npm test` and `npm run build` also cannot be executed in the sandbox; both must run before
+  any merge.
+- No actual MCP call has been observed from a spawned investigator.
+- `./opencode-probe-*.txt` evidence files for the old probes were removed earlier in this note.
+
+**Do not enable investigations in production until TASK 1 passes on your machine:**
+spawn the investigation runtime against a scratch copy of the repo and confirm, via tool_log,
+that shell tool calls (`shell`) appear in the investigator's log ONLY for `git log` / `git diff` /
+`cd` / `pwd` class reads, `read` fails for `.env`, `write`/`edit` tools are refused, and
+`parallel-search_web_search` returns real content when you hold `CONTEXT7_API_KEY`/network.
+
+**Commit status:** branch not pushed, not merged. `.opencode/` is present as a modified/untracked
+file in the working tree — the investigation runtime now depends on its presence, so it must be
+committed in the same change as the refreshed spawn code; without it, boots work but investigations
+run inside the stock `build` agent (the path that originally leaked restrictability by accident).
+
+
+## Phase 5 — detailed Gmail API report (2026-11-16)
+
+Report sections (rendered by `server/services/investigation/report.js`) now:
+
+1. Case metadata · 2. Original complaint · 3. Conversation log · 4. Investigation log
+(per-run role, status, **model_id**, attempt, tool log, files/commits/queries/failures, findings) ·
+5. Findings (confidence-grouped, demoted speculative) · 6. Recommended next steps ·
+**7. Sources** (files read, commits referenced, search queries, web URLs) ·
+**8. Audit and delivery** (Read-only safeguards list, audit events: total tool calls, failed tool
+calls, reruns requested, then generation details and per-run delivery status).
+
+Delivery pipeline (delivery.js → emailService) sends through the configured provider; the
+Gmail API path (`gmail_api`) is live in code with service-account OAuth. Report delivery depends
+on `notifications.email.enabled=true` in admin config and `GMAIL_CLIENT_ID/CLIENT_SECRET/REFRESH_TOKEN`
+set — neither has been exercised against a live mailbox in this migration.
+
+## Phase 4 addendum — the project config no longer binds the operator's session (2026-11-16)
+
+The first cut of the fix put `default_agent: "investigator"`, a global
+deny-first `permission` block, and the four MCP server declarations into the
+repository's `.opencode/opencode.json`. That file is read by **every**
+opencode started in this repo — including the operator's own session — so
+running opencode in this repository pinned the operator into the read-only
+investigator agent and registered four MCP servers bound to env-var
+credentials that may not exist there.
+
+Corrected split (what ships now):
+
+- `.opencode/opencode.json` declares `$schema` and **nothing else**.
+- `.opencode/agents/investigator.md` and `assistant.md` carry the full
+  deny-first lockdown in frontmatter (`"*": deny`, `read` allow with `.env`
+  denied, `glob`/`grep`/`list` allow, read-only `shell` allowlist, MCP tool
+  allowlists, no edit/write/patch/bash/web/subagents). It binds only sessions
+  created with `agent: "investigator"` / `agent: "assistant"` pinned.
+- `createInvestigationSession` (`opencodeRuntime.js`) pins `agent: "investigator"`;
+  the assistant pins `agent: "assistant"` at session creation and for its
+  boot readiness probe.
+- `.opencode/opencode.mcp.optional.json` holds the opt-in MCP block
+  (github, parallel-search, render, context7; `{env:NAME}` credentials only).
+  Merging it into `opencode.json` is a documented, deliberate act
+  (`.opencode/README.md`) and will register the servers for every opencode
+  run in this repo. Until merged, investigator/assistant sessions have no MCP
+  tools; the investigation still works with repository reads only.
+- Unit tests pin both halves of the contract (`server-investigation-runtime-config.test.js`
+  asserts the project config declares nothing and the agents carry the lockdown;
+  `server-investigation-mcp.test.js` asserts the optional block stays read-only
+  and unmerged).
+
+The operator's own opencode in this repo now sees only two additional,
+unselected read-only agents. It is NOT pinned, NOT restricted, and registers
+no MCP servers.

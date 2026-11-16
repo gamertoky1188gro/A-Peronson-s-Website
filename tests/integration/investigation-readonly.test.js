@@ -250,31 +250,14 @@ describeSpike("read-only investigation runtime (spike gate)", () => {
 	);
 
 	test(
-		"no MCP tool is available to the agent",
+		"the investigator sees no MCP servers until the opt-in block is merged in",
 		async () => {
+			// MCP is deliberately opt-in (.opencode/opencode.mcp.optional.json):
+			// the project config is read by every opencode started in this repo,
+			// including the operator's own session, so it must not declare MCP.
 			const listed = await runtime.client.mcp.list();
-			const servers = (listed?.data || listed || []).map((entry) => entry.name || entry);
-			for (const name of [
-				"render",
-				"chrome-devtools",
-				"blender-mcp",
-				"minecraft",
-				"github",
-				"parallel-search",
-			]) {
-				expect(servers).not.toContain(name);
-			}
-			const toolNames = await runtime.client.experimental?.tool?.ids?.().catch(() => null);
-			if (toolNames?.data) {
-				const ids = (toolNames.data || []).map((entry) => entry.id || entry);
-				expect(
-					ids.some((id) =>
-						/^(render|chrome-devtools|blender-mcp|minecraft|github|parallel-search)[_-]/i.test(
-							String(id),
-						),
-					),
-				).toBe(false);
-			}
+			const servers = (listed?.data || listed || []).map((entry) => entry.name || entry).sort();
+			expect(servers).toEqual([]);
 		},
 		TIMEOUT + 60_000,
 	);
