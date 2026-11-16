@@ -674,7 +674,10 @@ function AppLayout() {
 						</ErrorBoundary>
 					</main>
 					{/* footer (~990px stacked on mobile) exceeds the 100dvh locked shell and squeezes <main> to 0; hide below lg */}
-					{!hideChrome && location.pathname !== "/feed" ? (
+					{/* The global footer is light; the support routes are a full dark product surface, so it is hidden there. */}
+					{!hideChrome &&
+					location.pathname !== "/feed" &&
+					!location.pathname.startsWith("/support") ? (
 						<div
 							className={isViewportLockedRoute ? "global-footer hidden lg:block" : "global-footer"}
 						>

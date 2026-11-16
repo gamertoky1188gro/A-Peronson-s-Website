@@ -65,3 +65,8 @@ playwright-report/
 # The assistant's per-user opencode session map and the live server port.
 # Runtime state: it changes on every conversation and holds user -> session ids.
 sessions/
+
+# Build output: Render rebuilds dist/ on every deploy (buildCommand runs
+# `pnpm run build`). Local SERVE_DIST=true needs a fresh `npm run build`
+# after each commit.
+dist/
