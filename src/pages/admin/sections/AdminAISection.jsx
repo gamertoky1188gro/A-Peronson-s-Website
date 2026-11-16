@@ -217,7 +217,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 			const data = await apiRequest("/admin/support-tokens", { token: getToken() });
 			setTokens(Array.isArray(data?.items) ? data.items : []);
 		} catch (err) {
-			setTokensError(err?.message || "Failed to load buyer tokens");
+			setTokensError(err?.message || "Failed to load support tokens");
 		} finally {
 			setTokensLoading(false);
 		}
@@ -237,8 +237,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 				token: getToken(),
 			});
 			const items = Array.isArray(data?.items) ? data.items : [];
-			// Only buyers can hold a support token; the server refuses anyone else.
-			setBuyerResults(items.filter((user) => user?.role === "buyer"));
+			setBuyerResults(items);
 		} catch (err) {
 			setTokensError(err?.message || "Unable to search users");
 		} finally {
@@ -300,7 +299,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 	}
 
 	async function revokeToken(id) {
-		if (!window.confirm("Revoke this support token? The buyer loses AI access immediately.")) {
+		if (!window.confirm("Revoke this support token? The account loses AI access immediately.")) {
 			return;
 		}
 		try {
@@ -482,7 +481,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		{ id: "global", label: "Global Rules", icon: Lightbulb },
 		{ id: "smalltalk", label: "Small Talk", icon: MessageSquare },
 		{ id: "models", label: "OpenCode Models", icon: Cpu },
-		{ id: "tokens", label: "Buyer Tokens", icon: KeyRound },
+		{ id: "tokens", label: "Support Tokens", icon: KeyRound },
 		{ id: "models-admin", label: "Investigation Models", icon: ListChecks },
 	];
 
@@ -811,7 +810,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							<div className="flex items-center gap-2">
 								<KeyRound className="h-5 w-5 text-indigo-400" />
 								<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
-									Buyer Tokens
+									Support Tokens
 								</h3>
 							</div>
 							<button
@@ -825,8 +824,8 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							</button>
 						</div>
 						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
-							Issue a support token so a buyer can reach the AI investigation care path. Only buyer
-							accounts are eligible. The token is shown once, at creation time.
+							Issue a support token so any account can reach the AI investigation care path. Any
+							account role is eligible; the token is shown once, at creation time.
 						</p>
 
 						{tokensError && (
@@ -847,8 +846,8 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								type="text"
 								value={buyerQuery}
 								onChange={(event) => setBuyerQuery(event.target.value)}
-								placeholder="Search buyers by name or email…"
-								aria-label="Search buyers"
+								placeholder="Search accounts by name or email…"
+								aria-label="Search accounts"
 								className={cn(
 									"flex-1 rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
 									adminDark
@@ -901,7 +900,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 												<span className="block truncate text-xs text-slate-500">{user.email}</span>
 											</span>
 											<span className="shrink-0 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2.5 py-0.5 text-xs text-indigo-300">
-												buyer
+												{user.role}
 											</span>
 										</button>
 									</li>
@@ -1083,7 +1082,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								<thead>
 									<tr className={cn("text-left", adminDark ? "text-slate-400" : "text-slate-500")}>
 										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
-											Buyer
+											Account
 										</th>
 										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
 											Label

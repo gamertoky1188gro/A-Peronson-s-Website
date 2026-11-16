@@ -107,18 +107,25 @@ describe("supportTokenService", () => {
 		).rejects.toMatchObject({ status: 404 });
 	});
 
-	it("issuing a token for a non-buyer role rejects and creates no row", async () => {
-		stores.users.set("owner-9", {
-			id: "owner-9",
-			role: "owner",
-			email: "o@example.com",
-			name: "Owner Nine",
-			status: "active",
-		});
-		await expect(
-			svc.issueToken({ buyerId: "owner-9", label: "e", expiresAt: null, createdBy: "owner-1" }),
-		).rejects.toMatchObject({ status: 400 });
-		expect(stores.tokens.size).toBe(0);
+	it("any registered role can be issued a token (owner, factory, buying_house, agent)", async () => {
+		for (const role of ["owner", "factory", "buying_house", "agent"]) {
+			stores.users.set("u-" + role, {
+				id: "u-" + role,
+				role,
+				email: role + "@example.com",
+				name: role,
+				status: "active",
+			});
+		}
+		for (const role of ["owner", "factory", "buying_house", "agent"]) {
+			const result = await svc.issueToken({
+				buyerId: "u-" + role,
+				label: "e",
+				expiresAt: null,
+				createdBy: "owner-1",
+			});
+			expect(result.token.startsWith("gtk_sup_")).toBe(true);
+		}
 	});
 
 	it("issuing to a locked buyer rejects with 400 and creates nothing", async () => {
@@ -127,12 +134,12 @@ describe("supportTokenService", () => {
 			svc.issueToken({ buyerId: "buyer-1", label: "e", expiresAt: null, createdBy: "owner-1" }),
 		).rejects.toMatchObject({
 			status: 400,
-			message: "This buyer account is locked and cannot be issued a support token",
+			message: "That account is locked and cannot be issued a support token",
 		});
 		expect(stores.tokens.size).toBe(0);
 	});
 
-	it("a buyer whose role flips to owner fails validation", async () => {
+	it("a token remains valid when the account role changes later", async () => {
 		const { token } = await svc.issueToken({
 			buyerId: "buyer-1",
 			label: "e",
@@ -140,7 +147,7 @@ describe("supportTokenService", () => {
 			createdBy: "owner-1",
 		});
 		stores.users.get("buyer-1").role = "owner";
-		expect((await svc.validateToken(token)).reason).toBe("invalid");
+		expect((await svc.validateToken(token)).ok).toBe(true);
 	});
 
 	it("a buyer whose access is later locked fails validation", async () => {

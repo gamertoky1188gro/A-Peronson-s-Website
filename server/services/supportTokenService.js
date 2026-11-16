@@ -4,7 +4,6 @@ import { findUserById } from "./userService.js";
 
 const TOKEN_PREFIX = "gtk_sup_";
 const TOKEN_BYTES = 32;
-const SUPPORT_ELIGIBLE_ROLES = new Set(["buyer", "buying_house"]);
 
 export function hashToken(token) {
 	return crypto.createHash("sha256").update(String(token)).digest("hex");
@@ -26,13 +25,8 @@ export async function issueToken({ buyerId, label, expiresAt = null, createdBy }
 		error.status = 404;
 		throw error;
 	}
-	if (!SUPPORT_ELIGIBLE_ROLES.has(buyer.role)) {
-		const error = new Error("Only buyer accounts can be issued a support token");
-		error.status = 400;
-		throw error;
-	}
 	if (buyer.status === "locked") {
-		const error = new Error("This buyer account is locked and cannot be issued a support token");
+		const error = new Error("That account is locked and cannot be issued a support token");
 		error.status = 400;
 		throw error;
 	}
@@ -78,7 +72,7 @@ export async function validateToken(token) {
 		return { ok: false, reason: "expired" };
 	}
 	const buyer = await findUserById(row.buyer_id);
-	if (!(buyer && SUPPORT_ELIGIBLE_ROLES.has(buyer.role)) || buyer.status === "locked") {
+	if (!buyer || buyer.status === "locked") {
 		return { ok: false, reason: "invalid" };
 	}
 	// fire-and-forget; never block the request on the audit write
