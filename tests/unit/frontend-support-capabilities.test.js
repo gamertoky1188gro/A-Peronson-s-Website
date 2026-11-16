@@ -45,6 +45,7 @@ jest.unstable_mockModule("../../src/lib/signedFile.js", () => ({
 }));
 
 const { default: SupportWorkspace } = await import("../../src/pages/support/SupportWorkspace.jsx");
+const { setSupportSession, clearSupportSession } = await import("../../src/lib/supportToken.js");
 
 const FULL_ENVELOPE = {
 	repositoryInspection: true,
@@ -71,6 +72,7 @@ function rowFor(label) {
 
 beforeEach(() => {
 	apiRequest.mockReset();
+	clearSupportSession();
 	window.localStorage?.clear?.();
 });
 
@@ -98,7 +100,10 @@ describe("the right-rail capabilities card (src/pages/support/SupportWorkspace.j
 		apiRequest.mockResolvedValue({ ...FULL_ENVELOPE });
 		renderWorkspace();
 		await act(async () => {});
-		expect(apiRequest).toHaveBeenCalledWith("/support/capabilities", { token: "test-jwt" });
+		expect(apiRequest).toHaveBeenCalledWith("/support/capabilities", {
+			token: "test-jwt",
+			headers: undefined,
+		});
 		for (const label of [
 			"Repository inspection",
 			"GitHub history",
@@ -109,6 +114,17 @@ describe("the right-rail capabilities card (src/pages/support/SupportWorkspace.j
 		]) {
 			expect(screen.getByText(label)).toBeInTheDocument();
 		}
+	});
+
+	it("forwards the in-memory support token as x-support-token when the buyer holds one", async () => {
+		setSupportSession({ token: "gtk_sup_buyer-123", buyer: { id: "buyer-9" }, label: "demo" });
+		apiRequest.mockResolvedValue({ ...FULL_ENVELOPE });
+		renderWorkspace();
+		await act(async () => {});
+		expect(apiRequest).toHaveBeenCalledWith("/support/capabilities", {
+			token: "test-jwt",
+			headers: { "x-support-token": "gtk_sup_buyer-123" },
+		});
 	});
 
 	it("shows Authorized for granted capabilities and Unavailable for refused ones", async () => {

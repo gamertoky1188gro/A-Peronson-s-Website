@@ -420,7 +420,10 @@ export default function SupportWorkspace() {
 	// reason to claim access: the pills fall back to "Unknown".
 	useEffect(() => {
 		let cancelled = false;
-		apiRequest("/support/capabilities", { token: jwt ?? undefined })
+		apiRequest("/support/capabilities", {
+			token: jwt ?? undefined,
+			headers: supportToken ? { "x-support-token": supportToken } : undefined,
+		})
 			.then((data) => {
 				if (cancelled) {
 					return;
@@ -435,7 +438,7 @@ export default function SupportWorkspace() {
 		return () => {
 			cancelled = true;
 		};
-	}, [jwt]);
+	}, [jwt, supportToken]);
 
 	// Escape closes either mobile drawer.
 	const anyDrawerOpen = leftDrawerOpen || rightDrawerOpen;
