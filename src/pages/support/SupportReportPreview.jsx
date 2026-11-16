@@ -12,7 +12,7 @@
   A failed confirm stays on this page with an inline error.
 */
 
-import { AlertTriangle, ArrowLeft, Check, FileText } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, Download, FileDown, FileText } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 import ReactMarkdown from "react-markdown";
@@ -20,6 +20,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import remarkGfm from "remark-gfm";
 import { GlassCard } from "../../components/support/GlassCard.jsx";
 import { useSupportCase } from "../../hooks/useSupportCase.js";
+import { downloadReportHtml, printReportHtml } from "../../lib/reportExport.js";
 import { clearSupportSession, getSupportSession } from "../../lib/supportToken.js";
 
 const EXTERNAL_URL_PATTERN = /^https?:\/\//iu;
@@ -205,6 +206,41 @@ export default function SupportReportPreview() {
 						Review what the investigation found. Nothing goes to the support team until you approve
 						it below.
 					</p>
+					{hasReport ? (
+						<div class="mt-4 flex flex-wrap items-center gap-2">
+							<button
+								type="button"
+								onClick={() =>
+									printReportHtml({
+										title: "Investigation report",
+										subtitle: `Case ${String(caseId || "").slice(0, 12)}`,
+										markdown: report,
+										footer: "GarTexHub support investigation",
+									})
+								}
+								class="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-xs font-semibold text-purple-300 transition-all hover:bg-purple-500/20"
+							>
+								<Download class="h-3.5 w-3.5" aria-hidden="true" />
+								Print / Save as PDF
+							</button>
+							<button
+								type="button"
+								onClick={() =>
+									downloadReportHtml({
+										caseId,
+										title: "Investigation report",
+										subtitle: `Case ${String(caseId || "").slice(0, 12)}`,
+										markdown: report,
+										footer: "GarTexHub support investigation",
+									})
+								}
+								class="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-[#f4eeff] transition-all hover:border-purple-500/40 hover:bg-purple-500/10"
+							>
+								<FileDown class="h-3.5 w-3.5" aria-hidden="true" />
+								Download HTML
+							</button>
+						</div>
+					) : null}
 				</header>
 
 				{hasReport ? (

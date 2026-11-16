@@ -9,6 +9,7 @@ import { FileText } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { EvidenceViewerModal } from "../../../components/support/EvidenceViewerModal.jsx";
 import { StageRail } from "../../../components/support/StageRail.jsx";
+import { downloadReportHtml, printReportHtml } from "../../../lib/reportExport.js";
 import { signOne } from "../../../lib/signedFile.js";
 import {
 	ConfidenceChip,
