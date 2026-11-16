@@ -256,7 +256,7 @@ export function buildIsolatedRuntimeEnv({
  */
 export function buildAssistantRuntimeEnv({ password, configDir, baseEnv = process.env } = {}) {
 	return buildIsolatedRuntimeEnv({
-		config: buildInvestigationConfig(),
+		config: buildInvestigationConfig({ mcp: false, skills: false, plugins: false }),
 		password,
 		configDir,
 		baseEnv,

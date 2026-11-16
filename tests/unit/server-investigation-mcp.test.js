@@ -35,6 +35,20 @@ describe("investigation MCP wiring", () => {
 		expect(permission["*"]).toBe("deny");
 	});
 
+	test("mcp:false, skills:false, plugins:false restores the pre-Phase-4 config exactly", () => {
+		process.env.GITHUB_PERSONAL_ACCESS_TOKEN = "ghp_x";
+		const config = buildInvestigationConfig({ mcp: false, skills: false, plugins: false });
+		expect(config.mcp).toBeUndefined();
+		expect(config.skills).toBeUndefined();
+		expect(config.plugins).toBeUndefined();
+		expect(config.permission["github_get_file_contents"]).toBeUndefined();
+		expect(config.permission["parallel-search_web_search"]).toBeUndefined();
+		expect(config.tools["github_get_file_contents"]).toBeUndefined();
+		expect(config.tools["github_*"]).toBe(false);
+		expect(config.tools["parallel-search_*"]).toBe(false);
+		expect(config.tools["parallel-search_web_search"]).toBeUndefined();
+	});
+
 	test("skills and plugins are declared only when the directories exist", () => {
 		// The machine running tests has the skills dir; assert the shape, not existence.
 		const config = buildInvestigationConfig();

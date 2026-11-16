@@ -105,12 +105,15 @@ export const MCP_TOOL_ALLOWLISTS = {
 const CRED_FOR = { github: "GITHUB_PERSONAL_ACCESS_TOKEN", render: "RENDER_API_KEY", context7: "CONTEXT7_API_KEY" };
 const toolKey = (server, tool) => `${server}_${tool}`;
 
-export function buildInvestigationConfig({ mcpTools = [], skills, plugins } = {}) {
+export function buildInvestigationConfig({ mcpTools = [], skills, plugins, mcp } = {}) {
+	const mcpEnabled = mcp !== false;
 	// MCP: only servers whose credential (or public access) is available.
 	const servers = {};
-	for (const [name, server] of Object.entries(MCP_SERVERS)) {
-		const CRED = CRED_FOR[name];
-		if (!CRED || process.env[CRED]) servers[name] = server;
+	if (mcpEnabled) {
+		for (const [name, server] of Object.entries(MCP_SERVERS)) {
+			const CRED = CRED_FOR[name];
+			if (!CRED || process.env[CRED]) servers[name] = server;
+		}
 	}
 
 	const permission = {
@@ -142,14 +145,16 @@ export function buildInvestigationConfig({ mcpTools = [], skills, plugins } = {}
 	for (const pattern of [...ALWAYS_DISABLED_MCP_TOOLS, ...mcpTools]) {
 		tools[pattern] = false;
 	}
-	for (const [server, allowlist] of Object.entries(MCP_TOOL_ALLOWLISTS)) {
-		if (!servers[server]) continue;
-		for (const tool of allowlist) tools[toolKey(server, tool)] = true;
-	}
+	if (mcpEnabled) {
+		for (const [server, allowlist] of Object.entries(MCP_TOOL_ALLOWLISTS)) {
+			if (!servers[server]) continue;
+			for (const tool of allowlist) tools[toolKey(server, tool)] = true;
+		}
 
-	for (const [server, allowlist] of Object.entries(MCP_TOOL_ALLOWLISTS)) {
-		if (!servers[server]) continue;
-		for (const tool of allowlist) permission[toolKey(server, tool)] = "allow";
+		for (const [server, allowlist] of Object.entries(MCP_TOOL_ALLOWLISTS)) {
+			if (!servers[server]) continue;
+			for (const tool of allowlist) permission[toolKey(server, tool)] = "allow";
+		}
 	}
 
 	const config = {
@@ -171,11 +176,11 @@ export function buildInvestigationConfig({ mcpTools = [], skills, plugins } = {}
 		},
 	};
 
-	const skillsDir = skills ?? (exists(SKILLS_DIR) ? [SKILLS_DIR] : undefined);
+	const skillsDir = skills === false ? undefined : (skills ?? (exists(SKILLS_DIR) ? [SKILLS_DIR] : undefined));
 	if (skillsDir?.length) config.skills = skillsDir;
-	const pluginDirs = plugins ?? PLUGIN_DIRS.filter(exists);
-	if (pluginDirs.length) config.plugins = pluginDirs;
-	if (Object.keys(servers).length) config.mcp = { servers };
+	const pluginDirs = plugins === false ? undefined : (plugins ?? PLUGIN_DIRS.filter(exists));
+	if (pluginDirs?.length) config.plugins = pluginDirs;
+	if (mcpEnabled && Object.keys(servers).length) config.mcp = { servers };
 
 	return config;
 }
