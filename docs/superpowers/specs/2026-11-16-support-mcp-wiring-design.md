@@ -31,6 +31,25 @@ process, no change to the model chain, no new Prisma models/migrations.
    behave exactly like the existing deny list (`github_*`, `render_*`, …).
 6. Buyer-facing UI shows real availability (Authorized / Unavailable) driven
    by a new requireAuth-protected `GET /api/support/capabilities`.
+7. Owner addition to Phase 4: the investigation runtime ALSO loads the owner's
+   local opencode **skills** and three **plugins** (exact paths pinned in
+   §6): skills = all of `~/.config/opencode/skills` EXCEPT swarm (verified
+   absent from that directory — "swarm" refers to the separate
+   `opencode-swarm` application, which is not in the skills tree);
+   plugins = superpowers (`/home/ccm/.config/opencode/node_modules/superpowers`),
+   ponytail (`/home/ccm/.cache/opencode/npm/@dietrichgebert/ponytail@latest`),
+   plannotator (`/home/ccm/.cache/opencode/npm/@plannotator/opencode@latest`).
+   **Excluded: opencode-tavily, opencode-browser, opencode-swarm — never
+   declared, never loaded.** Visibly excluded by construction: the deny-first
+   `permission` config still binds every tool every plugin might want, so the
+   investigator cannot write, run commands, or delegate regardless.
+8. Plugin declaration is gated on the plugin directory existing at spawn time
+   (like env vars). On a host without them (e.g. Render), the runtime simply
+   declares no plugins/skills and behaves as before — the investigation never
+   fails to start because of a plugin.
+9. Skills and plugins give the investigator knowledge, not new capabilities;
+   the MCP allowlists and permission denies are unchanged by them. Buyers see
+   no plugin or skill details — the right rail stays as designed.
 
 ## Tool allowlists
 
@@ -83,6 +102,30 @@ Derived from `process.env` presence (repositoryInspection = codebase always true
 - `.env.example`: adds `GITHUB_PERSONAL_ACCESS_TOKEN=`, `RENDER_API_KEY=`, `CONTEXT7_API_KEY=` with a one-line comment each (no values; note they're read at boot).
 - `render.yaml`: adds the same three keys with `sync: false` (dashboard-managed; never committed).
 - `codemode: false` everywhere; `oauth: false` everywhere (API keys, not OAuth).
+
+### 6. Owner's local skills + selected plugins (§ Decisions 7–9)
+
+- `skills: ["/home/ccm/.config/opencode/skills"]` added to the investigation
+  config when the directory exists (fail-closed, like env vars). opencode
+  recursively scans it (max depth 6, `SKILL.md` discovery).
+- `plugins`: absolute paths, only when the directory exists:
+  - `/home/ccm/.config/opencode/node_modules/superpowers` (adds plan-tracking
+    hooks; `task` stays denied — no subagents)
+  - `/home/ccm/.cache/opencode/npm/@dietrichgebert/ponytail@latest` (injects
+    lazy-senior-dev style rules into the system prompt)
+  - `/home/ccm/.cache/opencode/npm/@plannotator/opencode@latest` (interactive
+    plan-review tooling; inert headless but loads cleanly)
+- The three directories are **not** committed to the repo and are not present
+  on Render; when absent they are simply not declared — the investigator runs
+  exactly as Phase 3 would. `.env.example` does **not** document them (machine
+  local); the rollout note records the three paths.
+- No plugin is given credentials: none of these three reads any secret; their
+  code executes in the investigator process, inside the same deny-first
+  permission envelope.
+- Explicitly excluded by construction: `opencode-tavily`,
+  `opencode-browser`, `opencode-swarm` — none are declared, and the swarm
+  application installer (`/home/ccm/.config/nvm/.../opencode-swarm`) is never
+  referenced by the runtime, the config, or the docs.
 
 ## Data flow
 
