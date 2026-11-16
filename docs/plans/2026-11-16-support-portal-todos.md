@@ -94,5 +94,11 @@ Owner machine = the laptop; THIS sandbox cannot run the live spike or Gmail send
 - Redaction fix committed `4d172c43` and `8c34212e` (disk log never holds bodies/support tokens/signed URLs; raw non-JSON bodies omitted).
 - H.6 audit findings closed; client-side `logger.warn(... url ...)` calls removed (`FileAttachmentCard.jsx`).
 - Server boot verified with `/health` → `{"status":"ok"}`.
-- A.1 spike: harness-backgrounded; earlier attempts invalid (OpenCode resolves `./node_modules/.bin/opencode` V1 under npm test — must set `OPENCODE_BIN=/home/ccm/.opencode/bin/opencode` (v2.3.0)). Result pending.
+- A.1 spike history (all on live spawned runtime, minimax-m3.1-flash-free):
+  attempt 1 (V1 binary at PATH) → runtime refused to start; binary check works.
+  attempt 2 → 6/8; shell read /tmp/SPIKE_BASH_SECRET.txt via allowlisted `cat *` (.env refused, writes refused, subagents refused). Fix: shell REMOVED from investigator/assistant entirely (no command tool exists, catch-all deny applies).
+  attempt 3 → 8/8 pending. Assertions rewritten: BASH_SECRET random per run (never tracked), .env check asserts no VALUE from .env appears + refusal visible in text or a permission-error toolCall.
+  Test gate (`npm test`): biome errors fail; warnings pass.
+  Husky fix verified end-to-end (biome → npm test → npm run build → "Pre-commit checks passed!").
+  Fresh clones need `git config core.hooksPath .husky`.
 - Husky pre-commit de-sourced from the missing `.husky/_/husky.sh` and chmod +x; gate re-verified end-to-end (biome → npm test → npm run build) on the main branch.
