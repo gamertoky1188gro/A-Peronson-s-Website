@@ -385,3 +385,31 @@ means touching the global shell for every route.
 
 Still not verified: the support chat, the report preview and the submitted
 screen, because they need a real case, and the tablet breakpoint.
+
+## Phase 10 — tablet pass, empty states, deep-link bug (2026-11-16)
+
+The tablet breakpoint was checked at 768px and empty states were captured:
+
+- `/support` at 768px: nav collapses, hero and cards render, cards stay 2-up.
+- `/support/case/<id>/report` at 768px with a signed-in session and a
+  non-existent case: renders "The report isn't ready yet" (empty state).
+- `/support/case/<id>/submitted` at 768px: renders "Report submitted!" with
+  the case reference, no session required.
+
+**A real bug was found by this pass and fixed**: local production builds
+(`vite.config.js`, `base` defaults to `./`) resolved every asset relative to
+the route, so `/support/case/:id/report` asked for
+`/support/case/:id/assets/…` and 404'd — the app never mounted and the page
+was stuck on the splash screen. Production was never affected
+(`render.yaml` sets `VITE_BASE_URL=/`). The default is now `/` with the
+environment variable still overriding it.
+
+Still NOT covered: the support chat and a report preview WITH a real report
+(needs the canary — owner-gated), and an exhaustive tablet sweep of every
+screen.
+
+**Commit-message archaeology (recorded for honesty, not rewritten)**: 1dc2eabb
+("fix(support): hide the global light footer…") contains only the dist
+deletions; the footer fix, .gitignore, docs and the dist/ untracking itself
+were committed in 31666c23 and 0a853ad8. History was not rewritten because it
+was already pushed.

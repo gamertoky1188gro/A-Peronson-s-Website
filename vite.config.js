@@ -58,7 +58,7 @@ function themeCssMapPlugin() {
 			handler(html, ctx) {
 				const map = {};
 				const prefix = base.endsWith("/") ? base : `${base}/`;
-				const THEME_FILE = /[\\/]theme[\\/]themes[\\/]([a-z-]+)\.css$/;
+				const THEME_FILE = /[\\/]theme[\\/]themes[\\/]([a-z-]+)\.css$/u;
 				for (const file of Object.values(ctx.bundle || {})) {
 					// A dynamic import of a .css file is emitted as a CSS asset...
 					if (file.type === "asset" && file.fileName.endsWith(".css")) {
@@ -82,7 +82,11 @@ function themeCssMapPlugin() {
 
 // https://vite.dev/config/
 export default defineConfig({
-	base: process.env.VITE_BASE_URL || "./",
+	// The deploy (render.yaml) and the local SERVE_DIST server both serve from
+	// the root, and the default has to match them — otherwise a relative base
+	// breaks every deep link: /support/case/:id/report loads ./assets/... which
+	// resolves to /support/case/:id/assets/... and the app never mounts.
+	base: process.env.VITE_BASE_URL || "/",
 	logLevel: "info",
 	clearScreen: false,
 	envDir: process.cwd(),
@@ -101,7 +105,7 @@ export default defineConfig({
 				manualChunks(id) {
 					const pkg = packageName(id);
 					if (!pkg) {
-						return undefined;
+						return;
 					}
 					return VENDOR_CHUNKS[pkg];
 				},
