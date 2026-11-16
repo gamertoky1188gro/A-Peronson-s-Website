@@ -336,37 +336,74 @@ function FindingsPanel({ investigations = EMPTY }) {
 }
 
 /** Activity: the tool-call log. Tool, status, optional error - never reasoning. */
-function ActivityPanel({ toolLog = EMPTY }) {
-	const list = Array.isArray(toolLog) ? toolLog : EMPTY;
-	const statusClass = (status) => {
-		const key = String(status || "").toLowerCase();
-		if (["ok", "completed", "done", "success"].includes(key)) {
-			return "text-emerald-300";
-		}
-		if (["failed", "error"].includes(key)) {
-			return "text-rose-300";
-		}
-		return "text-slate-400";
-	};
+const runStatusClass = (status) => {
+	const key = String(status || "").toLowerCase();
+	if (["ok", "completed", "complete", "done", "success"].includes(key)) {
+		return "text-emerald-300";
+	}
+	if (["failed", "error"].includes(key)) {
+		return "text-rose-300";
+	}
+	return "text-slate-400";
+};
+
+/**
+ * Activity: one group per investigation run, oldest first.
+ *
+ * A case can be investigated more than once (a re-run writes new rows), so
+ * the runs stay separate: the owner reads which role answered, with which
+ * model, in what state, and then replays that run's tool calls in order.
+ */
+function ActivityPanel({ timeline = EMPTY }) {
+	const runs = Array.isArray(timeline) ? timeline : EMPTY;
 	return (
 		<div class={panelClasses}>
-			{list.length === 0 ? <Empty>No tool call was recorded.</Empty> : null}
-			<ol class="space-y-1">
-				{list.map((entry) => (
-					<li
-						key={entry.key}
-						class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 rounded-lg border border-white/5 bg-white/5 px-3 py-1.5"
-					>
-						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-300/80">
-							{entry.role}
-						</span>
-						<span class="font-mono text-[11px] text-slate-100">{entry.tool}</span>
-						<span class={`font-mono text-[10px] uppercase ${statusClass(entry.status)}`}>
-							{entry.status}
-						</span>
-						{entry.error ? (
-							<span class="w-full text-[11px] text-rose-400">{entry.error}</span>
+			{runs.length === 0 ? <Empty>No investigation run was recorded.</Empty> : null}
+			<ol class="space-y-3">
+				{runs.map((run, index) => (
+					<li key={run.key} class="rounded-xl border border-white/5 bg-white/5 p-3">
+						<header class="flex flex-wrap items-center gap-x-3 gap-y-1">
+							<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-300/80">
+								{run.role}
+							</span>
+							<span class="font-mono text-[10px] text-slate-400">{run.model}</span>
+							<span class={`font-mono text-[10px] uppercase ${runStatusClass(run.status)}`}>
+								{run.status}
+							</span>
+							<span class="ml-auto font-mono text-[10px] text-slate-500">
+								run {index + 1}
+								{run.attempt ? ` · attempt ${run.attempt}` : ""}
+							</span>
+						</header>
+						{run.startedAt ? (
+							<p class="mt-1 font-mono text-[10px] text-slate-500">
+								{formatStamp(run.startedAt)}
+								{run.completedAt ? ` → ${formatStamp(run.completedAt)}` : ""}
+							</p>
 						) : null}
+						{run.calls.length === 0 ? (
+							<p class="mt-2 text-[11px] text-slate-500">No tool call was recorded.</p>
+						) : (
+							<ol class="mt-2 space-y-1">
+								{run.calls.map((call, callIndex) => (
+									<li
+										key={call.key}
+										class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 rounded-lg border border-white/5 bg-black/20 px-3 py-1.5"
+									>
+										<span class="w-6 shrink-0 font-mono text-[10px] text-slate-500">
+											{callIndex + 1}.
+										</span>
+										<span class="font-mono text-[11px] text-slate-100">{call.tool}</span>
+										<span class={`font-mono text-[10px] uppercase ${runStatusClass(call.status)}`}>
+											{call.status}
+										</span>
+										{call.error ? (
+											<span class="w-full text-[11px] text-rose-400">{call.error}</span>
+										) : null}
+									</li>
+								))}
+							</ol>
+						)}
 					</li>
 				))}
 			</ol>
@@ -421,7 +458,7 @@ function EmailReportPanel({ caseRow, report, busy, onResendReport }) {
  * @param {Array} [props.messages]
  * @param {Array} [props.investigations]
  * @param {Array} [props.attachments]
- * @param {Array} [props.toolLog]
+ * @param {Array} [props.timeline]
  * @param {string} [props.report]
  * @param {boolean} [props.busy]
  * @param {() => void} [props.onResendReport]
@@ -432,7 +469,7 @@ export function CaseDetailTabs({
 	messages = EMPTY,
 	investigations = EMPTY,
 	attachments = EMPTY,
-	toolLog = EMPTY,
+	timeline = EMPTY,
 	report = "",
 	busy = false,
 	onResendReport,
@@ -463,7 +500,7 @@ export function CaseDetailTabs({
 		conversation: <ConversationPanel messages={messages} />,
 		evidence: <EvidencePanel attachments={attachments} />,
 		findings: <FindingsPanel investigations={investigations} />,
-		activity: <ActivityPanel toolLog={toolLog} />,
+		activity: <ActivityPanel timeline={timeline} />,
 		email: (
 			<EmailReportPanel
 				caseRow={caseRow}

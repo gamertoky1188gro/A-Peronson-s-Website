@@ -110,16 +110,38 @@ const attachments = [
 	},
 ];
 
-const toolLog = [
-	{ key: "code-grep-1", role: "code", tool: "grep", status: "completed", error: "" },
+// The Activity tab replays one group per investigation run. These rows are
+// hand-built rather than derived from `investigations` above so the shape the
+// tab consumes is pinned on its own.
+const timeline = [
 	{
-		key: "code-read-2",
+		key: "code-run-1",
 		role: "code",
-		tool: "read",
-		status: "failed",
-		error: "File not found: server/missing.js",
+		model: "opencode/minimax-m3.1-flash-free",
+		status: "complete",
+		attempt: 0,
+		startedAt: "2026-11-16T09:00:00.000Z",
+		completedAt: "2026-11-16T09:04:00.000Z",
+		calls: [
+			{ key: "code-grep-1", tool: "grep", status: "completed", error: "" },
+			{
+				key: "code-read-2",
+				tool: "read",
+				status: "failed",
+				error: "File not found: server/missing.js",
+			},
+		],
 	},
-	{ key: "verify-matrix-3", role: "verify", tool: "verify-matrix", status: "completed", error: "" },
+	{
+		key: "verify-run-1",
+		role: "verify",
+		model: "default",
+		status: "complete",
+		attempt: 0,
+		startedAt: "2026-11-16T09:05:00.000Z",
+		completedAt: "2026-11-16T09:06:00.000Z",
+		calls: [{ key: "verify-matrix-3", tool: "verify-matrix", status: "completed", error: "" }],
+	},
 ];
 
 function renderTabs(overrides = {}) {
@@ -129,7 +151,7 @@ function renderTabs(overrides = {}) {
 		messages,
 		investigations,
 		attachments,
-		toolLog,
+		timeline,
 		report: "The export fails because the CSV column map is null.",
 		busy: false,
 		onResendReport: jest.fn(),
@@ -167,8 +189,8 @@ describe("<CaseDetailTabs>", () => {
 	it("conversation renders the right-aligned client bubble and the left-aligned assistant bubble", () => {
 		renderTabs();
 		fireEvent.click(screen.getByRole("tab", { name: "Conversation" }));
-		expect(screen.getByText(/The export button does nothing when I click it\./)).toBeTruthy();
-		expect(screen.getByText(/Which browser are you on\?/)).toBeTruthy();
+		expect(screen.getByText(/The export button does nothing when I click it\./u)).toBeTruthy();
+		expect(screen.getByText(/Which browser are you on\?/u)).toBeTruthy();
 	});
 
 	it("evidence signs urls, renders the thumbnail and opens the viewer modal", async () => {
@@ -177,9 +199,11 @@ describe("<CaseDetailTabs>", () => {
 		await waitFor(() =>
 			expect(signOne).toHaveBeenCalledWith("/uploads/support/1731600000000-export-error.png"),
 		);
-		const thumb = await screen.findByRole("button", { name: /Open evidence .*export-error\.png/i });
+		const thumb = await screen.findByRole("button", {
+			name: /Open evidence .*export-error\.png/iu,
+		});
 		fireEvent.click(thumb);
-		const dialog = await screen.findByRole("dialog", { name: /Evidence viewer/i });
+		const dialog = await screen.findByRole("dialog", { name: /Evidence viewer/iu });
 		expect(
 			within(dialog).getByRole("img", { name: "1731600000000-export-error.png" }),
 		).toBeTruthy();
@@ -191,7 +215,7 @@ describe("<CaseDetailTabs>", () => {
 		expect(screen.getAllByText("code").length).toBeGreaterThan(0);
 		expect(screen.getAllByText("verify").length).toBeGreaterThan(0);
 		expect(screen.getByText("confirmed")).toBeTruthy();
-		expect(screen.getByText(/server\/services\/exportService\.js:112-118/)).toBeTruthy();
+		expect(screen.getByText(/server\/services\/exportService\.js:112-118/u)).toBeTruthy();
 	});
 
 	it("activity renders the tool-call log with tool, status and error", () => {
@@ -199,7 +223,7 @@ describe("<CaseDetailTabs>", () => {
 		fireEvent.click(screen.getByRole("tab", { name: "Activity" }));
 		expect(screen.getByText("grep")).toBeTruthy();
 		expect(screen.getAllByText("failed").length).toBeGreaterThan(0);
-		expect(screen.getByText(/File not found: server\/missing\.js/)).toBeTruthy();
+		expect(screen.getByText(/File not found: server\/missing\.js/u)).toBeTruthy();
 		expect(screen.getByText("verify-matrix")).toBeTruthy();
 	});
 
@@ -209,10 +233,10 @@ describe("<CaseDetailTabs>", () => {
 		fireEvent.click(screen.getByRole("tab", { name: "Email report" }));
 		const panel = screen.getByRole("tabpanel", { name: "Email report" });
 		expect(within(panel).getByText("Sent")).toBeTruthy();
-		expect(within(panel).getByText(/Delivered/)).toBeTruthy();
-		fireEvent.click(screen.getByRole("button", { name: /Resend report/i }));
+		expect(within(panel).getByText(/Delivered/u)).toBeTruthy();
+		fireEvent.click(screen.getByRole("button", { name: /Resend report/iu }));
 		expect(onResendReport).toHaveBeenCalledTimes(1);
-		expect(screen.getByText(/The export fails because the CSV column map is null\./)).toBeTruthy();
+		expect(screen.getByText(/The export fails because the CSV column map is null\./u)).toBeTruthy();
 	});
 });
 

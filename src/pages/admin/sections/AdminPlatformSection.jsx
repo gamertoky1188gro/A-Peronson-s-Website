@@ -31,27 +31,39 @@ function pickSupportCaseReport(investigations) {
 }
 
 /**
- * Every tool call of every run of a case, in the order the runs happened.
+ * The case's investigation runs in the order they started, each carrying its
+ * own tool calls — the timeline the Activity tab replays.
+ *
+ * A re-run is a second group with the same role; flattening the runs into one
+ * list would hide which answer came from which attempt.
  *
  * @param {Array} investigations
  * @returns {Array}
  */
-function collectSupportCaseToolLog(investigations) {
+function collectSupportCaseTimeline(investigations) {
 	const rows = Array.isArray(investigations) ? investigations : [];
-	const entries = [];
-	for (const row of rows) {
-		const log = Array.isArray(row?.tool_log) ? row.tool_log : [];
-		for (const call of log) {
-			entries.push({
-				key: `${row?.role || "agent"}-${call?.tool || "tool"}-${call?.status || "unknown"}-${entries.length}`,
-				role: String(row?.role || "agent"),
+	return rows
+		.slice()
+		.sort((a, b) =>
+			String(a?.started_at || a?.created_at || "").localeCompare(
+				String(b?.started_at || b?.created_at || ""),
+			),
+		)
+		.map((row, index) => ({
+			key: `${row?.role || "agent"}-${row?.id || index}`,
+			role: String(row?.role || "agent"),
+			model: row?.model_id || "default",
+			status: String(row?.status || "unknown"),
+			attempt: Number(row?.attempt) || 0,
+			startedAt: row?.started_at || row?.created_at || null,
+			completedAt: row?.completed_at || null,
+			calls: (Array.isArray(row?.tool_log) ? row.tool_log : []).map((call, callIndex) => ({
+				key: `${row?.role || "agent"}-${callIndex}-${call?.tool || "unknown"}`,
 				tool: String(call?.tool || "unknown"),
 				status: String(call?.status || "unknown"),
 				error: String(call?.error || ""),
-			});
-		}
-	}
-	return entries;
+			})),
+		}));
 }
 
 export function AdminPlatformSection({
@@ -606,8 +618,8 @@ export function AdminPlatformSection({
 		openSupportCase(caseId);
 	}, [deepLinkedCaseId, openSupportCase]);
 
-	const supportCaseToolLog = useMemo(
-		() => collectSupportCaseToolLog(supportCaseDetail?.investigations),
+	const supportCaseTimeline = useMemo(
+		() => collectSupportCaseTimeline(supportCaseDetail?.investigations),
 		[supportCaseDetail],
 	);
 
@@ -2739,7 +2751,7 @@ export function AdminPlatformSection({
 									messages={supportCaseDetail.messages}
 									investigations={supportCaseDetail.investigations}
 									attachments={supportCaseDetail.attachments}
-									toolLog={supportCaseToolLog}
+									timeline={supportCaseTimeline}
 									report={supportCaseReport}
 									busy={supportCaseBusy}
 									onResendReport={() =>
