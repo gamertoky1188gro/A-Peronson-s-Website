@@ -12,6 +12,22 @@
  *    `task: "deny"` is therefore mandatory, not optional.
  */
 
+import fs from "node:fs";
+
+const SKILLS_DIR = "/home/ccm/.config/opencode/skills";
+const PLUGIN_DIRS = [
+	"/home/ccm/.config/opencode/node_modules/superpowers",
+	"/home/ccm/.cache/opencode/npm/@dietrichgebert/ponytail@latest",
+	"/home/ccm/.cache/opencode/npm/@plannotator/opencode@latest",
+];
+const exists = (p) => {
+	try {
+		return fs.existsSync(p);
+	} catch {
+		return false;
+	}
+};
+
 const ALWAYS_DENIED_TOOLS = [
 	"edit",
 	"bash",
@@ -32,7 +48,71 @@ const ALWAYS_DISABLED_MCP_TOOLS = [
 	"parallel-search_*",
 ];
 
-export function buildInvestigationConfig({ mcpTools = [] } = {}) {
+export const MCP_SERVERS = {
+	"parallel-search": {
+		type: "remote",
+		url: "https://search.parallel.ai/mcp",
+		oauth: false,
+		codemode: false,
+		timeout: 30_000,
+	},
+	github: {
+		type: "remote",
+		url: "https://api.githubcopilot.com/mcp/",
+		oauth: false,
+		codemode: false,
+		timeout: 30_000,
+		headers: { Authorization: "Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}" },
+	},
+	render: {
+		type: "remote",
+		url: "https://mcp.render.com/mcp",
+		oauth: false,
+		codemode: false,
+		timeout: 30_000,
+		headers: { Authorization: "Bearer {env:RENDER_API_KEY}" },
+	},
+	context7: {
+		type: "remote",
+		url: "https://mcp.context7.com/mcp",
+		oauth: false,
+		codemode: false,
+		timeout: 30_000,
+		headers: { CONTEXT7_API_KEY: "{env:CONTEXT7_API_KEY}" },
+	},
+};
+
+export const MCP_TOOL_ALLOWLISTS = {
+	github: [
+		"get_file_contents", "search_code", "list_commits", "get_commit", "search_commits",
+		"list_branches", "list_tags", "list_releases", "get_latest_release", "get_release_by_tag",
+		"get_tag", "list_issues", "issue_read", "search_issues", "list_issue_fields",
+		"list_issue_types", "list_pull_requests", "pull_request_read", "search_pull_requests",
+		"get_me", "search_repositories", "get_label", "get_teams", "get_team_members",
+		"list_repository_collaborators",
+	],
+	"parallel-search": ["web_search", "web_fetch"],
+	render: [
+		"list_services", "get_service", "list_events", "get_deploy", "list_deploys",
+		"get_metrics", "get_postgres", "list_postgres_instances", "list_key_value",
+		"list_workspaces", "list_flows", "get_flow", "list_workflow_runs",
+		"get_flow_run", "list_workflows", "get_workflow", "list_workflow_versions",
+		"get_workflow_version", "get_workflow_task", "list_flow_run_steps",
+	],
+	context7: ["resolve-library-id", "query-docs"],
+};
+
+const CRED_FOR = { github: "GITHUB_PERSONAL_ACCESS_TOKEN", render: "RENDER_API_KEY", context7: "CONTEXT7_API_KEY" };
+const toolKey = (server, tool) => `${server}_${tool}`;
+
+export function buildInvestigationConfig({ mcpTools = [], skills, plugins } = {}) {
+	// MCP: only servers whose credential (or public access) is available.
+	const servers = {};
+	for (const [name, server] of Object.entries(MCP_SERVERS)) {
+		const CRED = CRED_FOR[name];
+		if (!CRED || process.env[CRED]) servers[name] = server;
+	}
+
 	const permission = {
 		"*": "deny",
 		read: {
@@ -62,8 +142,17 @@ export function buildInvestigationConfig({ mcpTools = [] } = {}) {
 	for (const pattern of [...ALWAYS_DISABLED_MCP_TOOLS, ...mcpTools]) {
 		tools[pattern] = false;
 	}
+	for (const [server, allowlist] of Object.entries(MCP_TOOL_ALLOWLISTS)) {
+		if (!servers[server]) continue;
+		for (const tool of allowlist) tools[toolKey(server, tool)] = true;
+	}
 
-	return {
+	for (const [server, allowlist] of Object.entries(MCP_TOOL_ALLOWLISTS)) {
+		if (!servers[server]) continue;
+		for (const tool of allowlist) permission[toolKey(server, tool)] = "allow";
+	}
+
+	const config = {
 		default_agent: "investigator",
 		permission,
 		tools,
@@ -81,6 +170,14 @@ export function buildInvestigationConfig({ mcpTools = [] } = {}) {
 			},
 		},
 	};
+
+	const skillsDir = skills ?? (exists(SKILLS_DIR) ? [SKILLS_DIR] : undefined);
+	if (skillsDir?.length) config.skills = skillsDir;
+	const pluginDirs = plugins ?? PLUGIN_DIRS.filter(exists);
+	if (pluginDirs.length) config.plugins = pluginDirs;
+	if (Object.keys(servers).length) config.mcp = { servers };
+
+	return config;
 }
 
 export const ALWAYS_DENIED_TOOL_NAMES = ALWAYS_DENIED_TOOLS;

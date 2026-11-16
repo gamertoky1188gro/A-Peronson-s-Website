@@ -225,7 +225,7 @@ export function buildIsolatedRuntimeEnv({
 	configDir,
 	baseEnv = process.env,
 } = {}) {
-	return {
+	const env = {
 		...baseEnv,
 		OPENCODE_SERVER_PASSWORD: password,
 		OPENCODE_CONFIG_CONTENT: JSON.stringify(config),
@@ -233,6 +233,10 @@ export function buildIsolatedRuntimeEnv({
 		OPENCODE_CONFIG_DIR: configDir,
 		OPENCODE_CONFIG_PROJECT_DISABLE: "1",
 	};
+	for (const key of ["GITHUB_PERSONAL_ACCESS_TOKEN", "RENDER_API_KEY", "CONTEXT7_API_KEY"]) {
+		if (baseEnv[key]) env[key] = baseEnv[key];
+	}
+	return env;
 }
 
 /**
