@@ -1,31 +1,27 @@
-# .opencode — agent definitions only, never project policy
+# .opencode — agent definitions; MCP merged (github, render, parallel-search)
 
-This directory is committed so the investigation runtime and the support
-assistant can run as pinned, read-only agents. It is intentionally NOT a
-policy for every opencode session started in this repository.
+This repo's `.opencode/` is the configuration opencode v2 reads for every
+investigation AND every opencode session started here. Treat it accordingly.
 
-- `opencode.json` declares `$schema` and nothing else. Do not add
-  `default_agent`, `permission`, or `mcp` here: opencode v2 reads this file
-  for ANY opencode started in this repository, including the operator's own
-  session. Restrictions belong to the agents that need them.
+- `opencode.json` declares the three owner-approved MCP servers
+  (github, render, parallel-search) and nothing else - no `default_agent`,
+  no `permission`/`permissions`, nothing that binds other sessions.
+  - `github` and `render` use `{env:GITHUB_PERSONAL_ACCESS_TOKEN}` /
+    `{env:RENDER_API_KEY}` bearer interpolation. Credentials come from the
+    process environment; never inline them in this file.
+  - `parallel-search` needs no key.
+  - A missing key makes that server unavailable, never less restricted:
+    the investigator's deny-first permission set binds every tool call.
+- `opencode.mcp.optional.json` holds the `context7` profile. It stays OUT of
+  the project config because no `CONTEXT7_API_KEY` exists in the
+  investigation environment. Merging it requires the key and an owner call.
 - `agents/investigator.md` and `agents/assistant.md` carry the full
   deny-first permission set in their frontmatter (`"*": deny`, read allow
-  with `.env` denied at `*.env`, `**/.env`, NO shell of any kind,
-  MCP tool allowlists, no edit/write/patch/bash/web/subagents/question).
-  These rules apply only when a session runs that agent — the investigation
-  runtime pins `agent: "investigator"` at session creation
-  (`server/services/investigation/opencodeRuntime.js`) and the assistant
-  pins `agent: "assistant"` (`server/services/assistantService.js`).
-  Sessions created without that pin (e.g. the operator's own opencode) are
-  completely unaffected by these files.
-- `opencode.mcp.optional.json` is the opt-in MCP server block for
-  investigations (github, parallel-search, render, context7; credentials
-  only via `{env:NAME}` interpolation). It is NOT merged into
-  `opencode.json` on purpose: opencode has no per-agent MCP declaration, so
-  merging it registers the servers for every opencode run in this
-  repository, including the operator's. To enable investigation MCP, copy
-  the `mcp` object into `.opencode/opencode.json` knowingly, set
-  `GITHUB_PERSONAL_ACCESS_TOKEN` / `RENDER_API_KEY` / `CONTEXT7_API_KEY` in
-  the environment, and re-run the live read-only probe. Until that is done,
-  the investigator's MCP tool allowlist entries are inert — the tools do
-  not exist — and investigations run repository reads only.
+  with `.env` denied at `*.env`/`**/.env`, NO shell of any kind, MCP tool
+  allowlists for the investigator, no edit/web/subagents/question). It
+  binds only sessions created with `agent: "investigator"` /
+  `agent: "assistant"` pinned - the investigation session pin and the
+  assistant session pin, in server code. Sessions NOT pinned to those
+  agents (e.g. the operator's own opencode) are unaffected except for the
+  three MCP servers being discoverable. Investigator sessions expect the
+  `OPENCODE_BIN` to point at the v2 binary; V1 is refused by the runtime.

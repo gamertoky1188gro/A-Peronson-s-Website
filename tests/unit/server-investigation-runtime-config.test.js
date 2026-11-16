@@ -33,19 +33,35 @@ describe("investigation runtime project config (.opencode/)", () => {
 		expect(config.default_agent).toBeUndefined();
 		expect(config.permission).toBeUndefined();
 		expect(config.permissions).toBeUndefined();
-		expect(config.mcp).toBeUndefined();
+		// Agents carry their own lockdown; the project config only declares MCP.
 	});
 
-	it("the opt-in MCP block exists but is not merged into the project config", () => {
-		const optionalPath = path.join(ROOT, ".opencode", "opencode.mcp.optional.json");
-		expect(fs.existsSync(optionalPath)).toBe(true);
-		const optional = JSON.parse(fs.readFileSync(optionalPath, "utf8"));
-		expect(Object.keys(optional.mcp?.servers ?? {}).sort((a, b) => a.localeCompare(b))).toEqual([
-			"context7",
+	it("the project carries the three owner-approved MCP servers", () => {
+		const servers = config.mcp?.servers ?? {};
+		expect(Object.keys(servers).sort((a, b) => a.localeCompare(b))).toEqual([
 			"github",
 			"parallel-search",
 			"render",
 		]);
+		expect(servers.github?.oauth).toBe(false);
+		expect(servers.render?.oauth).toBe(false);
+		expect(servers["parallel-search"]?.oauth).toBe(false);
+		expect(servers.github?.codemode).toBe(false);
+		expect(servers.render?.codemode).toBe(false);
+		expect(servers["parallel-search"]?.codemode).toBe(false);
+		expect(servers.github?.headers?.Authorization).toBe(
+			"Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}",
+		);
+		expect(servers.render?.headers?.Authorization).toBe("Bearer {env:RENDER_API_KEY}");
+		expect(servers.context7).toBeUndefined();
+		expect(JSON.stringify(servers)).not.toMatch(/ghp_|rnd_|ctx7sk-|tvly-/u);
+	});
+
+	it("the context7 optional block remains unmerged", () => {
+		const optionalPath = path.join(ROOT, ".opencode", "opencode.mcp.optional.json");
+		expect(fs.existsSync(optionalPath)).toBe(true);
+		const optional = JSON.parse(fs.readFileSync(optionalPath, "utf8"));
+		expect(Object.keys(optional.mcp?.servers ?? {})).toEqual(["context7"]);
 	});
 });
 
