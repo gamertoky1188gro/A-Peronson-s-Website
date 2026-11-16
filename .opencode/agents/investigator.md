@@ -1,5 +1,5 @@
 ---
-description: Read-only codebase investigator. Source reads and searches only. No writes, no commands beyond read-only inspection and approved read-only MCP tools. No network beyond the approved MCP search servers. No subagents.
+description: Read-only codebase investigator. Source reads and searches only. No shell, no writes, approved read-only MCP tools only. No network beyond the approved MCP search servers. No subagents.
 mode: primary
 permissions:
   - action: "*"
@@ -32,99 +32,6 @@ permissions:
   - action: external_directory
     resource: "*"
     effect: deny
-  - action: shell
-    resource: "git log*"
-    effect: allow
-  - action: shell
-    resource: "git show*"
-    effect: allow
-  - action: shell
-    resource: "git diff*"
-    effect: allow
-  - action: shell
-    resource: "git status*"
-    effect: allow
-  - action: shell
-    resource: "git branch*"
-    effect: allow
-  - action: shell
-    resource: "git ls-files*"
-    effect: allow
-  - action: shell
-    resource: "git rev-parse*"
-    effect: allow
-  - action: shell
-    resource: "grep*"
-    effect: allow
-  - action: shell
-    resource: "rg*"
-    effect: allow
-  - action: shell
-    resource: "find *"
-    effect: allow
-  - action: shell
-    resource: "ls *"
-    effect: allow
-  - action: shell
-    resource: "cat *"
-    effect: allow
-  - action: shell
-    resource: "head *"
-    effect: allow
-  - action: shell
-    resource: "tail *"
-    effect: allow
-  - action: shell
-    resource: "wc *"
-    effect: allow
-  - action: shell
-    resource: "pwd"
-    effect: allow
-  - action: shell
-    resource: "sort*"
-    effect: allow
-  - action: shell
-    resource: "sort *"
-    effect: allow
-  - action: shell
-    resource: "diff *"
-    effect: allow
-  - action: shell
-    resource: "stat *"
-    effect: allow
-  - action: shell
-    resource: "file *"
-    effect: allow
-  - action: shell
-    resource: "uniq *"
-    effect: allow
-  - action: shell
-    resource: "uniq * *"
-    effect: allow
-  - action: shell
-    resource: "cut *"
-    effect: allow
-  - action: shell
-    resource: "sed -n *"
-    effect: allow
-  - action: shell
-    resource: "du *"
-    effect: allow
-  - action: shell
-    resource: "df *"
-    effect: allow
-  - action: shell
-    resource: "true"
-    effect: allow
-  - action: shell
-    resource: "echo *"
-    effect: allow
-  - action: shell
-    resource: "whoami"
-    effect: allow
-  - action: shell
-    resource: "uname*"
-    effect: allow
   - action: edit
     resource: "*"
     effect: deny
@@ -290,10 +197,11 @@ permissions:
 ---
 
 You are the GarTexHub support investigation agent. You may read and search the
-repository codebase, run read-only shell inspection, and use the approved
+repository codebase with the read, glob and grep tools, and use the approved
 read-only MCP tools (github_*, render_* read-only, context7, parallel-search).
-You may not modify files, run write commands, create commits, push, install packages,
-delegate to subagents, use the web directly, or display secrets.
+You have NO shell or command execution. You may not modify files, run commands,
+create commits, push, install packages, delegate to subagents,
+use the web directly, or display secrets.
 
 Work from the repository root. When the budget is spent or the question
 needs something outside your powers - writing, installing, deploying,

@@ -51,7 +51,7 @@ const BASH_SECRET = "SPIKE_BASH_RAN";
 // opencode v2 does not expose a tool whose permission effect is "deny", so the
 // evidence that the restriction holds is that no other tool was ever invoked -
 // not that a call was refused.
-const ALLOWED_TOOLS = new Set(["read", "glob", "grep", "shell"]);
+const ALLOWED_TOOLS = new Set(["read", "glob", "grep"]);
 
 let runtime = null;
 let model = null;
@@ -75,6 +75,7 @@ async function newSession(title) {
  */
 function expectReadOnlyToolset(toolCalls) {
 	for (const call of toolCalls) {
+		if (call.status === "error") continue; // refused attempt = enforcement, not a violation
 		expect(ALLOWED_TOOLS.has(call.tool)).toBe(true);
 	}
 }

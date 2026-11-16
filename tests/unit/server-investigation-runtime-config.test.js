@@ -99,17 +99,11 @@ describe.each([
 		);
 	});
 
-	test("shell allowlist contains only read-only inspection commands", () => {
-		const shellRules = [...file.matchAll(
-			/- action: shell\n\s+resource: "([^"]+)"\n\s+effect: (\w+)/g,
-		)].map((m) => ({ resource: m[1], effect: m[2] }));
-		expect(shellRules.length).toBeGreaterThan(10);
-		for (const rule of shellRules) {
-			if (rule.effect !== "allow") continue;
-			expect(rule.resource).not.toMatch(
-				/rm|mv|cp|ln|chmod|chown|commit|push|add |npm|pnpm|yarn|bun|npx|curl|wget|ssh|sudo|kill|pkill/,
-			);
-		}
+	test("the agent has NO shell at all - command execution is fully denied", () => {
+		const shellAllows = [
+			...file.matchAll(/- action: shell\n\s+resource: "[^"]*"\n\s+effect: allow/g),
+		];
+		expect(shellAllows).toHaveLength(0);
 	});
 });
 

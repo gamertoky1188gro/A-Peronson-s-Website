@@ -10,7 +10,7 @@ policy for every opencode session started in this repository.
   session. Restrictions belong to the agents that need them.
 - `agents/investigator.md` and `agents/assistant.md` carry the full
   deny-first permission set in their frontmatter (`"*": deny`, read allow
-  with `.env` denied at `*.env`, `**/.env`, read-only `shell` allowlist,
+  with `.env` denied at `*.env`, `**/.env`, NO shell of any kind,
   MCP tool allowlists, no edit/write/patch/bash/web/subagents/question).
   These rules apply only when a session runs that agent — the investigation
   runtime pins `agent: "investigator"` at session creation
