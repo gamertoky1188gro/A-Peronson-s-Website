@@ -20,6 +20,24 @@ function redactBodyValue(value, depth = 0) {
 	return value;
 }
 
+function redactRawBody(raw) {
+	const trimmed = String(raw || "").trim();
+	// application/x-www-form-urlencoded: redact values of sensitive keys
+	if (/^[a-zA-Z0-9_.-]+=[^&]*(&|$)/.test(trimmed)) {
+		return trimmed
+			.split("&")
+			.map((pair) => {
+				const idx = pair.indexOf("=");
+				if (idx === -1) return pair;
+				const key = pair.slice(0, idx);
+				return SENSITIVE_KEY.test(key) ? `${key}=[redacted]` : pair;
+			})
+			.join("&");
+	}
+	// multipart/binary/unparseable: never persist raw bytes
+	return "[non-JSON body omitted from log]";
+}
+
 function pathOnly(value) {
 	const raw = String(value || "");
 	return raw.split("#")[0].split("?")[0];
@@ -72,7 +90,7 @@ function getClientIp(req) {
 	return req.socket?.remoteAddress || req.ip || "unknown";
 }
 
-export { redactBodyValue, pathOnly };
+export { redactBodyValue, pathOnly, redactRawBody };
 
 export function requestCapture() {
 	return (req, res, next) => {
@@ -118,7 +136,7 @@ export function requestCapture() {
 					const raw = Buffer.concat(chunks).toString("utf-8");
 					body = redactBodyValue(JSON.parse(raw));
 				} catch {
-					body = Buffer.concat(chunks).toString("utf-8").slice(0, 2000);
+					body = redactRawBody(Buffer.concat(chunks).toString("utf-8").slice(0, 2000));
 				}
 			}
 

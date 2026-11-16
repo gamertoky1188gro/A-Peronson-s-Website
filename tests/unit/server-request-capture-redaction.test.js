@@ -1,7 +1,7 @@
 // The disk request log must never hold credentials. These tests pin the
 // redaction applied to bodies and urls in requestCapture.js.
 
-import { redactBodyValue, pathOnly } from "../../server/middleware/requestCapture.js";
+import { redactBodyValue, pathOnly, redactRawBody } from "../../server/middleware/requestCapture.js";
 
 describe("redactBodyValue", () => {
 	test("redacts password-like keys at any depth", () => {
@@ -33,5 +33,21 @@ describe("pathOnly", () => {
 
 	test("keeps plain paths untouched", () => {
 		expect(pathOnly("/api/support/cases")).toBe("/api/support/cases");
+	});
+});
+
+describe("redactRawBody", () => {
+	test("redacts form-encoded sensitive values", () => {
+		expect(redactRawBody("identifier=a@b.c&password=hunter2&keep=1")).toBe(
+			"identifier=a@b.c&password=[redacted]&keep=1",
+		);
+		expect(redactRawBody("token=abc")).toBe("token=[redacted]");
+	});
+
+	test("omits unparseable/binary bodies entirely", () => {
+		expect(redactRawBody("{not json")).toBe("[non-JSON body omitted from log]");
+		expect(redactRawBody("-----multipartboundary\x00\x01")).toBe(
+			"[non-JSON body omitted from log]",
+		);
 	});
 });
