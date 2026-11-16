@@ -1,86 +1,47 @@
-/**
- * Admin AI Section - AI Rules & Configuration
- */
-
 import {
 	AlertCircle,
-	Bot,
-	Check,
 	CheckCircle,
-	Code2,
 	Copy,
 	KeyRound,
-	Lightbulb,
 	ListChecks,
-	MessageSquare,
-	Plus,
 	RefreshCw,
 	Save,
-	Settings,
-	ToggleLeft,
-	ToggleRight,
+	Search,
 	Trash2,
+	UserRound,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Mosaic, ThreeDot } from "react-loading-indicators";
+import { ThreeDot } from "react-loading-indicators";
 import { apiRequest, getToken } from "../../../lib/auth.js";
 import { cn } from "../../../lib/cn.js";
-import { TIMEOUTS } from "../../../lib/constants.js";
-import { logger } from "../../../lib/logger.js";
 
-/**
- * A date for the tokens table, or an em dash.
- *
- * @param {string|null|undefined} value - The stored timestamp.
- * @returns {string} The local date-time, or "—".
- */
-function formatTokenDate(value) {
-	const date = new Date(value);
-	return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString();
+function formatDate(value) {
+	if (!value) return "—";
+	const d = new Date(value);
+	if (Number.isNaN(d.getTime())) return "—";
+	return new Intl.DateTimeFormat(undefined, {
+		day: "2-digit",
+		month: "short",
+		year: "numeric",
+	}).format(d);
 }
 
-export function AdminAISection({ activeCategory, adminDark }) {
-	const [rules, setRules] = useState({ globalRules: [], smallTalkRules: [] });
-	const [config, setConfig] = useState({
-		systemPrompt: "",
-		agentPrompt: "",
-		codeContextEnabled: true,
-		codeContextKeywords: "",
-	});
-	const [loading, setLoading] = useState(true);
-	const [saving, setSaving] = useState(false);
-	const [notice, setNotice] = useState("");
-	const [error, setError] = useState("");
-	const [activeTab, setActiveTab] = useState("settings");
+const PANEL =
+	"rounded-3xl border p-5 sm:p-6 " +
+	"bg-[#151020]/80 border-purple-400/10 text-slate-200 " +
+	"shadow-[0_30px_80px_-40px_rgba(168,85,247,0.45)] backdrop-blur-xl";
 
-	const [newRule, setNewRule] = useState({
-		source: "",
-		keywords: "",
-		response: "",
-	});
-	const [showAddForm, setShowAddForm] = useState(false);
+export function AdminAISection() {
+	const [activeTab, setActiveTab] = useState("tokens");
 
-	const [tokens, setTokens] = useState([]);
-	const [tokensLoading, setTokensLoading] = useState(false);
-	const [tokensError, setTokensError] = useState("");
-	const [tokensNotice, setTokensNotice] = useState("");
-	const [buyerQuery, setBuyerQuery] = useState("");
-	const [buyerResults, setBuyerResults] = useState([]);
-	const [buyerSearching, setBuyerSearching] = useState(false);
-	const [pickedBuyer, setPickedBuyer] = useState(null);
-	const [newLabel, setNewLabel] = useState("");
-	const [newExpiry, setNewExpiry] = useState("never"); // never|30d|90d|custom
-	const [customDate, setCustomDate] = useState("");
-	const [issuedToken, setIssuedToken] = useState(null); // { token, …row } — shown once
-	const [issuedBusy, setIssuedBusy] = useState(false);
-	const [tokenCopied, setTokenCopied] = useState(false);
+	/* ---------- Investigation Models ---------- */
 	const [modelsAdmin, setModelsAdmin] = useState(null);
 	const [modelsAdminLoading, setModelsAdminLoading] = useState(false);
 	const [modelsAdminSaving, setModelsAdminSaving] = useState(false);
 	const [modelsAdminError, setModelsAdminError] = useState("");
 	const [modelsAdminNotice, setModelsAdminNotice] = useState("");
 
-	async function fetchModelsAdmin(refresh = false) {
+	async function fetchModelsAdmin(refresh) {
 		try {
 			setModelsAdminLoading(true);
 			setModelsAdminError("");
@@ -94,23 +55,46 @@ export function AdminAISection({ activeCategory, adminDark }) {
 				default: data?.default ?? "",
 				buyerSelectEnabled: data?.buyerSelectEnabled !== false,
 				catalogStale: Boolean(data?.catalogStale),
-				catalogFetchedAt: data?.catalogFetchedAt ?? null,
 			});
 		} catch (err) {
-			setModelsAdminError(err?.message || "Failed to load the investigation models");
+			setModelsAdminError(err?.message || "Failed to load investigation models");
 		} finally {
 			setModelsAdminLoading(false);
 		}
 	}
 
-	// Toggling a checkbox edits the pending allowlist in component state;
-	// nothing is persisted until Save. The default snaps to the first
-	// pending allowed id when its option disappears.
+	async function saveModelsAdmin() {
+		if (!modelsAdmin) return;
+		if (modelsAdmin.allowed.length === 0) {
+			setModelsAdminError("At least one investigation model must stay allowed");
+			return;
+		}
+		setModelsAdminSaving(true);
+		setModelsAdminError("");
+		setModelsAdminNotice("");
+		try {
+			await apiRequest("/admin/support-models", {
+				method: "PUT",
+				token: getToken(),
+				body: {
+					allowed: modelsAdmin.allowed,
+					default: modelsAdmin.default,
+					buyerSelectEnabled: modelsAdmin.buyerSelectEnabled,
+				},
+			});
+			await fetchModelsAdmin(false);
+			setModelsAdminNotice("Saved");
+			setTimeout(() => setModelsAdminNotice(""), 1600);
+		} catch (err) {
+			setModelsAdminError(err?.message || "Failed to save investigation models");
+		} finally {
+			setModelsAdminSaving(false);
+		}
+	}
+
 	function toggleAllowedModel(id) {
 		setModelsAdmin((prev) => {
-			if (!prev) {
-				return prev;
-			}
+			if (!prev) return prev;
 			const checked = !prev.allowed.includes(id);
 			const allowed = checked ? [...prev.allowed, id] : prev.allowed.filter((x) => x !== id);
 			const def = allowed.includes(prev.default) ? prev.default : (allowed[0] ?? "");
@@ -118,39 +102,21 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		});
 	}
 
-	async function saveModelsAdmin() {
-		if (!modelsAdmin) {
-			return;
-		}
-		if (modelsAdmin.allowed.length === 0) {
-			setModelsAdminError("At least one model must stay allowed");
-			return;
-		}
-		setModelsAdminSaving(true);
-		setModelsAdminError("");
-		setModelsAdminNotice("");
-		const def = modelsAdmin.allowed.includes(modelsAdmin.default)
-			? modelsAdmin.default
-			: modelsAdmin.allowed[0];
-		try {
-			await apiRequest("/admin/support-models", {
-				method: "PUT",
-				token: getToken(),
-				body: {
-					allowed: modelsAdmin.allowed,
-					default: def,
-					buyerSelectEnabled: modelsAdmin.buyerSelectEnabled,
-				},
-			});
-			await fetchModelsAdmin();
-			setModelsAdminNotice("Saved");
-			setTimeout(() => setModelsAdminNotice(""), TIMEOUTS.LONG);
-		} catch (err) {
-			setModelsAdminError(err?.message || "Failed to save the investigation models");
-		} finally {
-			setModelsAdminSaving(false);
-		}
-	}
+	/* ---------- Support Tokens ---------- */
+	const [tokens, setTokens] = useState([]);
+	const [tokensLoading, setTokensLoading] = useState(false);
+	const [tokensError, setTokensError] = useState("");
+	const [tokensNotice, setTokensNotice] = useState("");
+	const [accountQuery, setAccountQuery] = useState("");
+	const [accountResults, setAccountResults] = useState([]);
+	const [accountSearching, setAccountSearching] = useState(false);
+	const [pickedAccount, setPickedAccount] = useState(null);
+	const [newLabel, setNewLabel] = useState("");
+	const [newExpiry, setNewExpiry] = useState("never"); // never | 30d | 90d | custom
+	const [customDate, setCustomDate] = useState("");
+	const [issuedToken, setIssuedToken] = useState(null);
+	const [issuedBusy, setIssuedBusy] = useState(false);
+	const [tokenCopied, setTokenCopied] = useState(false);
 
 	async function fetchTokens() {
 		try {
@@ -165,36 +131,32 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		}
 	}
 
-	async function searchBuyers(event) {
+	async function searchAccounts(event) {
 		event?.preventDefault?.();
-		const q = buyerQuery.trim();
+		const q = accountQuery.trim();
 		if (!q) {
-			setBuyerResults([]);
+			setAccountResults([]);
 			return;
 		}
 		try {
-			setBuyerSearching(true);
+			setAccountSearching(true);
 			setTokensError("");
 			const data = await apiRequest(`/users/search?q=${encodeURIComponent(q)}`, {
 				token: getToken(),
 			});
 			const items = Array.isArray(data?.items) ? data.items : [];
-			setBuyerResults(items);
+			setAccountResults(items.filter((u) => u?.status !== "locked"));
 		} catch (err) {
-			setTokensError(err?.message || "Unable to search users");
+			setTokensError(err?.message || "Unable to search accounts");
 		} finally {
-			setBuyerSearching(false);
+			setAccountSearching(false);
 		}
 	}
 
 	function expiryForSelection() {
 		const now = Date.now();
-		if (newExpiry === "30d") {
-			return new Date(now + 30 * 86_400_000).toISOString();
-		}
-		if (newExpiry === "90d") {
-			return new Date(now + 90 * 86_400_000).toISOString();
-		}
+		if (newExpiry === "30d") return new Date(now + 30 * 86_400_000).toISOString();
+		if (newExpiry === "90d") return new Date(now + 90 * 86_400_000).toISOString();
 		if (newExpiry === "custom") {
 			const date = new Date(customDate);
 			return Number.isNaN(date.getTime()) ? null : date.toISOString();
@@ -203,9 +165,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 	}
 
 	async function issueToken() {
-		if (!(pickedBuyer && newLabel.trim())) {
-			return;
-		}
+		if (!(pickedAccount && newLabel.trim())) return;
 		if (newExpiry === "custom" && !expiryForSelection()) {
 			setTokensError("Pick a date for the custom expiry.");
 			return;
@@ -215,10 +175,8 @@ export function AdminAISection({ activeCategory, adminDark }) {
 			setTokensError("");
 			setTokensNotice("");
 			const expiresAt = expiryForSelection();
-			const body = { buyerUserId: pickedBuyer.id, label: newLabel.trim() };
-			if (expiresAt) {
-				body.expiresAt = expiresAt;
-			}
+			const body = { buyerUserId: pickedAccount.id, label: newLabel.trim() };
+			if (expiresAt) body.expiresAt = expiresAt;
 			const issued = await apiRequest("/admin/support-tokens", {
 				method: "POST",
 				token: getToken(),
@@ -229,9 +187,9 @@ export function AdminAISection({ activeCategory, adminDark }) {
 			setNewLabel("");
 			setNewExpiry("never");
 			setCustomDate("");
-			setPickedBuyer(null);
-			setBuyerQuery("");
-			setBuyerResults([]);
+			setPickedAccount(null);
+			setAccountQuery("");
+			setAccountResults([]);
 			await fetchTokens();
 		} catch (err) {
 			setTokensError(err?.message || "Failed to issue the token");
@@ -245,8 +203,6 @@ export function AdminAISection({ activeCategory, adminDark }) {
 			return;
 		}
 		try {
-			setTokensError("");
-			setTokensNotice("");
 			const result = await apiRequest(`/admin/support-tokens/${id}/revoke`, {
 				method: "POST",
 				token: getToken(),
@@ -260,9 +216,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 	}
 
 	async function copyIssuedToken() {
-		if (!issuedToken?.token) {
-			return;
-		}
+		if (!issuedToken?.token) return;
 		try {
 			await navigator.clipboard.writeText(issuedToken.token);
 			setTokenCopied(true);
@@ -271,468 +225,146 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		}
 	}
 
-	async function fetchData() {
-		try {
-			setLoading(true);
-			const [rulesData, configData] = await Promise.all([
-				apiRequest("/api/assistant/rules", { token: true }),
-				apiRequest("/api/assistant/config", { token: true }),
-			]);
-			if (rulesData) {
-				setRules({
-					globalRules: rulesData.globalRules || [],
-					smallTalkRules: rulesData.smallTalkRules || [],
-				});
-			}
-			if (configData) {
-				setConfig({
-					systemPrompt: configData.systemPrompt || "",
-					agentPrompt: configData.agentPrompt || "",
-					codeContextEnabled: configData.codeContextEnabled !== false,
-					codeContextKeywords: (configData.codeContextKeywords || []).join(", "),
-				});
-			}
-		} catch (err) {
-			logger.warn("Failed to load AI data:", err);
-			setError("Failed to load data");
-		} finally {
-			setLoading(false);
-		}
-	}
+	// Load tokens once on mount; investigation models only when that tab opens.
+	useEffect(() => {
+		fetchTokens();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
 
 	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect
-		fetchData();
-	}, [
-		// eslint-disable-next-line react-hooks/set-state-in-effect
-		fetchData,
-	]);
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: fetch when the tab opens
-	useEffect(() => {
-		if (activeTab === "tokens") {
-			// eslint-disable-next-line react-hooks/set-state-in-effect
-			fetchTokens();
-		} else if (activeTab === "models-admin") {
-			// eslint-disable-next-line react-hooks/set-state-in-effect
-			fetchModelsAdmin();
+		if (activeTab === "models") {
+			fetchModelsAdmin(false);
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeTab]);
 
-	if (activeCategory !== "ai") {
-		return null;
-	}
-
-	async function saveConfig() {
-		setSaving(true);
-		setError("");
-		setNotice("");
-		try {
-			await apiRequest("/api/assistant/config", {
-				method: "POST",
-				token: true,
-				body: {
-					systemPrompt: config.systemPrompt,
-					agentPrompt: config.agentPrompt,
-					codeContextEnabled: config.codeContextEnabled,
-					codeContextKeywords: config.codeContextKeywords
-						.split(",")
-						.map((k) => k.trim())
-						.filter(Boolean),
-				},
-			});
-			setNotice("Configuration saved");
-		} catch (err) {
-			setError(err.message || "Failed to save configuration");
-		} finally {
-			setSaving(false);
-		}
-	}
-
-	async function addRule() {
-		if (!(newRule.response && newRule.keywords)) {
-			setError("Keywords and response are required");
-			return;
-		}
-		try {
-			const keywordArray = newRule.keywords
-				.split(",")
-				.map((k) => k.trim())
-				.filter(Boolean);
-			const ruleType = activeTab === "global" ? "global" : "smalltalk";
-			const rule = await apiRequest("/api/assistant/rules", {
-				method: "POST",
-				token: true,
-				body: {
-					type: ruleType,
-					source: newRule.source || `${ruleType}_rule_${Date.now()}`,
-					keywords: keywordArray,
-					response: newRule.response,
-				},
-			});
-			if (rule) {
-				setRules((prev) => ({
-					...prev,
-					[ruleType === "global" ? "globalRules" : "smallTalkRules"]: [
-						...(ruleType === "global" ? prev.globalRules : prev.smallTalkRules),
-						rule,
-					],
-				}));
-				setNewRule({ source: "", keywords: "", response: "" });
-				setShowAddForm(false);
-				setNotice("Rule added successfully");
-				setTimeout(() => setNotice(""), TIMEOUTS.LONG);
-			}
-		} catch (err) {
-			logger.warn("Failed to add rule:", err);
-			setError("Failed to add rule");
-		}
-	}
-
-	async function deleteRule(ruleId) {
-		try {
-			const ruleType = activeTab === "global" ? "global" : "smalltalk";
-			await apiRequest(`/api/assistant/rules/${ruleType}/${ruleId}`, {
-				method: "DELETE",
-				token: true,
-			});
-			setRules((prev) => ({
-				...prev,
-				[ruleType === "global" ? "globalRules" : "smallTalkRules"]: (ruleType === "global"
-					? prev.globalRules
-					: prev.smallTalkRules
-				).filter((r) => r.id !== ruleId),
-			}));
-			setNotice("Rule deleted");
-			setTimeout(() => setNotice(""), TIMEOUTS.LONG);
-		} catch (err) {
-			logger.warn("Failed to delete rule:", err);
-			setError("Failed to delete rule");
-		}
-	}
-
-	const currentRules = activeTab === "global" ? rules.globalRules : rules.smallTalkRules;
+	/* ---------- Render ---------- */
 	const tabs = [
-		{ id: "settings", label: "Settings", icon: Settings },
-		{ id: "global", label: "Global Rules", icon: Lightbulb },
-		{ id: "smalltalk", label: "Small Talk", icon: MessageSquare },
 		{ id: "tokens", label: "Support Tokens", icon: KeyRound },
-		{ id: "models-admin", label: "Investigation Models", icon: ListChecks },
+		{ id: "models", label: "Investigation Models", icon: ListChecks },
 	];
 
 	return (
-		<div class="space-y-6">
-			<div
-				class={cn(
-					"rounded-3xl border p-6",
-					adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
-				)}
-			>
+		<div class="space-y-5">
+			{/* Brand header */}
+			<div class={cn(PANEL, "p-6")}>
 				<div class="flex items-center gap-4">
-					<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-400 text-white">
-						<Bot class="h-6 w-6" />
+					<div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#a855f7] to-[#d946ef] text-white shadow-[0_0_28px_-8px_rgba(168,85,247,0.6)]">
+						<ListChecks class="h-6 w-6" />
 					</div>
-					<div>
-						<h2 class={cn("text-2xl font-semibold", adminDark ? "text-white" : "text-slate-900")}>
-							AI Support
-						</h2>
-						<p class={adminDark ? "text-slate-400" : "text-slate-500"}>
-							Investigation models, assistant rules, and buyer-token support
+					<div class="min-w-0">
+						<h2 class="text-2xl font-semibold tracking-tight text-[#f4eeff]">AI Support</h2>
+						<p class="text-sm text-[#a99bbd]">
+							Token-gated support access and free investigation models only (OpenCode).
 						</p>
 					</div>
 				</div>
 			</div>
-
-			{notice && (
-				<div class="flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-400">
-					<CheckCircle class="h-5 w-5" />
-					{notice}
-				</div>
-			)}
-
-			{error && (
-				<div class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-400">
-					<AlertCircle class="h-5 w-5" />
-					{error}
-				</div>
-			)}
 
 			{/* Tabs */}
-			<div
-				class={cn(
-					"flex gap-2 rounded-2xl border p-1",
-					adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
-				)}
-			>
-				{tabs.map((tab) => (
-					<button
-						key={tab.id}
-						type="button"
-						onClick={() => setActiveTab(tab.id)}
-						class={cn(
-							"flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
-							activeTab === tab.id
-								? adminDark
-									? "bg-indigo-500/20 text-indigo-300"
-									: "bg-white text-indigo-600 shadow-sm"
-								: adminDark
-									? "text-slate-400 hover:text-white"
-									: "text-slate-600 hover:text-slate-900",
-						)}
-					>
-						<tab.icon class="h-4 w-4" />
-						{tab.label}
-					</button>
-				))}
+			<div class="flex gap-1.5 rounded-2xl border border-purple-400/10 bg-[#0b0714]/50 p-1.5">
+				{tabs.map((tab) => {
+					const active = activeTab === tab.id;
+					const Icon = tab.icon;
+					return (
+						<button
+							key={tab.id}
+							type="button"
+							onClick={() => setActiveTab(tab.id)}
+							class={cn(
+								"flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-all",
+								active
+									? "bg-purple-500/20 text-purple-300 ring-1 ring-inset ring-purple-500/40"
+									: "text-slate-400 hover:text-white",
+							)}
+						>
+							<Icon class="h-4 w-4" />
+							{tab.label}
+						</button>
+					);
+				})}
 			</div>
 
-			{loading ? (
-				<Mosaic color="#337ab0" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
-			) : activeTab === "settings" ? (
-				<div class="space-y-6">
-					{/* System Prompt */}
-					<div
-						class={cn(
-							"rounded-3xl border p-6",
-							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
-						)}
-					>
-						<div class="mb-4 flex items-center gap-2">
-							<Code2 class="h-5 w-5 text-indigo-400" />
-							<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
-								System Prompt
-							</h3>
-						</div>
-						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
-							Short instruction that defines AI's role. Sent as "system" message to AI.
-						</p>
-						<textarea
-							value={config.systemPrompt}
-							onChange={(e) => setConfig((prev) => ({ ...prev, systemPrompt: e.target.value }))}
-							rows={3}
-							placeholder="You are a helpful GarTex assistant."
-							class={cn(
-								"w-full rounded-2xl border px-4 py-3 text-sm outline-none resize-none",
-								adminDark
-									? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
-									: "border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500",
-							)}
-						/>
-					</div>
-
-					{/* Agent Prompt */}
-					<div
-						class={cn(
-							"rounded-3xl border p-6",
-							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
-						)}
-					>
-						<div class="mb-4 flex items-center gap-2">
-							<Bot class="h-5 w-5 text-indigo-400" />
-							<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
-								Agent Prompt
-							</h3>
-						</div>
-						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
-							Full prompt with role description. Appended before knowledge base and user question.
-						</p>
-						<textarea
-							value={config.agentPrompt}
-							onChange={(e) => setConfig((prev) => ({ ...prev, agentPrompt: e.target.value }))}
-							rows={6}
-							placeholder="You are the GarTex Assistant, an expert on the GarTexHub textile marketplace platform..."
-							class={cn(
-								"w-full rounded-2xl border px-4 py-3 text-sm outline-none resize-none font-mono",
-								adminDark
-									? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
-									: "border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500",
-							)}
-						/>
-					</div>
-
-					{/* Code Context Settings */}
-					<div
-						class={cn(
-							"rounded-3xl border p-6",
-							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
-						)}
-					>
-						<div class="mb-4 flex items-center justify-between">
+			{/* Support Tokens */}
+			{activeTab === "tokens" && (
+				<div class="grid gap-5 lg:grid-cols-3">
+					{/* Issue card */}
+					<div class={cn("lg:col-span-2", PANEL)}>
+						<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
 							<div class="flex items-center gap-2">
-								<Code2 class="h-5 w-5 text-indigo-400" />
-								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
-									Code Context Search
-								</h3>
-							</div>
-							<button
-								type="button"
-								onClick={() =>
-									setConfig((prev) => ({
-										...prev,
-										codeContextEnabled: !prev.codeContextEnabled,
-									}))
-								}
-								class="text-indigo-400"
-							>
-								{config.codeContextEnabled ? (
-									<ToggleRight class="h-6 w-6" />
-								) : (
-									<ToggleLeft class="h-6 w-6" />
-								)}
-							</button>
-						</div>
-						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
-							When enabled, AI will search your codebase for relevant code snippets when questions
-							contain these keywords.
-						</p>
-						<div>
-							<label
-								class={cn(
-									"mb-1.5 block text-sm font-medium",
-									adminDark ? "text-slate-300" : "text-slate-700",
-								)}
-							>
-								Keywords (comma separated)
-							</label>
-							<input
-								type="text"
-								value={config.codeContextKeywords}
-								onChange={(e) =>
-									setConfig((prev) => ({
-										...prev,
-										codeContextKeywords: e.target.value,
-									}))
-								}
-								placeholder="api, route, server, code, bug, error"
-								disabled={!config.codeContextEnabled}
-								class={cn(
-									"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none",
-									adminDark
-										? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
-										: "border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500",
-									!config.codeContextEnabled && "opacity-50",
-								)}
-							/>
-						</div>
-					</div>
-
-					{/* Save Button */}
-					<button
-						type="button"
-						onClick={saveConfig}
-						disabled={saving}
-						class="flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/20 px-6 py-3 text-sm font-medium text-indigo-300 transition-all hover:bg-indigo-500/30 disabled:opacity-50"
-					>
-						{saving ? (
-							<ThreeDot variant="bounce" color="#337ab0" size="small" text="" textColor="" />
-						) : (
-							<Save class="h-4 w-4" />
-						)}
-						{saving ? "Saving..." : "Save Settings"}
-					</button>
-				</div>
-			) : activeTab === "tokens" ? (
-				<div class="space-y-6">
-					<div
-						class={cn(
-							"rounded-3xl border p-6",
-							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
-						)}
-					>
-						<div class="mb-4 flex flex-wrap items-center justify-between gap-4">
-							<div class="flex items-center gap-2">
-								<KeyRound class="h-5 w-5 text-indigo-400" />
-								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
-									Support Tokens
-								</h3>
+								<KeyRound class="h-5 w-5 text-purple-400" />
+								<h3 class="font-semibold text-[#f4eeff]">Issue a support token</h3>
 							</div>
 							<button
 								type="button"
 								onClick={fetchTokens}
 								disabled={tokensLoading}
-								class="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
+								class="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 transition-all hover:text-white disabled:opacity-50"
 							>
 								<RefreshCw class={cn("h-3.5 w-3.5", tokensLoading && "animate-spin")} />
 								Refresh
 							</button>
 						</div>
-						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
-							Issue a support token so any account can reach the AI investigation care path. Any
-							account role is eligible; the token is shown once, at creation time.
+						<p class="mb-4 text-xs text-slate-400">
+							Tokens open the AI support chat. Any account role is eligible. Shown once at creation.
 						</p>
 
 						{tokensError && (
-							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
 								<AlertCircle class="h-4 w-4" />
 								{tokensError}
 							</div>
 						)}
 						{tokensNotice && (
-							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm text-green-400">
+							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400">
 								<CheckCircle class="h-4 w-4" />
 								{tokensNotice}
 							</div>
 						)}
 
-						<form onSubmit={searchBuyers} class="flex gap-2">
-							<input
-								type="text"
-								value={buyerQuery}
-								onChange={(event) => setBuyerQuery(event.target.value)}
-								placeholder="Search accounts by name or email…"
-								aria-label="Search accounts"
-								class={cn(
-									"flex-1 rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
-									adminDark
-										? "border-white/10 bg-slate-900/70 placeholder:text-slate-500 text-white focus:border-indigo-400"
-										: "border-slate-200 bg-white placeholder:text-slate-400 text-slate-900 focus:border-indigo-400",
-								)}
-							/>
+						<form onSubmit={searchAccounts} class="flex flex-wrap gap-2">
+							<div class="relative min-w-0 flex-1">
+								<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+								<input
+									type="text"
+									value={accountQuery}
+									onChange={(e) => setAccountQuery(e.target.value)}
+									placeholder="Search accounts by name or email…"
+									aria-label="Search accounts"
+									class="w-full rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition-all placeholder:text-slate-500 focus:border-purple-500/40"
+								/>
+							</div>
 							<button
 								type="submit"
-								disabled={buyerSearching}
-								class="flex items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-2.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20 disabled:opacity-50"
+								disabled={accountSearching}
+								class="flex items-center gap-2 rounded-2xl border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-sm font-medium text-purple-400 transition-all hover:bg-purple-500/20 disabled:opacity-50"
 							>
-								{buyerSearching ? (
-									<ThreeDot variant="bounce" color="#6366f1" size="small" text="" textColor="" />
+								{accountSearching ? (
+									<ThreeDot variant="bounce" color="#a855f7" size="small" text="" textColor="" />
 								) : (
-									<KeyRound class="h-4 w-4" />
+									<Search class="h-4 w-4" />
 								)}
 								Search
 							</button>
 						</form>
 
-						{buyerResults.length > 0 && (
-							<ul
-								class={cn(
-									"mt-2 divide-y overflow-hidden rounded-2xl border",
-									adminDark
-										? "divide-white/5 border-white/10 bg-slate-900/40"
-										: "divide-slate-100 border-slate-200 bg-slate-50",
-								)}
-							>
-								{buyerResults.map((user) => (
+						{accountResults.length > 0 && (
+							<ul class="mt-2 divide-y divide-white/5 overflow-hidden rounded-2xl border border-purple-400/10 bg-[#0b0714]/40">
+								{accountResults.map((user) => (
 									<li key={user.id}>
 										<button
 											type="button"
 											onClick={() => {
-												setPickedBuyer(user);
-												setBuyerResults([]);
+												setPickedAccount(user);
+												setAccountResults([]);
 											}}
-											class="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition-colors hover:bg-indigo-500/5"
+											class="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-purple-500/10"
 										>
-											<span class="min-w-0">
-												<span
-													class={cn(
-														"block truncate text-sm font-medium",
-														adminDark ? "text-slate-100" : "text-slate-800",
-													)}
-												>
-													{user.name || user.email}
-												</span>
-												<span class="block truncate text-xs text-slate-500">{user.email}</span>
+											<UserRound class="h-4 w-4 shrink-0 text-slate-500" />
+											<span class="min-w-0 flex-1 truncate text-sm text-slate-100">
+												{user.name || user.email}
 											</span>
-											<span class="shrink-0 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2.5 py-0.5 text-xs text-indigo-300">
+											<span class="shrink-0 rounded-full border border-purple-400/20 bg-purple-500/10 px-2.5 py-0.5 text-[10px] uppercase tracking-wider text-purple-300">
 												{user.role}
 											</span>
 										</button>
@@ -741,51 +373,36 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							</ul>
 						)}
 
-						{pickedBuyer && (
-							<div
-								class={cn(
-									"mt-3 flex items-center justify-between gap-4 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-sm",
-									adminDark ? "text-indigo-200" : "text-indigo-700",
-								)}
-							>
-								<span class="min-w-0 truncate">
-									Issuing to: <strong>{pickedBuyer.name || pickedBuyer.email}</strong> (
-									{pickedBuyer.email})
+						{pickedAccount && (
+							<div class="mt-3 flex items-center justify-between gap-4 rounded-2xl border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-sm">
+								<span class="min-w-0 truncate text-purple-200">
+									Issuing to: <strong>{pickedAccount.name || pickedAccount.email}</strong> (
+									{pickedAccount.email})
 								</span>
 								<button
 									type="button"
-									onClick={() => setPickedBuyer(null)}
-									class="shrink-0 text-xs text-slate-400 hover:text-white"
+									onClick={() => setPickedAccount(null)}
+									class="shrink-0 text-xs text-slate-400 transition-colors hover:text-white"
 								>
 									Clear
 								</button>
 							</div>
 						)}
 
-						<div class="mt-4 grid gap-4 sm:grid-cols-2">
+						<div class="mt-4 grid gap-3 sm:grid-cols-2">
 							<input
 								type="text"
 								value={newLabel}
-								onChange={(event) => setNewLabel(event.target.value)}
-								placeholder="Label — e.g. Acme Corp, Nov issue"
+								onChange={(e) => setNewLabel(e.target.value)}
+								placeholder="Label — e.g. Acme Corp"
 								aria-label="Token label"
-								class={cn(
-									"rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
-									adminDark
-										? "border-white/10 bg-slate-900/70 placeholder:text-slate-500 text-white focus:border-indigo-400"
-										: "border-slate-200 bg-white placeholder:text-slate-400 text-slate-900 focus:border-indigo-400",
-								)}
+								class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none transition-all placeholder:text-slate-500 focus:border-purple-500/40"
 							/>
 							<select
 								value={newExpiry}
-								onChange={(event) => setNewExpiry(event.target.value)}
+								onChange={(e) => setNewExpiry(e.target.value)}
 								aria-label="Token expiry"
-								class={cn(
-									"rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
-									adminDark
-										? "border-white/10 bg-slate-900/70 text-white focus:border-indigo-400"
-										: "border-slate-200 bg-white text-slate-900 focus:border-indigo-400",
-								)}
+								class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none transition-all focus:border-purple-500/40"
 							>
 								<option value="never">Never expires</option>
 								<option value="30d">Expires in 30 days</option>
@@ -794,29 +411,22 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							</select>
 						</div>
 						{newExpiry === "custom" && (
-							<div class="mt-3">
-								<input
-									type="date"
-									value={customDate}
-									onChange={(event) => setCustomDate(event.target.value)}
-									aria-label="Custom expiry date"
-									class={cn(
-										"rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
-										adminDark
-											? "border-white/10 bg-slate-900/70 text-white focus:border-indigo-400"
-											: "border-slate-200 bg-white text-slate-900 focus:border-indigo-400",
-									)}
-								/>
-							</div>
+							<input
+								type="date"
+								value={customDate}
+								onChange={(e) => setCustomDate(e.target.value)}
+								aria-label="Custom expiry date"
+								class="mt-3 rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500/40"
+							/>
 						)}
 						<button
 							type="button"
 							onClick={issueToken}
-							disabled={issuedBusy || !pickedBuyer || !newLabel.trim()}
-							class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-400 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+							disabled={issuedBusy || !pickedAccount || !newLabel.trim()}
+							class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#a855f7] to-[#d946ef] px-5 py-2.5 text-sm font-semibold text-[#f4eeff] shadow-[0_0_24px_-10px_rgba(168,85,247,0.55)] transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
 						>
 							{issuedBusy ? (
-								<ThreeDot variant="bounce" color="#6366f1" size="small" text="" textColor="" />
+								<ThreeDot variant="bounce" color="#a855f7" size="small" text="" textColor="" />
 							) : (
 								<KeyRound class="h-4 w-4" />
 							)}
@@ -824,596 +434,261 @@ export function AdminAISection({ activeCategory, adminDark }) {
 						</button>
 					</div>
 
-					{/* The token is shown exactly once, right after issue. */}
-					{issuedToken && (
-						<div
-							class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-							role="dialog"
-							aria-modal="true"
-							aria-label="Support token issued"
-						>
-							<div
-								class={cn(
-									"w-full max-w-lg rounded-3xl border p-6",
-									adminDark
-										? "border-white/10 bg-slate-900 text-white"
-										: "border-slate-200 bg-white text-slate-900",
-								)}
-							>
-								<h3 class="text-lg font-semibold">Token issued</h3>
-								<p class="mt-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-300">
-									This token will not be shown again. Store it somewhere safe.
-								</p>
-								<div class="mt-4 flex items-stretch gap-2">
-									<code
-										class={cn(
-											"flex-1 select-all break-all rounded-2xl border px-4 py-3 font-mono text-xs leading-5",
-											adminDark
-												? "border-white/10 bg-slate-950 text-emerald-300"
-												: "border-slate-200 bg-slate-50 text-emerald-700",
-										)}
-									>
-										{issuedToken.token}
-									</code>
-									<button
-										type="button"
-										onClick={copyIssuedToken}
-										class="flex items-center gap-1.5 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
-									>
-										{tokenCopied ? <Check class="h-4 w-4" /> : <Copy class="h-4 w-4" />}
-										{tokenCopied ? "Copied" : "Copy"}
-									</button>
-								</div>
-								<div class="mt-4 flex justify-end">
-									<button
-										type="button"
-										onClick={() => setIssuedToken(null)}
-										class="rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-400 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
-									>
-										Done
-									</button>
-								</div>
-							</div>
-						</div>
-					)}
-
-					<div
-						class={cn(
-							"overflow-x-auto rounded-3xl border",
-							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
-						)}
-					>
-						<div class="border-b border-slate-200/10 px-6 py-4">
-							<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
-								Issued tokens ({tokens.length})
-							</h3>
+					{/* Issued tokens card */}
+					<div class={cn(PANEL, "flex flex-col")}>
+						<div class="mb-3 border-b border-white/5 pb-3">
+							<h3 class="font-semibold text-[#f4eeff]">Issued tokens ({tokens.length})</h3>
 						</div>
 						{tokensLoading ? (
-							<div class="flex justify-center px-6 py-12">
-								<Mosaic
-									color="#6366f1"
-									size="large"
-									style={{ fontSize: "40px" }}
-									text=""
-									textColor=""
-								/>
+							<div class="flex justify-center py-10">
+								<ThreeDot variant="bounce" color="#a855f7" size="small" text="" textColor="" />
 							</div>
 						) : tokens.length === 0 ? (
-							<div class="px-6 py-12 text-center">
-								<KeyRound
-									class={cn(
-										"mx-auto h-12 w-12 mb-4",
-										adminDark ? "text-slate-600" : "text-slate-300",
-									)}
-								/>
-								<p class={adminDark ? "text-slate-400" : "text-slate-500"}>No tokens issued yet</p>
-							</div>
+							<p class="py-10 text-center text-sm text-slate-400">No tokens issued yet</p>
 						) : (
-							<table class="min-w-full text-sm">
-								<thead>
-									<tr class={cn("text-left", adminDark ? "text-slate-400" : "text-slate-500")}>
-										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
-											Account
-										</th>
-										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Label</th>
-										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
-											Created
-										</th>
-										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
-											Last used
-										</th>
-										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Expiry</th>
-										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Status</th>
-										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider" />
-									</tr>
-								</thead>
-								<tbody class={cn("divide-y", adminDark ? "divide-white/5" : "divide-slate-100")}>
-									{tokens.map((row) => {
-										const revoked = Boolean(row.revoked_at);
-										const expired = row.expires_at
-											? new Date(row.expires_at).getTime() <= Date.now()
-											: false;
-										const status = revoked ? "Revoked" : expired ? "Expired" : "Active";
-										const statusClass = revoked
-											? "border-rose-500/30 bg-rose-500/10 text-rose-400"
-											: expired
-												? "border-amber-500/30 bg-amber-500/10 text-amber-400"
-												: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400";
-										return (
-											<tr key={row.id}>
-												<td class="px-6 py-3">
-													<span
-														class={cn(
-															"block font-medium",
-															adminDark ? "text-slate-100" : "text-slate-800",
-														)}
-													>
-														{row.buyer?.name || row.buyer?.email || row.buyer_id}
-													</span>
-													<span class="block text-xs text-slate-500">{row.buyer?.email}</span>
-												</td>
-												<td class="px-6 py-3">{row.label}</td>
-												<td class="px-6 py-3 whitespace-nowrap">
-													{formatTokenDate(row.created_at)}
-												</td>
-												<td class="px-6 py-3 whitespace-nowrap">
-													{row.last_used_at ? formatTokenDate(row.last_used_at) : "—"}
-												</td>
-												<td class="px-6 py-3 whitespace-nowrap">
-													{row.expires_at ? formatTokenDate(row.expires_at) : "Never"}
-												</td>
-												<td class="px-6 py-3">
-													<span
-														class={cn(
-															"inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium",
-															statusClass,
-														)}
-													>
-														{status}
-													</span>
-												</td>
-												<td class="px-6 py-3 text-right">
-													{!revoked && (
-														<button
-															type="button"
-															onClick={() => revokeToken(row.id)}
-															class="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-400 transition-all hover:bg-rose-500/20"
-														>
-															<Trash2 class="h-3.5 w-3.5" />
-															Revoke
-														</button>
+							<ul class="max-h-96 space-y-2 overflow-y-auto pr-1">
+								{tokens.map((row) => {
+									const revoked = Boolean(row.revoked_at);
+									const expired = row.expires_at
+										? new Date(row.expires_at).getTime() <= Date.now()
+										: false;
+									const active = !(revoked || expired);
+									const status = revoked ? "Revoked" : expired ? "Expired" : "Active";
+									return (
+										<li
+											key={row.id}
+											class="flex items-center justify-between gap-3 rounded-2xl border border-white/5 bg-[#0b0714]/50 px-3 py-2.5"
+										>
+											<div class="min-w-0 flex-1">
+												<p class="truncate text-xs font-medium text-slate-100">
+													{row.buyer?.name || row.buyer?.email || row.buyer_id}
+												</p>
+												<p class="truncate text-[10px] text-slate-500">
+													{row.label} · {formatDate(row.created_at)} ·{" "}
+													{row.expires_at ? `exp ${formatDate(row.expires_at)}` : "never expires"}
+												</p>
+											</div>
+											<div class="flex shrink-0 items-center gap-2">
+												<span
+													class={cn(
+														"rounded-full border px-2 py-0.5 text-[10px] font-medium",
+														revoked
+															? "border-red-500/30 bg-red-500/10 text-red-400"
+															: expired
+																? "border-amber-500/30 bg-amber-500/10 text-amber-400"
+																: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400",
 													)}
-												</td>
-											</tr>
-										);
-									})}
-								</tbody>
-							</table>
+												>
+													{status}
+												</span>
+												{active && (
+													<button
+														type="button"
+														onClick={() => revokeToken(row.id)}
+														aria-label="Revoke token"
+														class="rounded-lg border border-red-500/30 bg-red-500/10 p-1.5 text-red-400 transition-all hover:bg-red-500/20"
+													>
+														<Trash2 class="h-3.5 w-3.5" />
+													</button>
+												)}
+											</div>
+										</li>
+									);
+								})}
+							</ul>
 						)}
 					</div>
 				</div>
-			) : activeTab === "models-admin" ? (
-				<div class="space-y-6">
-					<div
-						class={cn(
-							"rounded-3xl border p-6",
-							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
-						)}
-					>
-						<div class="mb-4 flex flex-wrap items-center justify-between gap-4">
-							<div class="flex flex-wrap items-center gap-2">
-								<ListChecks class="h-5 w-5 text-indigo-400" />
-								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
-									Investigation Models
-								</h3>
-								{modelsAdmin?.catalogStale && (
-									<span class="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-0.5 text-xs text-yellow-300">
-										stale catalog
-									</span>
-								)}
-							</div>
-							<button
-								type="button"
-								onClick={() => fetchModelsAdmin(true)}
-								disabled={modelsAdminLoading}
-								class="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
-							>
-								<RefreshCw class={cn("h-3.5 w-3.5", modelsAdminLoading && "animate-spin")} />
-								Refresh
-							</button>
+			)}
+
+			{/* Investigation Models */}
+			{activeTab === "models" && (
+				<div class={cn(PANEL)}>
+					<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+						<div class="flex flex-wrap items-center gap-2">
+							<ListChecks class="h-5 w-5 text-purple-400" />
+							<h3 class="font-semibold text-[#f4eeff]">Investigation Models</h3>
+							{modelsAdmin?.catalogStale && (
+								<span class="rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-0.5 text-xs text-amber-300">
+									stale catalog
+								</span>
+							)}
 						</div>
-						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
-							Owner-controlled. Free OpenCode models only.
-						</p>
+						<button
+							type="button"
+							onClick={() => fetchModelsAdmin(true)}
+							disabled={modelsAdminLoading}
+							class="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 transition-all hover:text-white disabled:opacity-50"
+						>
+							<RefreshCw class={cn("h-3.5 w-3.5", modelsAdminLoading && "animate-spin")} />
+							Refresh
+						</button>
+					</div>
+					<p class="mb-4 text-xs text-slate-400">
+						Owner-controlled. Free OpenCode models only; iceman-free is permanently excluded.
+					</p>
 
-						{modelsAdminError && (
-							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
-								<AlertCircle class="h-4 w-4" />
-								{modelsAdminError}
-							</div>
-						)}
-						{modelsAdminNotice && (
-							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm text-green-400">
-								<CheckCircle class="h-4 w-4" />
-								{modelsAdminNotice}
-							</div>
-						)}
-
-						<div class="space-y-2">
-							{(modelsAdmin?.catalog ?? []).length === 0 && !modelsAdminLoading ? (
-								<p class={cn("text-sm", adminDark ? "text-slate-500" : "text-slate-400")}>
-									The live catalog is unavailable — the persisted allowlist is kept as-is.
-								</p>
-							) : null}
-							{(modelsAdmin?.catalog ?? []).map((model) => (
-								<label
-									key={model.id}
-									class={cn(
-										"flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition-all",
-										adminDark
-											? "border-white/10 hover:border-white/20"
-											: "border-slate-200 hover:border-slate-300",
-									)}
-								>
-									<input
-										type="checkbox"
-										checked={modelsAdmin?.allowed.includes(model.id) ?? false}
-										onChange={() => toggleAllowedModel(model.id)}
-										disabled={modelsAdminSaving}
-										class="h-4 w-4 accent-indigo-500"
-										aria-label={`Allow ${model.id}`}
-									/>
-									<span
-										class={cn(
-											"min-w-0 flex-1 font-mono text-sm",
-											adminDark ? "text-slate-100" : "text-slate-800",
-										)}
-									>
-										{model.id}
-									</span>
-									<span class={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
-										{model.ownedBy ?? model.providerID}
-									</span>
-								</label>
-							))}
+					{modelsAdminError && (
+						<div class="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+							<AlertCircle class="h-4 w-4" />
+							{modelsAdminError}
 						</div>
+					)}
+					{modelsAdminNotice && (
+						<div class="mb-3 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400">
+							<CheckCircle class="h-4 w-4" />
+							{modelsAdminNotice}
+						</div>
+					)}
 
-						{/* Allowed but not in the catalog (e.g. catalog down) — shown so the
-						    allowlist is never silently truncated. */}
-						{(modelsAdmin?.allowed ?? [])
-							.filter((id) => !(modelsAdmin?.catalog ?? []).some((m) => m.id === id))
-							.map((id) => (
-								<div
-									key={id}
-									class={cn(
-										"mt-2 flex items-center gap-3 rounded-2xl border border-dashed px-4 py-3 text-xs",
-										adminDark
-											? "border-white/15 text-slate-400"
-											: "border-slate-300 text-slate-500",
-									)}
-								>
-									<span class="font-mono">{id}</span>
-									<span class="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-yellow-300">
-										persisted
-									</span>
-								</div>
-							))}
-
-						<div class="mt-4 grid gap-4 sm:grid-cols-2">
-							<div>
-								<label
-									class={cn(
-										"mb-1.5 block text-sm font-medium",
-										adminDark ? "text-slate-300" : "text-slate-700",
-									)}
-									for="investigation-default-model"
-								>
-									Default model
-								</label>
-								<select
-									id="investigation-default-model"
-									value={modelsAdmin?.default ?? ""}
-									onChange={(event) =>
-										setModelsAdmin((prev) =>
-											prev ? { ...prev, default: event.target.value } : prev,
-										)
-									}
-									disabled={modelsAdminSaving || (modelsAdmin?.allowed.length ?? 0) === 0}
-									aria-label="Default model"
-									class={cn(
-										"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
-										adminDark
-											? "border-white/10 bg-slate-900/70 text-white focus:border-indigo-400"
-											: "border-slate-200 bg-white text-slate-900 focus:border-indigo-400",
-									)}
-								>
-									{(modelsAdmin?.allowed ?? []).map((id) => (
-										<option key={id} value={id}>
-											{id}
-										</option>
-									))}
-								</select>
-							</div>
-
-							<div class="flex items-end">
-								<div
-									class={cn(
-										"flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3",
-										adminDark ? "border-white/10" : "border-slate-200",
-									)}
-								>
-									<div class="min-w-0">
-										<p
+					{modelsAdminLoading && !modelsAdmin ? (
+						<div class="flex justify-center py-10">
+							<ThreeDot variant="bounce" color="#a855f7" size="small" text="" textColor="" />
+						</div>
+					) : (
+						<>
+							<div class="space-y-2">
+								{(modelsAdmin?.catalog ?? []).map((model) => {
+									const checked = modelsAdmin?.allowed.includes(model.id) ?? false;
+									return (
+										<label
+											key={model.id}
 											class={cn(
-												"text-sm font-medium",
-												adminDark ? "text-slate-200" : "text-slate-700",
+												"flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-2.5 transition-all",
+												checked
+													? "border-purple-500/30 bg-purple-500/5"
+													: "border-white/5 hover:border-white/15",
 											)}
 										>
-											Buyers can change model per message
-										</p>
-										<p class={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
-											Exposes the picker in the buyer's composer
-										</p>
-									</div>
-									<button
-										type="button"
-										onClick={() =>
-											setModelsAdmin((prev) =>
-												prev ? { ...prev, buyerSelectEnabled: !prev.buyerSelectEnabled } : prev,
+											<input
+												type="checkbox"
+												checked={checked}
+												onChange={() => toggleAllowedModel(model.id)}
+												disabled={modelsAdminSaving}
+												class="h-4 w-4 accent-purple-500"
+												aria-label={`Allow ${model.id}`}
+											/>
+											<span class="min-w-0 flex-1 font-mono text-xs text-slate-100">
+												{model.id}
+											</span>
+											<span class="shrink-0 text-[10px] uppercase tracking-wider text-slate-500">
+												{model.ownedBy ?? model.providerID}
+											</span>
+										</label>
+									);
+								})}
+								{(modelsAdmin?.allowed ?? [])
+									.filter((id) => !(modelsAdmin?.catalog ?? []).some((m) => m.id === id))
+									.map((id) => (
+										<div
+											key={id}
+											class="flex items-center gap-3 rounded-2xl border border-dashed border-amber-500/30 bg-amber-500/5 px-4 py-2.5 text-xs text-amber-200"
+										>
+											<span class="font-mono">{id}</span>
+											<span class="ml-auto rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wide">
+												persisted
+											</span>
+										</div>
+									))}
+							</div>
+
+							<div class="mt-4 flex flex-wrap items-end justify-between gap-4">
+								<label class="block">
+									<span class="mb-1.5 block text-xs font-medium text-slate-400">Default model</span>
+									<select
+										value={modelsAdmin?.default ?? ""}
+										onChange={(e) =>
+											setModelsAdmin((p) => (p ? { ...p, default: e.target.value } : p))
+										}
+										disabled={modelsAdminSaving || (modelsAdmin?.allowed.length ?? 0) === 0}
+										class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500/40"
+									>
+										{(modelsAdmin?.allowed ?? []).map((id) => (
+											<option key={id} value={id}>
+												{id}
+											</option>
+										))}
+									</select>
+								</label>
+
+								<label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-purple-400/10 bg-[#0b0714]/50 px-4 py-2.5">
+									<input
+										type="checkbox"
+										checked={modelsAdmin?.buyerSelectEnabled ?? true}
+										onChange={() =>
+											setModelsAdmin((p) =>
+												p ? { ...p, buyerSelectEnabled: !p.buyerSelectEnabled } : p,
 											)
 										}
 										disabled={modelsAdminSaving}
+										class="h-4 w-4 accent-purple-500"
 										aria-label="Buyers can change model per message"
-										aria-pressed={modelsAdmin?.buyerSelectEnabled ?? true}
-										class="shrink-0 text-indigo-400 disabled:opacity-50"
-									>
-										{(modelsAdmin?.buyerSelectEnabled ?? true) ? (
-											<ToggleRight class="h-7 w-7" />
-										) : (
-											<ToggleLeft class="h-7 w-7" />
-										)}
-									</button>
-								</div>
+									/>
+									<span class="text-xs leading-5 text-slate-300">
+										Buyers can change model per message
+									</span>
+								</label>
 							</div>
-						</div>
 
-						<div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-							<p class={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
-								iceman-free is permanently excluded (trains on prompts).
-							</p>
+							<div class="mt-4 flex justify-end">
+								<button
+									type="button"
+									onClick={saveModelsAdmin}
+									disabled={modelsAdminSaving || !modelsAdmin}
+									class="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#a855f7] to-[#d946ef] px-5 py-2.5 text-sm font-semibold text-[#f4eeff] shadow-[0_0_24px_-10px_rgba(168,85,247,0.55)] transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+								>
+									{modelsAdminSaving ? (
+										<ThreeDot variant="bounce" color="#a855f7" size="small" text="" textColor="" />
+									) : (
+										<Save class="h-4 w-4" />
+									)}
+									{modelsAdminSaving ? "Saving…" : "Save"}
+								</button>
+							</div>
+						</>
+					)}
+				</div>
+			)}
+
+			{/* Issued token modal */}
+			{issuedToken && (
+				<div
+					role="dialog"
+					aria-modal="true"
+					aria-label="Support token issued"
+					class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+				>
+					<div class="w-full max-w-lg rounded-3xl border border-purple-400/20 bg-[#151020] p-6 text-[#f4eeff] shadow-2xl">
+						<div class="mb-3 flex items-center gap-2">
+							<KeyRound class="h-5 w-5 text-purple-400" />
+							<h3 class="text-lg font-semibold">Support token issued</h3>
+						</div>
+						<p class="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-300">
+							Store it now — it will not be shown again.
+						</p>
+						<code class="mt-3 block break-all rounded-2xl border border-purple-400/10 bg-[#0b0714] px-4 py-3 font-mono text-xs leading-6 text-purple-200">
+							{issuedToken.token}
+						</code>
+						<div class="mt-4 flex items-center justify-between gap-3">
 							<button
 								type="button"
-								onClick={saveModelsAdmin}
-								disabled={modelsAdminSaving || !modelsAdmin}
-								class="flex items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-5 py-2.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+								onClick={copyIssuedToken}
+								class="flex items-center gap-2 rounded-2xl border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-xs font-medium text-purple-300 transition-all hover:bg-purple-500/20"
 							>
-								{modelsAdminSaving ? (
-									<ThreeDot variant="bounce" color="#6366f1" size="small" text="" textColor="" />
-								) : (
-									<Save class="h-4 w-4" />
-								)}
-								{modelsAdminSaving ? "Saving…" : "Save"}
+								{tokenCopied ? <CheckCircle class="h-4 w-4" /> : <Copy class="h-4 w-4" />}
+								{tokenCopied ? "Copied" : "Copy"}
+							</button>
+							<button
+								type="button"
+								onClick={() => setIssuedToken(null)}
+								class="rounded-2xl bg-gradient-to-r from-[#a855f7] to-[#d946ef] px-5 py-2 text-xs font-semibold text-[#f4eeff] transition-all hover:brightness-110"
+							>
+								Done
 							</button>
 						</div>
 					</div>
-				</div>
-			) : (
-				<div class="space-y-4">
-					{/* Rules List */}
-					<div
-						class={cn(
-							"rounded-3xl border",
-							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
-						)}
-					>
-						<div class="border-b border-slate-200/10 px-6 py-4">
-							<div class="flex items-center justify-between">
-								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
-									{activeTab === "global" ? "Global Rules" : "Small Talk Rules"} (
-									{currentRules.length})
-								</h3>
-								<button
-									type="button"
-									onClick={() => setShowAddForm(!showAddForm)}
-									class="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
-								>
-									<Plus class="h-4 w-4" />
-									Add Rule
-								</button>
-							</div>
-						</div>
-
-						{currentRules.length === 0 ? (
-							<div class="px-6 py-12 text-center">
-								<Bot
-									class={cn(
-										"mx-auto h-12 w-12 mb-4",
-										adminDark ? "text-slate-600" : "text-slate-300",
-									)}
-								/>
-								<p class={adminDark ? "text-slate-400" : "text-slate-500"}>
-									No rules configured yet
-								</p>
-							</div>
-						) : (
-							<div class="divide-y divide-slate-200/10">
-								{currentRules.map((rule) => (
-									<div key={rule.id} class="px-6 py-4 hover:bg-white/5">
-										<div class="flex items-start justify-between gap-4">
-											<div class="min-w-0 flex-1">
-												<div class="flex items-center gap-2 flex-wrap">
-													<span
-														class={cn(
-															"text-sm font-medium",
-															adminDark ? "text-white" : "text-slate-900",
-														)}
-													>
-														{rule.source}
-													</span>
-												</div>
-												<div class="mt-2 flex items-center gap-2 flex-wrap">
-													{rule.keywords?.map((kw, idx) => (
-														<span
-															key={idx}
-															class={cn(
-																"rounded-full border px-2 py-0.5 text-xs",
-																adminDark
-																	? "border-indigo-500/30 bg-indigo-500/10 text-indigo-300"
-																	: "border-indigo-200 bg-indigo-50 text-indigo-600",
-															)}
-														>
-															{kw}
-														</span>
-													))}
-												</div>
-												<p
-													class={cn(
-														"mt-2 text-sm",
-														adminDark ? "text-slate-300" : "text-slate-600",
-													)}
-												>
-													{rule.response}
-												</p>
-											</div>
-											<button
-												type="button"
-												onClick={() => deleteRule(rule.id)}
-												class="shrink-0 rounded-xl border border-red-500/30 bg-red-500/10 p-2 text-red-400 transition-all hover:bg-red-500/20"
-											>
-												<Trash2 class="h-4 w-4" />
-											</button>
-										</div>
-									</div>
-								))}
-							</div>
-						)}
-					</div>
-
-					{/* Add Rule Form */}
-					{showAddForm && (
-						<div
-							class={cn(
-								"rounded-3xl border p-6",
-								adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
-							)}
-						>
-							<h3 class={cn("mb-4 font-semibold", adminDark ? "text-white" : "text-slate-900")}>
-								Add New Rule
-							</h3>
-							<div class="space-y-4">
-								<div>
-									<label
-										class={cn(
-											"mb-1.5 block text-sm font-medium",
-											adminDark ? "text-slate-300" : "text-slate-700",
-										)}
-									>
-										Source (optional)
-									</label>
-									<input
-										type="text"
-										value={newRule.source}
-										onChange={(e) =>
-											setNewRule((prev) => ({
-												...prev,
-												source: e.target.value,
-											}))
-										}
-										placeholder="e.g., custom_rule_name"
-										class={cn(
-											"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none",
-											adminDark
-												? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
-												: "border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500",
-										)}
-									/>
-								</div>
-								<div>
-									<label
-										class={cn(
-											"mb-1.5 block text-sm font-medium",
-											adminDark ? "text-slate-300" : "text-slate-700",
-										)}
-									>
-										Keywords (comma separated)
-									</label>
-									<input
-										type="text"
-										value={newRule.keywords}
-										onChange={(e) =>
-											setNewRule((prev) => ({
-												...prev,
-												keywords: e.target.value,
-											}))
-										}
-										placeholder="e.g., setup, onboarding, profile"
-										class={cn(
-											"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none",
-											adminDark
-												? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
-												: "border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500",
-										)}
-									/>
-								</div>
-								<div>
-									<label
-										class={cn(
-											"mb-1.5 block text-sm font-medium",
-											adminDark ? "text-slate-300" : "text-slate-700",
-										)}
-									>
-										Response
-									</label>
-									<textarea
-										value={newRule.response}
-										onChange={(e) =>
-											setNewRule((prev) => ({
-												...prev,
-												response: e.target.value,
-											}))
-										}
-										rows={3}
-										placeholder="The response the AI should give when keywords match"
-										class={cn(
-											"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none resize-none",
-											adminDark
-												? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
-												: "border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-indigo-500",
-										)}
-									/>
-								</div>
-								<div class="flex gap-2">
-									<button
-										type="button"
-										onClick={addRule}
-										class="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
-									>
-										<Plus class="h-4 w-4" />
-										Add Rule
-									</button>
-									<button
-										type="button"
-										onClick={() => {
-											setShowAddForm(false);
-											setNewRule({ source: "", keywords: "", response: "" });
-										}}
-										class={cn(
-											"rounded-xl border px-4 py-2 text-sm font-medium transition-all",
-											adminDark
-												? "border-slate-700 text-slate-400 hover:text-white"
-												: "border-slate-200 text-slate-600 hover:text-slate-900",
-										)}
-									>
-										Cancel
-									</button>
-								</div>
-							</div>
-						</div>
-					)}
 				</div>
 			)}
 		</div>
 	);
 }
-
-export default AdminAISection;
