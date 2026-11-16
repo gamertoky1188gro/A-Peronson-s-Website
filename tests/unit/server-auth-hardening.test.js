@@ -61,7 +61,7 @@ describe("register orphan recovery (server/controllers/authController.js)", () =
 		profile: { country: "Bangladesh", position: "Owner" },
 	});
 
-	test("someone who only knows the email gets 409, not the account's token", async () => {
+	it("someone who only knows the email gets 409, not the account's token", async () => {
 		const res = mockRes();
 		await register({ body: body("wrong-password-1") }, res);
 		expect(verifyPassword).toHaveBeenCalled();
@@ -69,7 +69,7 @@ describe("register orphan recovery (server/controllers/authController.js)", () =
 		expect(res.body.token).toBeUndefined();
 	});
 
-	test("the account owner (correct password) can still resume an orphaned signup", async () => {
+	it("the account owner (correct password) can still resume an orphaned signup", async () => {
 		verifyPassword.mockImplementation(async () => true);
 		const res = mockRes();
 		await register({ body: body("right-password-1") }, res);
@@ -78,14 +78,14 @@ describe("register orphan recovery (server/controllers/authController.js)", () =
 		expect(typeof res.body.token).toBe("string");
 	});
 
-	test("weak passwords are rejected by the API, not only by the form", async () => {
+	it("weak passwords are rejected by the API, not only by the form", async () => {
 		const res = mockRes();
 		await register({ body: { ...body("short1"), email: "new@co.example" } }, res);
 		expect(res.statusCode).toBe(400);
-		expect(res.body.error).toMatch(/at least 8 characters/);
+		expect(res.body.error).toMatch(/at least 8 characters/u);
 	});
 
-	test("invalid company facts are rejected before any account work", async () => {
+	it("invalid company facts are rejected before any account work", async () => {
 		const res = mockRes();
 		await register(
 			{
@@ -103,7 +103,7 @@ describe("register orphan recovery (server/controllers/authController.js)", () =
 });
 
 describe("API error handler (server/middleware/errorHandler.js)", () => {
-	test("expected 4xx errors keep their status and message; others become a generic 500", async () => {
+	it("expected 4xx errors keep their status and message; others become a generic 500", async () => {
 		const { errorHandler } = await import("../../server/middleware/errorHandler.js");
 		const conflict = Object.assign(new Error("Email already used"), { status: 409, code: "DUP" });
 		let res = mockRes();
@@ -148,7 +148,7 @@ describe("crash reporter (server/utils/crashReporter.js)", () => {
 		fs.rmSync(dir, { recursive: true, force: true });
 	});
 
-	test("a crash record is diagnostic and secret-free", () => {
+	it("a crash record is diagnostic and secret-free", () => {
 		process.env.TEST_FAKE_SECRET = "s3cr3t-value-123";
 		const err = new Error(
 			"boom postgresql://user:pw@db.example:5432/x Bearer abc.def token=s3cr3t-value-123",
@@ -167,7 +167,7 @@ describe("crash reporter (server/utils/crashReporter.js)", () => {
 		expect(text).toContain("[REDACTED]");
 	});
 
-	test("records are written synchronously, once per error, and rotated", () => {
+	it("records are written synchronously, once per error, and rotated", () => {
 		for (let i = 0; i < 6; i += 1) {
 			crash.writeCrashSync(
 				crash.buildCrashRecord({ type: "test", error: new Error(`e${i} ${"x".repeat(400)}`) }),
@@ -175,13 +175,41 @@ describe("crash reporter (server/utils/crashReporter.js)", () => {
 		}
 		const files = fs.readdirSync(dir);
 		expect(files).toContain("crash-history.jsonl");
-		expect(files.some((name) => /^crash-\d{4}-\d{2}-\d{2}\.log$/.test(name))).toBe(true);
-		// rotation keeps at most CRASH_LOG_MAX_FILES rotated copies per kind
-		expect(files.filter((name) => name.startsWith("crash-history.")).length).toBeLessThanOrEqual(2);
+		expect(files.some((name) => /^crash-\d{4}-\d{2}-\d{2}\.log$/u.test(name))).toBe(true);
+		// rotation keeps at most CRASH_LOG_MAX_FILES ROTATED copies per kind.
+		// The live file is not a rotated copy: it is the one being written,
+		// and it is never a prune candidate (its name matches the rotation
+		// prefix, so counting it here would also make the live file compete
+		// for the budget - and lose the history when its mtime ties).
+		const rotatedHistory = files.filter(
+			(name) => name.startsWith("crash-history.") && name !== "crash-history.jsonl",
+		);
+		expect(rotatedHistory.length).toBeLessThanOrEqual(2);
+		const rotatedDaily = files.filter(
+			(name) =>
+				/^crash-\d{4}-\d{2}-\d{2}\./u.test(name) && !/^crash-\d{4}-\d{2}-\d{2}\.log$/u.test(name),
+		);
+		expect(rotatedDaily.length).toBeLessThanOrEqual(2);
 		expect(fs.writeSync).toHaveBeenCalledWith(2, expect.stringContaining('"event":"crash"'));
 	});
 
-	test("an unwritable log directory degrades to stderr instead of throwing", () => {
+	it("the live history file is never pruned away, so no crash record is lost", () => {
+		// The regression: the live file's name matches the rotation prefix
+		// ("crash-history.jsonl" starts with "crash-history."), so it used to
+		// compete for the prune budget with the rotated copies - and when its
+		// mtime tied with one of them it was deleted, taking the history with
+		// it. Every record has to survive.
+		for (let i = 0; i < 6; i += 1) {
+			crash.writeCrashSync(crash.buildCrashRecord({ type: "test", error: new Error(`kept-${i}`) }));
+		}
+		// The live file holds the newest record; the older ones were rotated
+		// away by the SIZE budget (every record is larger than
+		// CRASH_LOG_MAX_SIZE_MB here), which is the designed behaviour.
+		const history = fs.readFileSync(path.join(dir, "crash-history.jsonl"), "utf8");
+		expect(history).toContain("kept-5");
+	});
+
+	it("an unwritable log directory degrades to stderr instead of throwing", () => {
 		process.env.CRASH_LOG_DIR = path.join(dir, "file-not-dir");
 		fs.writeFileSync(process.env.CRASH_LOG_DIR, "");
 		const result = crash.writeCrashSync(

@@ -48,7 +48,7 @@ export function crashConfig() {
 
 // --- secret redaction -------------------------------------------------------
 
-const SECRET_ENV_NAME = /(SECRET|PASSWORD|TOKEN|API_KEY|PRIVATE|DATABASE_URL|_CODE|CREDENTIAL)/i;
+const SECRET_ENV_NAME = /(SECRET|PASSWORD|TOKEN|API_KEY|PRIVATE|DATABASE_URL|_CODE|CREDENTIAL)/iu;
 
 function secretValues() {
 	const values = [];
@@ -67,10 +67,13 @@ export function redact(text) {
 		out = out.split(value).join("[REDACTED]");
 	}
 	return out
-		.replace(/([a-z][a-z0-9+.-]*:\/\/)[^\s/@:]+:[^\s/@]+@/gi, "$1[REDACTED]@")
-		.replace(/(bearer\s+)[a-z0-9._~+/-]+=*/gi, "$1[REDACTED]")
-		.replace(/\beyJ[a-zA-Z0-9_-]{8,}\.[a-zA-Z0-9_-]{8,}\.[a-zA-Z0-9_-]+/g, "[REDACTED_JWT]")
-		.replace(/((?:password|passwd|secret|token|api[_-]?key)["'\s:=]+)[^\s"',;]+/gi, "$1[REDACTED]");
+		.replace(/([a-z][a-z0-9+.-]*:\/\/)[^\s/@:]+:[^\s/@]+@/giu, "$1[REDACTED]@")
+		.replace(/(bearer\s+)[a-z0-9._~+/-]+=*/giu, "$1[REDACTED]")
+		.replace(/\beyJ[a-zA-Z0-9_-]{8,}\.[a-zA-Z0-9_-]{8,}\.[a-zA-Z0-9_-]+/gu, "[REDACTED_JWT]")
+		.replace(
+			/((?:password|passwd|secret|token|api[_-]?key)["'\s:=]+)[^\s"',;]+/giu,
+			"$1[REDACTED]",
+		);
 }
 
 // --- record -----------------------------------------------------------------
@@ -169,11 +172,25 @@ export function buildCrashRecord({
 
 // --- synchronous file sink --------------------------------------------------
 
-function pruneOldFiles(dir, prefix, keep) {
+/**
+ * Keep the newest `keep` files that start with `prefix`.
+ *
+ * The files that are being written RIGHT NOW are excluded from the
+ * candidates: the live file's name matches the rotation prefix (the history
+ * file is `crash-history.jsonl` and the prefix is `crash-history.`), so
+ * without the exclusion the logger could prune the very file it is
+ * appending to - and lose the crash history it was asked to keep.
+ *
+ * @param {string} dir
+ * @param {string} prefix
+ * @param {number} keep
+ * @param {Set<string>} [active] The names that are being written now.
+ */
+function pruneOldFiles(dir, prefix, keep, active = new Set()) {
 	try {
 		const files = fs
 			.readdirSync(dir)
-			.filter((name) => name.startsWith(prefix))
+			.filter((name) => name.startsWith(prefix) && !active.has(name))
 			.map((name) => ({ name, mtime: fs.statSync(path.join(dir, name)).mtimeMs }))
 			.sort((a, b) => b.mtime - a.mtime);
 		for (const file of files.slice(keep)) {
@@ -187,7 +204,7 @@ function pruneOldFiles(dir, prefix, keep) {
 function rotateIfLarge(filePath, maxBytes) {
 	try {
 		if (fs.statSync(filePath).size < maxBytes) return;
-		const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+		const stamp = new Date().toISOString().replace(/[:.]/gu, "-");
 		const ext = path.extname(filePath);
 		fs.renameSync(filePath, `${filePath.slice(0, -ext.length)}.${stamp}${ext}`);
 	} catch {
@@ -241,8 +258,12 @@ export function writeCrashSync(record, config = crashConfig()) {
 		rotateIfLarge(historyFile, config.maxFileBytes);
 		appendSync(dailyFile, humanBlock(record));
 		appendSync(historyFile, `${JSON.stringify(record)}\n`);
-		pruneOldFiles(config.dir, "crash-2", config.maxFiles);
-		pruneOldFiles(config.dir, "crash-history.", config.maxFiles);
+		// The two files that are being written now are never prune candidates.
+		const active = new Set([path.basename(dailyFile), path.basename(historyFile)]);
+		// The daily prefix is the DAY, not "crash-2": the year changes and the
+		// prefix has to keep matching.
+		pruneOldFiles(config.dir, `crash-${day}`, config.maxFiles, active);
+		pruneOldFiles(config.dir, "crash-history.", config.maxFiles, active);
 		result.file = dailyFile;
 	} catch (error) {
 		try {
@@ -272,7 +293,7 @@ export async function persistCrashRecord(record, config = crashConfig()) {
 				fatal: record.fatal,
 				error_name: record.error.name.slice(0, 200),
 				error_message: record.error.message.slice(0, 2000),
-				stack: record.error.stack.slice(0, 20000),
+				stack: record.error.stack.slice(0, 20_000),
 				exit_code: record.exit_code,
 				signal: record.signal,
 				environment: record.environment,
