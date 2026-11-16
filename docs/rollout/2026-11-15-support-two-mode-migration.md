@@ -362,3 +362,26 @@ wants it.
 - [ ] Owner has read this appendix.
 - [ ] Owner has run the Phase E canary (see `docs/rollout/2026-11-16-support-canary-runbook.md`) and recorded the result.
 - [ ] Owner decides whether investigations stay token-gated or open to everyone, and whether the report mail stays on.
+
+## Phase 9 — C.3/C.4 verified with a local browser (2026-11-16)
+
+The local playwright MCP reaches `127.0.0.1:4000`, which the remote browser
+could not. Screenshots were captured and the mobile/affordance behaviour was
+checked by hand:
+
+- `/support` at 1280px and 375px: nav collapses, hero stacks, the two mode cards
+  stack, tokens hint line renders.
+- `/admin` → AI Support at 1280px and 375px: full-width (no gap), the tabs wrap,
+  the investigation models list, per-agent pins and auto-routing rules all render.
+- The mobile hamburger next to the search bar slides the admin sidebar in and the
+  backdrop closes it.
+- Focus rings were added to the inputs that had `outline-none` (see the C.4 commit).
+
+Known cosmetic artifact (NOT fixed, owner decision): the support pages show a
+white band at the bottom of the page because the app shell forces
+`min-h-[125vh]` on non-feed routes, and the dark support surfaces do not fill
+it. That is the same artifact visible in the original screenshot. Fixing it
+means touching the global shell for every route.
+
+Still not verified: the support chat, the report preview and the submitted
+screen, because they need a real case, and the tablet breakpoint.

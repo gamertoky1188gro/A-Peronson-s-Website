@@ -111,8 +111,8 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 							aria-label="Investigation model"
 							className={`rounded-xl border px-3 py-1.5 text-xs outline-none transition disabled:cursor-not-allowed disabled:opacity-60 ${
 								darkMode
-									? "border-white/10 bg-slate-900/70 text-slate-100 focus:border-cyan-400"
-									: "border-slate-200 bg-white text-slate-800 focus:border-cyan-400"
+									? "border-white/10 bg-slate-900/70 text-slate-100 focus:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400/60"
+									: "border-slate-200 bg-white text-slate-800 focus:border-cyan-400 focus-visible:ring-2 focus-visible:ring-cyan-400/60"
 							}`}
 						>
 							{config.allowed.map((id) => (

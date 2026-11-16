@@ -159,7 +159,7 @@ export function Composer({
 						}
 					}}
 					onPaste={(event) => addFiles(event.clipboardData?.files)}
-					className="max-h-40 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-sm leading-6 text-[#f4eeff] outline-none placeholder:text-[#a99bbd]/60 disabled:cursor-not-allowed disabled:opacity-50"
+					className="max-h-40 min-h-[40px] flex-1 resize-none bg-transparent px-1 py-2 text-sm leading-6 text-[#f4eeff] outline-none placeholder:text-[#a99bbd]/60 focus:bg-white/5 focus:rounded-lg focus-visible:ring-2 focus-visible:ring-purple-500/60 disabled:cursor-not-allowed disabled:opacity-50"
 				/>
 
 				{sending ? (

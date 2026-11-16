@@ -61,7 +61,7 @@ const subtleText = "text-[11px] text-slate-400";
 const monoLine = "font-mono text-[10px] text-slate-400";
 
 function Empty({ children }) {
-	return <p class="text-[11px] text-slate-500">{children}</p>;
+	return <p class="text-[11px] text-slate-400">{children}</p>;
 }
 
 /** Overview: who, what, when, where in the pipeline. */
@@ -72,25 +72,25 @@ function OverviewPanel({ caseRow, clientUser, reportStatus, feedback = null }) {
 			<h3 class="text-sm font-semibold text-slate-100">{caseRow?.subject || "Support case"}</h3>
 			<div class="mt-3 grid grid-cols-1 gap-3 text-[11px] sm:grid-cols-2">
 				<div>
-					<p class="uppercase tracking-[0.18em] text-slate-500">Client</p>
+					<p class="uppercase tracking-[0.18em] text-slate-400">Client</p>
 					<p class="mt-1 text-slate-200">{clientName}</p>
 					{clientUser?.email && clientUser.name !== clientUser.email ? (
-						<p class="text-slate-500">{clientUser.email}</p>
+						<p class="text-slate-400">{clientUser.email}</p>
 					) : null}
 				</div>
 				<div>
-					<p class="uppercase tracking-[0.18em] text-slate-500">Case</p>
+					<p class="uppercase tracking-[0.18em] text-slate-400">Case</p>
 					<p class="mt-1 font-mono text-slate-200" title={caseRow?.id}>
 						{String(caseRow?.id || "--").slice(0, 12)}
 						{caseRow?.ticket_id ? ` · ticket ${caseRow.ticket_id}` : ""}
 					</p>
 				</div>
 				<div>
-					<p class="uppercase tracking-[0.18em] text-slate-500">Submitted</p>
+					<p class="uppercase tracking-[0.18em] text-slate-400">Submitted</p>
 					<p class="mt-1 tabular-nums text-slate-200">{formatStamp(caseRow?.created_at)}</p>
 				</div>
 				<div>
-					<p class="uppercase tracking-[0.18em] text-slate-500">Updated</p>
+					<p class="uppercase tracking-[0.18em] text-slate-400">Updated</p>
 					<p class="mt-1 tabular-nums text-slate-200">{formatStamp(caseRow?.updated_at)}</p>
 				</div>
 			</div>
@@ -324,7 +324,7 @@ function FindingsPanel({ investigations = EMPTY }) {
 								</div>
 							))}
 							{limitations.length > 0 ? (
-								<p class="mt-2 text-[11px] text-slate-500">
+								<p class="mt-2 text-[11px] text-slate-400">
 									Limitations: {limitations.join(" · ")}
 								</p>
 							) : null}
@@ -371,19 +371,19 @@ function ActivityPanel({ timeline = EMPTY }) {
 							<span class={`font-mono text-[10px] uppercase ${runStatusClass(run.status)}`}>
 								{run.status}
 							</span>
-							<span class="ml-auto font-mono text-[10px] text-slate-500">
+							<span class="ml-auto font-mono text-[10px] text-slate-400">
 								run {index + 1}
 								{run.attempt ? ` · attempt ${run.attempt}` : ""}
 							</span>
 						</header>
 						{run.startedAt ? (
-							<p class="mt-1 font-mono text-[10px] text-slate-500">
+							<p class="mt-1 font-mono text-[10px] text-slate-400">
 								{formatStamp(run.startedAt)}
 								{run.completedAt ? ` → ${formatStamp(run.completedAt)}` : ""}
 							</p>
 						) : null}
 						{run.calls.length === 0 ? (
-							<p class="mt-2 text-[11px] text-slate-500">No tool call was recorded.</p>
+							<p class="mt-2 text-[11px] text-slate-400">No tool call was recorded.</p>
 						) : (
 							<ol class="mt-2 space-y-1">
 								{run.calls.map((call, callIndex) => (
@@ -391,7 +391,7 @@ function ActivityPanel({ timeline = EMPTY }) {
 										key={call.key}
 										class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 rounded-lg border border-white/5 bg-black/20 px-3 py-1.5"
 									>
-										<span class="w-6 shrink-0 font-mono text-[10px] text-slate-500">
+										<span class="w-6 shrink-0 font-mono text-[10px] text-slate-400">
 											{callIndex + 1}.
 										</span>
 										<span class="font-mono text-[11px] text-slate-100">{call.tool}</span>
@@ -419,7 +419,7 @@ function EmailReportPanel({ caseRow, report, busy, onResendReport }) {
 		<div class={panelClasses}>
 			<div class="flex flex-wrap items-center justify-between gap-3">
 				<div>
-					<p class="uppercase tracking-[0.18em] text-slate-500">Report email</p>
+					<p class="uppercase tracking-[0.18em] text-slate-400">Report email</p>
 					<div class="mt-2 flex flex-wrap items-center gap-2">
 						<ReportStatusPill status={caseRow?.report_status} />
 						<span class={subtleText}>
@@ -441,7 +441,7 @@ function EmailReportPanel({ caseRow, report, busy, onResendReport }) {
 					{report}
 				</pre>
 			) : (
-				<p class="mt-4 border-t border-white/5 pt-4 text-[11px] text-slate-500">
+				<p class="mt-4 border-t border-white/5 pt-4 text-[11px] text-slate-400">
 					No report has been written yet.
 				</p>
 			)}

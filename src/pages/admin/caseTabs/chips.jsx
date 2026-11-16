@@ -25,7 +25,7 @@ export function PriorityChip({ priority }) {
 		.toLowerCase();
 	const tone = PRIORITY_CLASS[key];
 	if (!tone) {
-		return <span className="text-[11px] text-slate-500">—</span>;
+		return <span className="text-[11px] text-slate-400">—</span>;
 	}
 	return <span className={`${BASE} ${tone}`}>{key}</span>;
 }

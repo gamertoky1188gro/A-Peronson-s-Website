@@ -402,14 +402,14 @@ export function AdminAISection() {
 
 						<form onSubmit={searchAccounts} class="flex flex-wrap gap-2">
 							<div class="relative min-w-0 flex-1">
-								<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+								<Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
 								<input
 									type="text"
 									value={accountQuery}
 									onChange={(e) => setAccountQuery(e.target.value)}
 									placeholder="Search accounts by name or email…"
 									aria-label="Search accounts"
-									class="w-full rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition-all placeholder:text-slate-500 focus:border-purple-500/40"
+									class="w-full rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 py-2.5 pl-9 pr-3 text-sm text-white outline-none transition-all placeholder:text-slate-400 focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
 								/>
 							</div>
 							<button
@@ -438,7 +438,7 @@ export function AdminAISection() {
 											}}
 											class="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-purple-500/10"
 										>
-											<UserRound class="h-4 w-4 shrink-0 text-slate-500" />
+											<UserRound class="h-4 w-4 shrink-0 text-slate-400" />
 											<span class="min-w-0 flex-1 truncate text-sm text-slate-100">
 												{user.name || user.email}
 											</span>
@@ -474,13 +474,13 @@ export function AdminAISection() {
 								onChange={(e) => setNewLabel(e.target.value)}
 								placeholder="Label — e.g. Acme Corp"
 								aria-label="Token label"
-								class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none transition-all placeholder:text-slate-500 focus:border-purple-500/40"
+								class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none transition-all placeholder:text-slate-400 focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
 							/>
 							<select
 								value={newExpiry}
 								onChange={(e) => setNewExpiry(e.target.value)}
 								aria-label="Token expiry"
-								class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none transition-all focus:border-purple-500/40"
+								class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none transition-all focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
 							>
 								<option value="never">Never expires</option>
 								<option value="30d">Expires in 30 days</option>
@@ -494,7 +494,7 @@ export function AdminAISection() {
 								value={customDate}
 								onChange={(e) => setCustomDate(e.target.value)}
 								aria-label="Custom expiry date"
-								class="mt-3 rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500/40"
+								class="mt-3 rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
 							/>
 						)}
 						<button
@@ -541,7 +541,7 @@ export function AdminAISection() {
 												<p class="truncate text-xs font-medium text-slate-100">
 													{row.buyer?.name || row.buyer?.email || row.buyer_id}
 												</p>
-												<p class="truncate text-[10px] text-slate-500">
+												<p class="truncate text-[10px] text-slate-400">
 													{row.label} · {formatDate(row.created_at)} ·{" "}
 													{row.expires_at ? `exp ${formatDate(row.expires_at)}` : "never expires"}
 												</p>
@@ -606,7 +606,7 @@ export function AdminAISection() {
 						Owner-controlled. Free OpenCode models only; iceman-free is permanently excluded.
 					</p>
 					{modelsAdmin?.health?.windowDays ? (
-						<p class="mb-3 text-[11px] text-slate-500">
+						<p class="mb-3 text-[11px] text-slate-400">
 							Last {modelsAdmin.health.windowDays} days · {modelsAdmin.health.runs || 0}{" "}
 							investigation run{modelsAdmin.health.runs === 1 ? "" : "s"} recorded
 						</p>
@@ -655,7 +655,7 @@ export function AdminAISection() {
 											<span class="min-w-0 flex-1 font-mono text-xs text-slate-100">
 												{model.id}
 											</span>
-											<span class="shrink-0 text-[10px] uppercase tracking-wider text-slate-500">
+											<span class="shrink-0 text-[10px] uppercase tracking-wider text-slate-400">
 												{model.ownedBy ?? model.providerID}
 											</span>
 											{describeModelHealth(modelsAdmin?.health?.models?.[model.id]) ? (
@@ -686,7 +686,7 @@ export function AdminAISection() {
 
 							<div class="mt-4 rounded-2xl border border-purple-400/10 bg-[#0b0714]/40 p-4">
 								<p class="text-xs font-medium text-slate-300">Auto-routing rules</p>
-								<p class="mt-1 text-[11px] text-slate-500">
+								<p class="mt-1 text-[11px] text-slate-400">
 									When the case text contains the keyword, that model leads the chain for the role.
 									The first matching rule wins.
 								</p>
@@ -698,7 +698,7 @@ export function AdminAISection() {
 												class="flex items-center gap-3 rounded-xl border border-white/5 bg-black/20 px-3 py-2 text-xs"
 											>
 												<span class="font-mono text-slate-100">{rule.keyword}</span>
-												<span class="text-slate-500">→</span>
+												<span class="text-slate-400">→</span>
 												<span class="font-mono text-slate-300">{rule.modelId}</span>
 												<span class="rounded-full border border-purple-400/20 bg-purple-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-purple-300">
 													{rule.role || "all roles"}
@@ -722,13 +722,13 @@ export function AdminAISection() {
 										onChange={(e) => setNewRule((p) => ({ ...p, keyword: e.target.value }))}
 										placeholder="keyword"
 										aria-label="Routing keyword"
-										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none placeholder:text-slate-500 focus:border-purple-500/40"
+										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none placeholder:text-slate-400 focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
 									/>
 									<select
 										value={newRule.modelId}
 										onChange={(e) => setNewRule((p) => ({ ...p, modelId: e.target.value }))}
 										aria-label="Routing model"
-										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/40"
+										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
 									>
 										<option value="">model…</option>
 										{(modelsAdmin?.allowed ?? []).map((id) => (
@@ -741,7 +741,7 @@ export function AdminAISection() {
 										value={newRule.role}
 										onChange={(e) => setNewRule((p) => ({ ...p, role: e.target.value }))}
 										aria-label="Routing role"
-										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/40"
+										class="rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
 									>
 										<option value="">all roles</option>
 										{INVESTIGATION_ROLES.map((role) => (
@@ -763,13 +763,13 @@ export function AdminAISection() {
 
 							<div class="mt-5 rounded-2xl border border-purple-400/10 bg-[#0b0714]/40 p-4">
 								<p class="text-xs font-medium text-slate-300">Per-agent models</p>
-								<p class="mt-1 text-[11px] text-slate-500">
+								<p class="mt-1 text-[11px] text-slate-400">
 									Pin a model to one agent. &quot;Chain&quot; lets the free-model chain pick it.
 								</p>
 								<div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
 									{INVESTIGATION_ROLES.map((role) => (
 										<label key={role} class="block">
-											<span class="mb-1 block text-[10px] uppercase tracking-wider text-slate-500">
+											<span class="mb-1 block text-[10px] uppercase tracking-wider text-slate-400">
 												{role}
 											</span>
 											<select
@@ -777,7 +777,7 @@ export function AdminAISection() {
 												onChange={(e) => setRoleModel(role, e.target.value)}
 												disabled={modelsAdminSaving || (modelsAdmin?.allowed.length ?? 0) === 0}
 												aria-label={`Model for the ${role} agent`}
-												class="w-full rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/40"
+												class="w-full rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
 											>
 												<option value="">Chain (auto)</option>
 												{(modelsAdmin?.allowed ?? []).map((id) => (
@@ -800,7 +800,7 @@ export function AdminAISection() {
 											setModelsAdmin((p) => (p ? { ...p, default: e.target.value } : p))
 										}
 										disabled={modelsAdminSaving || (modelsAdmin?.allowed.length ?? 0) === 0}
-										class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500/40"
+										class="rounded-2xl border border-purple-400/10 bg-[#0b0714]/60 px-4 py-2.5 text-sm text-white outline-none focus:border-purple-500/70 focus:ring-2 focus:ring-purple-500/25"
 									>
 										{(modelsAdmin?.allowed ?? []).map((id) => (
 											<option key={id} value={id}>
