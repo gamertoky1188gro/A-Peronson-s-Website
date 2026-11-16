@@ -127,7 +127,7 @@ const AgentDashboard = safeLazy(() => import("./pages/AgentDashboard.jsx"));
 const IndustryPage = safeLazy(() => import("./pages/IndustryPage.jsx"));
 const RatingFeedback = safeLazy(() => import("./pages/RatingFeedback.jsx"));
 const SupportLanding = safeLazy(() => import("./pages/support/SupportLanding.jsx"));
-const SupportCase = safeLazy(() => import("./pages/support/SupportCase.jsx"));
+const SupportWorkspace = safeLazy(() => import("./pages/support/SupportWorkspace.jsx"));
 const SupportCaseReport = safeLazy(() => import("./pages/support/SupportCaseReport.jsx"));
 const SupportCaseSubmitted = safeLazy(() => import("./pages/support/SupportCaseSubmitted.jsx"));
 const VerificationPage = safeLazy(() => import("./pages/VerificationPage.jsx"));
@@ -481,7 +481,7 @@ function AppRoutes() {
 				}
 			/>
 			<Route path="/support" element={<SupportLanding />} />
-			<Route path="/support/case/:caseId" element={<SupportCase />} />
+			<Route path="/support/case/:caseId" element={<SupportWorkspace />} />
 			<Route path="/support/case/:caseId/report" element={<SupportCaseReport />} />
 			<Route path="/support/case/:caseId/submitted" element={<SupportCaseSubmitted />} />
 
