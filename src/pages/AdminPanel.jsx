@@ -3237,26 +3237,35 @@ export default function AdminPanel() {
 											setRejectionItem={setRejectionItem}
 										/>
 									)}
-									<div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+									<div
+										class={cn(
+											"grid grid-cols-1 gap-6",
+											!["ultra-security", "files", "media-review", "finance", "ai"].includes(
+												activeCategory,
+											) && "lg:grid-cols-[1fr_320px]",
+										)}
+									>
 										<section class="space-y-4">
-											<div class="admin-card admin-sweep rounded-3xl p-6">
-												<div class="flex flex-wrap items-center justify-between gap-3">
-													<div class="flex items-center gap-2">
-														<CategoryIcon class="h-5 w-5 text-orange-200/80" />
-														<div>
-															<p class="text-sm font-bold">{activeData?.label || "Module"}</p>
-															<p class="text-xs text-slate-500">
-																{activeData?.sections?.length || 0} sections
-															</p>
+											{activeCategory === "ai" ? null : (
+												<div class="admin-card admin-sweep rounded-3xl p-6">
+													<div class="flex flex-wrap items-center justify-between gap-3">
+														<div class="flex items-center gap-2">
+															<CategoryIcon class="h-5 w-5 text-orange-200/80" />
+															<div>
+																<p class="text-sm font-bold">{activeData?.label || "Module"}</p>
+																<p class="text-xs text-slate-500">
+																	{activeData?.sections?.length || 0} sections
+																</p>
+															</div>
 														</div>
+														<span
+															class={`rounded-full px-2 py-0.5 text-[10px] font-semibold${statusBadge("live")}`}
+														>
+															live
+														</span>
 													</div>
-													<span
-														class={`rounded-full px-2 py-0.5 text-[10px] font-semibold${statusBadge("live")}`}
-													>
-														live
-													</span>
 												</div>
-											</div>
+											)}
 
 											{activeCategory === "finance" ? (
 												<AdminFinanceSection
@@ -3536,12 +3545,14 @@ export default function AdminPanel() {
 													emptyCopy={emptyCopy}
 												/>
 											) : null}
+											{activeCategory === "ai" ? <AdminAISection /> : null}
 										</section>
 
 										{activeCategory === "ultra-security" ||
 										activeCategory === "files" ||
 										activeCategory === "media-review" ||
-										activeCategory === "finance" ? null : (
+										activeCategory === "finance" ||
+										activeCategory === "ai" ? null : (
 											<aside class="space-y-4">
 												{activeCategory === "config" ? (
 													<AdminConfigSection
@@ -3556,10 +3567,6 @@ export default function AdminPanel() {
 														setConfigEditorNotice={setConfigEditorNotice}
 														setConfigEditorError={setConfigEditorError}
 													/>
-												) : null}
-
-												{activeCategory === "ai" ? (
-													<AdminAISection activeCategory={activeCategory} adminDark={adminDark} />
 												) : null}
 											</aside>
 										)}
