@@ -31,6 +31,10 @@ const PANEL =
 	"bg-[#151020]/80 border-purple-400/10 text-slate-200 " +
 	"shadow-[0_30px_80px_-40px_rgba(168,85,247,0.45)] backdrop-blur-xl";
 
+// The five investigation agents, in the order the queue runs them. Mirrors
+// AGENT_ROLES in server/services/investigation/agents.js.
+const INVESTIGATION_ROLES = ["lead", "code", "repo", "research", "verify"];
+
 /**
  * One line of live health for a model: what its investigation runs actually
  * did over the recent window. Empty when the model has not been picked yet —
@@ -77,6 +81,7 @@ export function AdminAISection() {
 				buyerSelectEnabled: data?.buyerSelectEnabled !== false,
 				catalogStale: Boolean(data?.catalogStale),
 				health: data?.health ?? { windowDays: 0, runs: 0, models: {} },
+				roleModels: data?.roleModels ?? {},
 			});
 		} catch (err) {
 			setModelsAdminError(err?.message || "Failed to load investigation models");
@@ -100,6 +105,7 @@ export function AdminAISection() {
 				token: getToken(),
 				body: {
 					allowed: modelsAdmin.allowed,
+					roleModels: modelsAdmin.roleModels ?? {},
 					default: modelsAdmin.default,
 					buyerSelectEnabled: modelsAdmin.buyerSelectEnabled,
 				},
@@ -112,6 +118,22 @@ export function AdminAISection() {
 		} finally {
 			setModelsAdminSaving(false);
 		}
+	}
+
+	/**
+	 * Pin a model to one agent role, or unpin it ("" = the chain decides).
+	 */
+	function setRoleModel(role, modelId) {
+		setModelsAdmin((prev) => {
+			if (!prev) return prev;
+			const roleModels = { ...(prev.roleModels ?? {}) };
+			if (modelId) {
+				roleModels[role] = modelId;
+			} else {
+				delete roleModels[role];
+			}
+			return { ...prev, roleModels };
+		});
 	}
 
 	function toggleAllowedModel(id) {
@@ -626,6 +648,36 @@ export function AdminAISection() {
 											</span>
 										</div>
 									))}
+							</div>
+
+							<div class="mt-5 rounded-2xl border border-purple-400/10 bg-[#0b0714]/40 p-4">
+								<p class="text-xs font-medium text-slate-300">Per-agent models</p>
+								<p class="mt-1 text-[11px] text-slate-500">
+									Pin a model to one agent. &quot;Chain&quot; lets the free-model chain pick it.
+								</p>
+								<div class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+									{INVESTIGATION_ROLES.map((role) => (
+										<label key={role} class="block">
+											<span class="mb-1 block text-[10px] uppercase tracking-wider text-slate-500">
+												{role}
+											</span>
+											<select
+												value={modelsAdmin?.roleModels?.[role] ?? ""}
+												onChange={(e) => setRoleModel(role, e.target.value)}
+												disabled={modelsAdminSaving || (modelsAdmin?.allowed.length ?? 0) === 0}
+												aria-label={`Model for the ${role} agent`}
+												class="w-full rounded-xl border border-purple-400/10 bg-[#0b0714]/60 px-3 py-2 text-xs text-white outline-none focus:border-purple-500/40"
+											>
+												<option value="">Chain (auto)</option>
+												{(modelsAdmin?.allowed ?? []).map((id) => (
+													<option key={id} value={id}>
+														{id}
+													</option>
+												))}
+											</select>
+										</label>
+									))}
+								</div>
 							</div>
 
 							<div class="mt-4 flex flex-wrap items-end justify-between gap-4">

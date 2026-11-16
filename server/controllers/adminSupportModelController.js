@@ -15,6 +15,8 @@ function shape(config, health) {
 		allowed: config.allowed,
 		default: config.default,
 		buyerSelectEnabled: config.buyerSelectEnabled,
+		// The per-role model pins: { role: modelId }.
+		roleModels: config.roleModels ?? {},
 		catalogStale: Boolean(config.catalogStale),
 		catalogFetchedAt: config.catalogFetchedAt ?? null,
 		// The catalog array ({ id, name, providerID, created, ownedBy }) — the
@@ -45,7 +47,7 @@ export async function getAdminSupportModels(req, res) {
 export async function putAdminSupportModels(req, res) {
 	try {
 		const body = req.body ?? {};
-		const { allowed, default: def, buyerSelectEnabled } = body;
+		const { allowed, default: def, buyerSelectEnabled, roleModels } = body;
 		if (allowed !== undefined && !Array.isArray(allowed)) {
 			return res.status(400).json({ error: "allowed must be an array of model ids" });
 		}
@@ -55,11 +57,22 @@ export async function putAdminSupportModels(req, res) {
 		if (buyerSelectEnabled !== undefined && typeof buyerSelectEnabled !== "boolean") {
 			return res.status(400).json({ error: "buyerSelectEnabled must be a boolean" });
 		}
-		if (allowed === undefined && def === undefined && buyerSelectEnabled === undefined) {
+		if (
+			roleModels !== undefined &&
+			(!roleModels || typeof roleModels !== "object" || Array.isArray(roleModels))
+		) {
+			return res.status(400).json({ error: "roleModels must be an object of role -> model id" });
+		}
+		if (
+			allowed === undefined &&
+			def === undefined &&
+			buyerSelectEnabled === undefined &&
+			roleModels === undefined
+		) {
 			return res.status(400).json({ error: "Nothing to update" });
 		}
 		const result = await setInvestigationModelConfig(
-			{ allowed, default: def, buyerSelectEnabled },
+			{ allowed, default: def, buyerSelectEnabled, roleModels },
 			req.user?.id,
 		);
 		return res.json({ ok: true, ...shape(result) });

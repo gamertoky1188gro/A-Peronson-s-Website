@@ -262,6 +262,7 @@ describe("GET /api/admin/support-models", () => {
 			catalog: CATALOG,
 			catalogStale: false,
 			catalogFetchedAt: 1_730_000_000_000,
+			roleModels: {},
 			health: HEALTH,
 		});
 	});

@@ -130,7 +130,7 @@ const MAX_CONVERSATION_MESSAGES = 20;
 const VERIFY_ROLE = "verify";
 
 /** An evidence reference that is a URL rather than a path on disk. */
-const URL_REFERENCE_RE = /^https?:\/\//i;
+const URL_REFERENCE_RE = /^https?:\/\//iu;
 
 /**
  * The statuses a case may hold when the investigation ends.
@@ -383,7 +383,7 @@ async function runInvestigation(job) {
 			password: mintRuntimePassword(),
 		});
 
-		const models = await pickCaseModels(runtime.client, context.caseRow);
+		const { models, roleModels } = await pickCaseModels(runtime.client, context.caseRow);
 		if (!models.length) {
 			await failRows(rows, finished, "No free investigation model is available on the runtime.");
 			await setTerminalStatus(caseId, "failed");
@@ -402,6 +402,7 @@ async function runInvestigation(job) {
 			const outcome = await runRole({
 				runtime,
 				models,
+				roleModels,
 				role,
 				prompt,
 				row: findRow(rows, role),
@@ -418,6 +419,7 @@ async function runInvestigation(job) {
 		await runVerification({
 			runtime,
 			models,
+			roleModels,
 			caseId,
 			context,
 			candidates: accumulated,
@@ -453,6 +455,7 @@ async function runInvestigation(job) {
 async function runVerification({
 	runtime,
 	models,
+	roleModels,
 	caseId,
 	context,
 	candidates,
@@ -470,6 +473,7 @@ async function runVerification({
 	const outcome = await runRole({
 		runtime,
 		models,
+		roleModels,
 		role: VERIFY_ROLE,
 		prompt,
 		row: findRow(rows, VERIFY_ROLE),
@@ -542,12 +546,15 @@ async function runVerification({
  *
  * @returns {Promise<{role: string, status: string, findings: object[], limitations: string[], summary: string, error?: string}>}
  */
-async function runRole({ runtime, models, role, prompt, row, caseId, sessionIDs }) {
+async function runRole({ runtime, models, role, prompt, row, caseId, sessionIDs, roleModels }) {
 	if (!row) {
 		return { role, status: "failed", findings: [], limitations: [], summary: "", error: "no row" };
 	}
 
-	const chain = (Array.isArray(models) ? models : [models]).filter(Boolean);
+	const chain = orderChainForRole(
+		(Array.isArray(models) ? models : [models]).filter(Boolean),
+		roleModels?.[role],
+	);
 	if (!chain.length) {
 		const error = "No free investigation model is available on the runtime.";
 		await finishRow(row, { status: "failed", error });
@@ -913,9 +920,9 @@ export function resolvesInsideRepository(file) {
 	if (URL_REFERENCE_RE.test(reference)) {
 		return true;
 	}
-	const candidates = [reference, reference.replace(/:\d+(?:-\d+)?$/, "")];
+	const candidates = [reference, reference.replace(/:\d+(?:-\d+)?$/u, "")];
 	for (const candidate of candidates) {
-		const relative = candidate.replace(/\\/g, "/").trim();
+		const relative = candidate.replace(/\\/gu, "/").trim();
 		if (!relative) {
 			continue;
 		}
@@ -963,7 +970,7 @@ function buildEvidenceList(caseRow, attachments) {
 		evidence.push(mime ? `${label} (${mime})` : label);
 	}
 
-	if (evidence.some((entry) => /image\//i.test(entry))) {
+	if (evidence.some((entry) => /image\//iu.test(entry))) {
 		evidence.push(
 			"(A binary image may not be readable as text. If you cannot open one, say so in `limitations` - do not guess at what it shows.)",
 		);
@@ -1025,7 +1032,8 @@ function normalizeToolCalls(toolCalls) {
 }
 
 /**
- * Pick the ordered model chain for one investigation.
+ * Pick the ordered model chain for one investigation, and the per-role pins
+ * that reorder it.
  *
  * The case's own model, when it was set and the runtime still offers it, leads
  * the chain; the rest of the allowlist follows in allowlist order; the default
@@ -1033,13 +1041,36 @@ function normalizeToolCalls(toolCalls) {
  */
 async function pickCaseModels(client, caseRow) {
 	const available = await listAvailableModels(client);
-	const { allowed, buyerSelectEnabled } = await getInvestigationModelConfig();
+	const { allowed, buyerSelectEnabled, roleModels } = await getInvestigationModelConfig();
 	const caseModelId = effectiveCaseModelId({
 		caseModelId: caseRow?.model_id || null,
 		buyerSelectEnabled,
 		allowed,
 	});
-	return computeCaseModelOrder({ caseModelId, allowed, available });
+	return {
+		models: computeCaseModelOrder({ caseModelId, allowed, available }),
+		roleModels: roleModels ?? {},
+	};
+}
+
+/**
+ * The chain for one role: the model pinned to that role first, then the rest.
+ *
+ * A pin the runtime does not offer is ignored — the chain is the truth about
+ * what the runtime can actually answer with, and the pin only decides the
+ * order of the models that are in it.
+ */
+export function orderChainForRole(models, pinnedModelId) {
+	const chain = Array.isArray(models) ? models.filter(Boolean) : [];
+	const pinned = typeof pinnedModelId === "string" ? pinnedModelId : "";
+	if (!pinned) {
+		return chain;
+	}
+	const index = chain.findIndex((entry) => entry?.id === pinned);
+	if (index <= 0) {
+		return chain;
+	}
+	return [chain[index], ...chain.slice(0, index), ...chain.slice(index + 1)];
 }
 
 /**
