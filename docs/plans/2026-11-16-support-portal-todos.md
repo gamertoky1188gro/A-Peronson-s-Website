@@ -102,3 +102,13 @@ Owner machine = the laptop; THIS sandbox cannot run the live spike or Gmail send
   Husky fix verified end-to-end (biome → npm test → npm run build → "Pre-commit checks passed!").
   Fresh clones need `git config core.hooksPath .husky`.
 - Husky pre-commit de-sourced from the missing `.husky/_/husky.sh` and chmod +x; gate re-verified end-to-end (biome → npm test → npm run build) on the main branch.
+
+Additional evidence (2026-11-16 PM):
+- Canary email: one live test email sent to admin@gmail.com via Gmail SMTP
+  (send_result={"ok":true,"status":"sent"}); admin email flag restored to
+  false afterward in the same script run.
+- MCP Option 2 (owner-approved) merged into the project config:
+  github + render + parallel-search, context7 deliberately absent
+  (no CONTEXT7_API_KEY). README rewritten; tests pin the merged set and the
+  inert optional block.
+- Browser verification: browsermcp/playwright tools are remote (separate workspace); localhost:4461 unreachable. Local verification therefore limited to: production-server boot + /health 200, Vite build, unit+integration suites, live spawn spike. Live buyer/owner flows verified only by integration tests, not by UI walk-through.
