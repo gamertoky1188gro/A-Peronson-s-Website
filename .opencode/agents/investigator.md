@@ -1,107 +1,292 @@
 ---
-description: Read-only codebase investigator. Source reads and searches only. No writes, no commands beyond read-only inspection and approved read-only MCP tools. No network beyond the approved MCP search servers. No writes, no subagents.
+description: Read-only codebase investigator. Source reads and searches only. No writes, no commands beyond read-only inspection and approved read-only MCP tools. No network beyond the approved MCP search servers. No subagents.
 mode: primary
-permission:
-  "*": deny
-  read:
-    "*": allow
-    "*.env": deny
-    "*.env.*": deny
-    "**/.env": deny
-    "**/.env.*": deny
-    "*.env.example": allow
-  glob: allow
-  grep: allow
-  list: allow
-  edit: deny
-  write: deny
-  patch: deny
-  bash: deny
-  shell:
-    "*": "deny"
-    "git log*": "allow"
-    "git show*": "allow"
-    "git diff*": "allow"
-    "git status*": "allow"
-    "git branch*": "allow"
-    "git ls-files*": "allow"
-    "git rev-parse*": "allow"
-    "grep*": "allow"
-    "rg*": "allow"
-    "find *": "allow"
-    "ls *": "allow"
-    "cat *": "allow"
-    "head *": "allow"
-    "tail *": "allow"
-    "wc *": "allow"
-    "pwd": "allow"
-    "sort*": "allow"
-    "diff *": "allow"
-    "stat *": "allow"
-    "file *": "allow"
-    "uniq *": "allow"
-    "cut *": "allow"
-    "sed -n *": "allow"
-    "du *": "allow"
-    "df *": "allow"
-    "true": "allow"
-    "echo *": "allow"
-    "whoami": "allow"
-    "uname*": "allow"
-  github_get_file_contents: allow
-  github_search_code: allow
-  github_list_commits: allow
-  github_get_commit: allow
-  github_search_commits: allow
-  github_list_branches: allow
-  github_list_tags: allow
-  github_list_releases: allow
-  github_get_latest_release: allow
-  github_get_release_by_tag: allow
-  github_get_tag: allow
-  github_list_issues: allow
-  github_issue_read: allow
-  github_search_issues: allow
-  github_list_issue_fields: allow
-  github_list_issue_types: allow
-  github_list_pull_requests: allow
-  github_pull_request_read: allow
-  github_search_pull_requests: allow
-  github_get_me: allow
-  github_search_repositories: allow
-  github_get_label: allow
-  github_get_teams: allow
-  github_get_team_members: allow
-  github_list_repository_collaborators: allow
-  parallel-search_web_search: allow
-  parallel-search_web_fetch: allow
-  render_list_services: allow
-  render_get_service: allow
-  render_list_events: allow
-  render_get_deploy: allow
-  render_list_deploys: allow
-  render_get_metrics: allow
-  render_get_postgres: allow
-  render_list_postgres_instances: allow
-  render_list_key_value: allow
-  render_list_workspaces: allow
-  render_list_flows: allow
-  render_get_flow: allow
-  render_list_workflow_runs: allow
-  render_get_flow_run: allow
-  render_list_workflows: allow
-  render_get_workflow: allow
-  render_list_workflow_versions: allow
-  render_get_workflow_version: allow
-  render_get_workflow_task: allow
-  render_list_flow_run_steps: allow
-  context7_resolve-library-id: allow
-  context7_query-docs: allow
-  webfetch: deny
-  websearch: deny
-  task: deny
-  subagent: deny
-  question: deny
+permissions:
+  - action: "*"
+    resource: "*"
+    effect: deny
+  - action: read
+    resource: "*"
+    effect: allow
+  - action: read
+    resource: "*.env"
+    effect: deny
+  - action: read
+    resource: "*.env.*"
+    effect: deny
+  - action: read
+    resource: "**/.env"
+    effect: deny
+  - action: read
+    resource: "**/.env.*"
+    effect: deny
+  - action: read
+    resource: "*.env.example"
+    effect: allow
+  - action: glob
+    resource: "*"
+    effect: allow
+  - action: grep
+    resource: "*"
+    effect: allow
+  - action: external_directory
+    resource: "*"
+    effect: deny
+  - action: shell
+    resource: "git log*"
+    effect: allow
+  - action: shell
+    resource: "git show*"
+    effect: allow
+  - action: shell
+    resource: "git diff*"
+    effect: allow
+  - action: shell
+    resource: "git status*"
+    effect: allow
+  - action: shell
+    resource: "git branch*"
+    effect: allow
+  - action: shell
+    resource: "git ls-files*"
+    effect: allow
+  - action: shell
+    resource: "git rev-parse*"
+    effect: allow
+  - action: shell
+    resource: "grep*"
+    effect: allow
+  - action: shell
+    resource: "rg*"
+    effect: allow
+  - action: shell
+    resource: "find *"
+    effect: allow
+  - action: shell
+    resource: "ls *"
+    effect: allow
+  - action: shell
+    resource: "cat *"
+    effect: allow
+  - action: shell
+    resource: "head *"
+    effect: allow
+  - action: shell
+    resource: "tail *"
+    effect: allow
+  - action: shell
+    resource: "wc *"
+    effect: allow
+  - action: shell
+    resource: "pwd"
+    effect: allow
+  - action: shell
+    resource: "sort*"
+    effect: allow
+  - action: shell
+    resource: "sort *"
+    effect: allow
+  - action: shell
+    resource: "diff *"
+    effect: allow
+  - action: shell
+    resource: "stat *"
+    effect: allow
+  - action: shell
+    resource: "file *"
+    effect: allow
+  - action: shell
+    resource: "uniq *"
+    effect: allow
+  - action: shell
+    resource: "uniq * *"
+    effect: allow
+  - action: shell
+    resource: "cut *"
+    effect: allow
+  - action: shell
+    resource: "sed -n *"
+    effect: allow
+  - action: shell
+    resource: "du *"
+    effect: allow
+  - action: shell
+    resource: "df *"
+    effect: allow
+  - action: shell
+    resource: "true"
+    effect: allow
+  - action: shell
+    resource: "echo *"
+    effect: allow
+  - action: shell
+    resource: "whoami"
+    effect: allow
+  - action: shell
+    resource: "uname*"
+    effect: allow
+  - action: edit
+    resource: "*"
+    effect: deny
+  - action: webfetch
+    resource: "*"
+    effect: deny
+  - action: websearch
+    resource: "*"
+    effect: deny
+  - action: subagent
+    resource: "*"
+    effect: deny
+  - action: question
+    resource: "*"
+    effect: deny
+  - action: github_get_file_contents
+    resource: "*"
+    effect: allow
+  - action: github_search_code
+    resource: "*"
+    effect: allow
+  - action: github_list_commits
+    resource: "*"
+    effect: allow
+  - action: github_get_commit
+    resource: "*"
+    effect: allow
+  - action: github_search_commits
+    resource: "*"
+    effect: allow
+  - action: github_list_branches
+    resource: "*"
+    effect: allow
+  - action: github_list_tags
+    resource: "*"
+    effect: allow
+  - action: github_list_releases
+    resource: "*"
+    effect: allow
+  - action: github_get_latest_release
+    resource: "*"
+    effect: allow
+  - action: github_get_release_by_tag
+    resource: "*"
+    effect: allow
+  - action: github_get_tag
+    resource: "*"
+    effect: allow
+  - action: github_list_issues
+    resource: "*"
+    effect: allow
+  - action: github_issue_read
+    resource: "*"
+    effect: allow
+  - action: github_search_issues
+    resource: "*"
+    effect: allow
+  - action: github_list_issue_fields
+    resource: "*"
+    effect: allow
+  - action: github_list_issue_types
+    resource: "*"
+    effect: allow
+  - action: github_list_pull_requests
+    resource: "*"
+    effect: allow
+  - action: github_pull_request_read
+    resource: "*"
+    effect: allow
+  - action: github_search_pull_requests
+    resource: "*"
+    effect: allow
+  - action: github_get_me
+    resource: "*"
+    effect: allow
+  - action: github_search_repositories
+    resource: "*"
+    effect: allow
+  - action: github_get_label
+    resource: "*"
+    effect: allow
+  - action: github_get_teams
+    resource: "*"
+    effect: allow
+  - action: github_get_team_members
+    resource: "*"
+    effect: allow
+  - action: github_list_repository_collaborators
+    resource: "*"
+    effect: allow
+  - action: parallel-search_web_search
+    resource: "*"
+    effect: allow
+  - action: parallel-search_web_fetch
+    resource: "*"
+    effect: allow
+  - action: render_list_services
+    resource: "*"
+    effect: allow
+  - action: render_get_service
+    resource: "*"
+    effect: allow
+  - action: render_list_events
+    resource: "*"
+    effect: allow
+  - action: render_get_deploy
+    resource: "*"
+    effect: allow
+  - action: render_list_deploys
+    resource: "*"
+    effect: allow
+  - action: render_get_metrics
+    resource: "*"
+    effect: allow
+  - action: render_get_postgres
+    resource: "*"
+    effect: allow
+  - action: render_list_postgres_instances
+    resource: "*"
+    effect: allow
+  - action: render_list_key_value
+    resource: "*"
+    effect: allow
+  - action: render_list_workspaces
+    resource: "*"
+    effect: allow
+  - action: render_list_flows
+    resource: "*"
+    effect: allow
+  - action: render_get_flow
+    resource: "*"
+    effect: allow
+  - action: render_list_workflow_runs
+    resource: "*"
+    effect: allow
+  - action: render_get_flow_run
+    resource: "*"
+    effect: allow
+  - action: render_list_workflows
+    resource: "*"
+    effect: allow
+  - action: render_get_workflow
+    resource: "*"
+    effect: allow
+  - action: render_list_workflow_versions
+    resource: "*"
+    effect: allow
+  - action: render_get_workflow_version
+    resource: "*"
+    effect: allow
+  - action: render_get_workflow_task
+    resource: "*"
+    effect: allow
+  - action: render_list_flow_run_steps
+    resource: "*"
+    effect: allow
+  - action: context7_resolve-library-id
+    resource: "*"
+    effect: allow
+  - action: context7_query-docs
+    resource: "*"
+    effect: allow
 ---
 
 You are the GarTexHub support investigation agent. You may read and search the
@@ -111,7 +296,7 @@ You may not modify files, run write commands, create commits, push, install pack
 delegate to subagents, use the web directly, or display secrets.
 
 Work from the repository root. When the budget is spent or the question
-needs something outside your powers — writing, installing, deploying,
-or reading a secret — stop and say so in `limitations`. Never invent the
+needs something outside your powers - writing, installing, deploying,
+or reading a secret - stop and say so in `limitations`. Never invent the
 behavior of the codebase. Never claim a fix exists before you can point at
 the line. Always name the file and the line for every claim.

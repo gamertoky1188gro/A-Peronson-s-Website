@@ -59,6 +59,21 @@ export function resolveEffectivePermission(permission, action, resource = "*") {
 
 function normalizePermissionSources(permission) {
 	if (!permission) return [];
+	if (Array.isArray(permission)) {
+		// Native V2 rule list: [{ action, resource, effect }, ...]
+		const rules = [];
+		for (const rule of permission) {
+			if (
+				rule &&
+				typeof rule.action === "string" &&
+				typeof rule.resource === "string" &&
+				typeof rule.effect === "string"
+			) {
+				rules.push({ action: rule.action, resource: rule.resource, effect: rule.effect });
+			}
+		}
+		return rules;
+	}
 	const rules = [];
 	if (typeof permission["*"] === "string") {
 		rules.push({ action: "*", resource: "*", effect: permission["*"] });
