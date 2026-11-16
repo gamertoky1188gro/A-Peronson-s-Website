@@ -70,3 +70,60 @@ Notes for whoever baselines Aiven later:
 - `iceman-free` is excluded at four layers: catalog fetch, PUT validation, default selection, and the
   investigation queue's `FORBIDDEN` set — it is permanently unavailable.
 - Behavior with `buyer_model_select = "0"`: no dropdown; every case uses the owner default.
+
+## Phase 4 — Support investigation MCP, read-only wiring (2026-11-16)
+
+Branch: feat/support-mcp-wiring · Plan: `docs/plans/2026-11-16-support-mcp-wiring.md` ·
+Spec: `docs/superpowers/specs/2026-11-16-support-mcp-wiring-design.md`
+
+### What shipped
+
+- Credential-gated, **read-only** MCP servers for the investigation runtime only:
+  `github` (`GITHUB_PERSONAL_ACCESS_TOKEN`; read-only allowlist — repo evidence,
+  commits, code), `parallel-search` (no key; `web_search`, `web_fetch`),
+  `render` (`RENDER_API_KEY`; list/get services and deploys/metrics — **NOT**
+  logs, and no writes/env-var changes), `context7` (`CONTEXT7_API_KEY`;
+  library/API docs). Everything not allowlisted stays denied by the existing
+  `*` deny.
+- Skills + plugins declared **for the investigation runtime only**: all of
+  `/home/ccm/.config/opencode/skills` and exactly three plugins —
+  superpowers (`/home/ccm/.config/opencode/node_modules/superpowers`),
+  ponytail (`/home/ccm/.cache/opencode/npm/@dietrichgebert/ponytail@latest`),
+  plannotator (`/home/ccm/.cache/opencode/npm/@plannotator/opencode@latest`) —
+  each declared only when its absolute directory exists at spawn time.
+  `opencode-tavily`, `opencode-browser` and `opencode-swarm` are never declared.
+- Assistant isolation: the buyer-facing assistant runtime gets NO MCP servers,
+  skills or plugins — it is not an investigator.
+- `GET /api/support/capabilities` (requireAuthOrSupportToken — signed-in
+  users and support-token buyers): the server returns only
+  booleans derived from env presence (`repositoryInspection`, `githubHistory`,
+  `renderServices`, `research`, `libraryDocs`, `applicationData`); raw secrets
+  never leave the server.
+- Honest buyer pills: the right rail renders Authorized / Unavailable from that
+  endpoint; on fetch failure it shows "Unknown" — never a silent Authorized.
+
+### Applied at boot
+
+NOTHING. No migration, no backfill, no config rewrite. Every gate is
+env-presence (or absolute-directory existence) based; absent ⇒ the server or
+plugin is simply not declared and the investigator behaves exactly as Phase 3.
+
+### Deploy notes (whoever owns Render)
+
+- Set `GITHUB_PERSONAL_ACCESS_TOKEN`, `RENDER_API_KEY` and/or
+  `CONTEXT7_API_KEY` in the Render dashboard if wanted. `render.yaml` declares
+  the three keys as `sync: false` (dashboard-managed; values never committed).
+  Absent ⇒ the investigator runs as before (no MCP), and the buyer pills
+  honestly show Unavailable.
+- The investigation runtime loads the owner's opencode skills directory and the
+  three plugin directories ONLY when those absolute directories exist on the
+  host — they do **not** exist on Render, so the investigator there runs with
+  no extra plugins and behaves as before. Never add them there without
+  reviewing the plugin code first: plugins execute inside the investigator
+  process, under the same deny-first permission envelope, but they are still
+  third-party code.
+- `iceman-free` remains excluded at all layers and `longcat-2.5-free` stays out
+  of the default allowlist. Both unchanged by this phase.
+- Swarm: `opencode-swarm` (the separate application and its installer) is
+  never referenced anywhere in phases 1–4 — not in the runtime config, the
+  spawn path, this note, or any other doc added by this phase. Do not add it.

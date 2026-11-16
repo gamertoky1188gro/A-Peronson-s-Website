@@ -150,5 +150,16 @@ services:
         value: ""
       - key: RERANKER_MODEL
         value: BAAI/bge-reranker-v2-m3
+      # --- Support investigation MCP (all optional; unset = server not declared) ---
+      # Read-only GitHub MCP for the investigation runtime (evidence, commits, code).
+      # Values are set in the Render dashboard (sync: false), never committed.
+      - key: GITHUB_PERSONAL_ACCESS_TOKEN
+        sync: false
+      # Read-only Render MCP (list/get services/deploys — NOT logs).
+      - key: RENDER_API_KEY
+        sync: false
+      # Context7 MCP — library/API docs for the investigator.
+      - key: CONTEXT7_API_KEY
+        sync: false
     buildCommand: pnpm install --frozen-lockfile && pnpm run build && npx prisma migrate deploy && pnpm run db:generate && pnpm run ci:reindex
     startCommand: pnpm run start:prod
