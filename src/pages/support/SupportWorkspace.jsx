@@ -327,7 +327,7 @@ function ReportPanel({ report, confirming, confirmed, onConfirm }) {
 					type="button"
 					onClick={onConfirm}
 					disabled={confirming || confirmed}
-					className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 px-4 py-2.5 text-xs font-semibold text-[#050b1d] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+					className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 px-4 py-2.5 text-xs font-semibold text-[#050b1d] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					{confirming ? (
 						<ThreeDot variant="bounce" color="#050b1d" size="small" text="" textColor="" />
@@ -872,7 +872,7 @@ export default function SupportWorkspace() {
 					{isInvestigating ? (
 						<span
 							aria-hidden="true"
-							className="h-1.5 w-1.5 animate-pulse rounded-full bg-sky-400"
+							className="h-1.5 w-1.5 animate-pulse motion-reduce:animate-none rounded-full bg-sky-400"
 						/>
 					) : null}
 					{statusLabel}
@@ -957,7 +957,7 @@ export default function SupportWorkspace() {
 									type="button"
 									onClick={startCase}
 									disabled={creating}
-									className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-sky-500 px-5 py-3 text-sm font-semibold text-[#050b1d] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+									className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-sky-500 px-5 py-3 text-sm font-semibold text-[#050b1d] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
 								>
 									{creating ? (
 										<ThreeDot variant="bounce" color="#050b1d" size="small" text="" textColor="" />
@@ -1088,7 +1088,8 @@ export default function SupportWorkspace() {
 												"h-full rounded-full",
 												upload.status === "error" && "w-full bg-rose-400",
 												upload.status === "done" && "w-full bg-cyan-400",
-												upload.status === "uploading" && "w-full animate-pulse bg-cyan-400/70",
+												upload.status === "uploading" &&
+													"w-full animate-pulse motion-reduce:animate-none bg-cyan-400/70",
 												upload.status === "queued" && "w-1/5 bg-white/20",
 											)}
 										/>

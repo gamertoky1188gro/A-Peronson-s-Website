@@ -642,7 +642,17 @@ export async function getCaseController(req, res) {
 		}
 
 		const { messages, ...caseRow } = found;
-		return res.json({ case: caseRow, messages: messages || [] });
+		// The evidence the client attached to the case. Same rows, same order
+		// as the admin case detail serves - the Evidence tab renders them.
+		const attachments = await prisma.supportCaseAttachment.findMany({
+			where: { case_id: caseId },
+			orderBy: { created_at: "asc" },
+		});
+		return res.json({
+			case: caseRow,
+			messages: messages || [],
+			attachments: Array.isArray(attachments) ? attachments : [],
+		});
 	} catch (error) {
 		return handleControllerError(res, error);
 	}

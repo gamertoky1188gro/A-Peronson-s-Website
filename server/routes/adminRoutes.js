@@ -104,7 +104,12 @@ import { requireAdminSecurity } from "../middleware/adminSecurity.js";
 import { requireAdminStepUp } from "../middleware/adminStepUp.js";
 import { requireAuth } from "../middleware/auth.js";
 import { adminLimiter } from "../middleware/rateLimiter.js";
-import { appendCaseMessage, getCaseWithMessages, listCasesAdmin } from "../services/caseService.js";
+import {
+	appendCaseMessage,
+	attachTicketPriority,
+	getCaseWithMessages,
+	listCasesAdmin,
+} from "../services/caseService.js";
 import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 
@@ -167,7 +172,8 @@ async function getSupportCaseHandler(req, res) {
 	if (!found) {
 		return res.status(404).json({ error: "Support case not found" });
 	}
-	const { messages, ...caseRow } = found;
+	const { messages, ...caseRowBase } = found;
+	const [caseRow] = await attachTicketPriority([caseRowBase]);
 	const investigations = await prisma.supportInvestigation.findMany({
 		where: { case_id: caseId },
 		orderBy: { created_at: "asc" },

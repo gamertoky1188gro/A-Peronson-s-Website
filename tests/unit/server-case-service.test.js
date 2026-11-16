@@ -13,6 +13,7 @@ const supportCaseDelete = jest.fn(async () => ({ id: "case-1" }));
 const messageFindFirst = jest.fn(async () => null);
 const messageCreate = jest.fn(async (args) => ({ id: "m1", ...args.data }));
 const attachmentFindMany = jest.fn(async () => []);
+const supportTicketFindMany = jest.fn(async () => []);
 
 const transaction = jest.fn(async (fn) =>
 	fn({
@@ -36,6 +37,7 @@ jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
 		},
 		supportCaseMessage: { findFirst: messageFindFirst, create: messageCreate },
 		supportCaseAttachment: { findMany: attachmentFindMany },
+		supportTicket: { findMany: supportTicketFindMany },
 		$transaction: transaction,
 	},
 }));
@@ -59,6 +61,8 @@ beforeEach(() => {
 	messageCreate.mockClear();
 	attachmentFindMany.mockReset();
 	attachmentFindMany.mockResolvedValue([]);
+	supportTicketFindMany.mockReset();
+	supportTicketFindMany.mockResolvedValue([]);
 	transaction.mockClear();
 });
 
@@ -150,6 +154,27 @@ describe("listCasesAdmin", () => {
 	test("lists every case, most recently touched first", async () => {
 		await listCasesAdmin();
 		expect(supportCaseFindMany).toHaveBeenCalledWith({ orderBy: { updated_at: "desc" } });
+	});
+
+	test("attaches the linked ticket's priority to each case", async () => {
+		supportCaseFindMany.mockResolvedValueOnce([
+			{ id: "case-1", ticket_id: "ticket-1", status: "collecting" },
+			{ id: "case-2", ticket_id: null, status: "investigating" },
+			{ id: "case-3", ticket_id: "ticket-gone", status: "completed" },
+		]);
+		supportTicketFindMany.mockResolvedValueOnce([{ id: "ticket-1", priority: "urgent" }]);
+
+		const rows = await listCasesAdmin();
+
+		expect(supportTicketFindMany).toHaveBeenCalledWith({
+			where: { id: { in: ["ticket-1", "ticket-gone"] } },
+			select: { id: true, priority: true },
+		});
+		expect(rows.map((row) => [row.id, row.priority])).toEqual([
+			["case-1", "urgent"],
+			["case-2", null],
+			["case-3", null],
+		]);
 	});
 });
 

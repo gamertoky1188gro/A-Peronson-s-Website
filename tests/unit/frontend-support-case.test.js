@@ -46,6 +46,20 @@ const { useSupportCase } = await import("../../src/hooks/useSupportCase.js");
 
 const CASE_ID = "case-1";
 
+// One attachment row, as the GET route serves it.
+function caseAttachment(overrides = {}) {
+	return {
+		id: "att-1",
+		case_id: CASE_ID,
+		file_path: "/uploads/support/shot.png",
+		mime_type: "image/png",
+		byte_size: 1024,
+		uploaded_by: "user-1",
+		created_at: "2026-11-16T09:00:00.000Z",
+		...overrides,
+	};
+}
+
 // One case row.
 function caseRow(overrides = {}) {
 	return {
@@ -60,7 +74,7 @@ function caseRow(overrides = {}) {
 // The default server answers for one case.
 function defaultResponses(overrides = {}) {
 	return {
-		case: { case: caseRow(), messages: [] },
+		case: { case: caseRow(), messages: [], attachments: [caseAttachment()] },
 		message: {
 			message: {
 				id: "msg-client",
@@ -125,6 +139,36 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 			expect.objectContaining({ token: "test-token" }),
 		);
 		expect(result.current.status).toBe("collecting");
+	});
+
+	test("loads the attachments the server returns with the case", async () => {
+		installApi();
+		const { result } = renderHook(() => useSupportCase(CASE_ID));
+
+		await waitFor(() => expect(result.current.attachments).toHaveLength(1));
+		expect(result.current.attachments[0]).toMatchObject({
+			id: "att-1",
+			file_path: "/uploads/support/shot.png",
+		});
+	});
+
+	test("a send followed by a reload keeps one attachment per file", async () => {
+		installApi();
+		const { result } = renderHook(() => useSupportCase(CASE_ID));
+		await waitFor(() => expect(result.current.caseRow).not.toBeNull());
+
+		await act(async () => {
+			await result.current.send("Here is the screenshot", [
+				{ file_path: "/uploads/support/shot.png", mime_type: "image/png", byte_size: 1024 },
+			]);
+		});
+
+		await act(async () => {
+			await result.current.refresh();
+		});
+
+		expect(result.current.attachments).toHaveLength(1);
+		expect(result.current.attachments[0]).toMatchObject({ id: "att-1" });
 	});
 
 	test("threads the support token into the x-support-token header when one is set", async () => {

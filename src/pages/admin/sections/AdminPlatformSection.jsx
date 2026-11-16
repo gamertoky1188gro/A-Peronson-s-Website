@@ -2509,6 +2509,7 @@ export function AdminPlatformSection({
 							["collecting", "Collecting"],
 							["investigating", "Investigating"],
 							["verifying", "Verifying"],
+							["reporting", "Reporting"],
 							["completed", "Completed"],
 							["failed", "Failed"],
 						].map(([value, label]) => {
@@ -2565,7 +2566,7 @@ export function AdminPlatformSection({
 					</div>
 
 					{/* Dense inbox table. Row click opens the case, as before. */}
-					<div class="mt-3 overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
+					<div className="mt-3 overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
 						<table className="w-full min-w-[56rem] border-collapse text-left text-[11px]">
 							<thead>
 								<tr className="border-b border-white/10 text-[10px] uppercase tracking-[0.18em] text-slate-500">

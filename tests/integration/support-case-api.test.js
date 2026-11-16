@@ -406,6 +406,7 @@ describe("support case API (real router, real controller)", () => {
 			.expect(200);
 		expect(read.body.case).toMatchObject({ id: created.id, user_id: OWNER.id });
 		expect(Array.isArray(read.body.messages)).toBe(true);
+		expect(Array.isArray(read.body.attachments)).toBe(true);
 
 		const posted = await postMessage(created.id, "The total is wrong at checkout");
 		expectSuccess(posted);
@@ -423,6 +424,39 @@ describe("support case API (real router, real controller)", () => {
 		expect(typeof posted.body.reply.content).toBe("string");
 		expect(posted.body.reply.content.length).toBeGreaterThan(0);
 		expect(posted.body.ready).toBe(false);
+	});
+
+	test("the case GET returns the case's attachments, oldest first", async () => {
+		const created = await createCase();
+
+		state.attachments.push(
+			{
+				id: "att-old",
+				case_id: created.id,
+				document_id: "doc-old",
+				file_path: "/uploads/support/old.png",
+				mime_type: "image/png",
+				byte_size: 10,
+				uploaded_by: OWNER.id,
+				created_at: "2026-11-10T09:00:00.000Z",
+			},
+			{
+				id: "att-new",
+				case_id: created.id,
+				document_id: "doc-new",
+				file_path: "/uploads/support/new.png",
+				mime_type: "image/png",
+				byte_size: 20,
+				uploaded_by: OWNER.id,
+				created_at: "2026-11-11T09:00:00.000Z",
+			},
+		);
+
+		const read = await request(buildApp())
+			.get(`/api/support/cases/${created.id}`)
+			.set(AUTH.owner)
+			.expect(200);
+		expect(read.body.attachments.map((row) => row.id)).toEqual(["att-old", "att-new"]);
 	});
 
 	test("the owner sees only their own cases in the list", async () => {

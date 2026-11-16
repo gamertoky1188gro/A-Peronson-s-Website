@@ -165,6 +165,12 @@ describe("the premium support workspace (src/pages/support/SupportWorkspace.jsx)
 		expect(screen.getByText("Investigation started.")).toBeInTheDocument();
 	});
 
+	it("renders the evidence rail from the hook's attachments", async () => {
+		await renderWorkspace();
+		expect(screen.getByText("Evidence (1)")).toBeInTheDocument();
+		expect(screen.getAllByText("checkout-shot.png").length).toBeGreaterThan(0);
+	});
+
 	it("opens the evidence viewer when an evidence thumb is clicked", async () => {
 		await renderWorkspace();
 		const opens = await screen.findAllByRole("button", {

@@ -55,17 +55,34 @@ function mergeMessages(existing, incoming) {
 }
 
 // Adds attachments to the case's attachment list, without duplicating one
-// that is already there.
+// that is already there. An attachment that carries an id is matched on it;
+// one without (the local payload kept for a send that has not been
+// re-fetched) is matched on its path, so a send-then-reload does not show
+// the same file twice.
 function mergeAttachments(existing, incoming) {
 	const list = Array.isArray(existing) ? [...existing] : [];
 	for (const attachment of incoming || []) {
-		if (attachment?.file_path) {
-			const index = list.findIndex((entry) => entry?.file_path === attachment.file_path);
-			if (index >= 0) {
-				list[index] = { ...list[index], ...attachment };
-			} else {
-				list.push(attachment);
+		if (!attachment || typeof attachment !== "object") {
+			continue;
+		}
+		const id = attachment.id ?? null;
+		const filePath = attachment.file_path ?? null;
+		if (!id && !filePath) {
+			continue;
+		}
+		const index = list.findIndex((entry) => {
+			if (id && entry?.id) {
+				return entry.id === id;
 			}
+			if (filePath && entry?.file_path) {
+				return entry.file_path === filePath;
+			}
+			return false;
+		});
+		if (index >= 0) {
+			list[index] = { ...list[index], ...attachment };
+		} else {
+			list.push(attachment);
 		}
 	}
 	return list;
@@ -198,6 +215,7 @@ function caseReducer(state, action) {
 				caseRow: action.caseRow,
 				messages: Array.isArray(action.messages) ? action.messages : [],
 				status: action.status ?? null,
+				attachments: mergeAttachments(state.attachments, action.attachments),
 			};
 		case "error:set":
 			return {
@@ -249,6 +267,7 @@ async function loadCaseAction(caseId, dispatch, supportToken = "") {
 			caseRow: data?.case ?? null,
 			messages: data?.messages,
 			status: data?.case?.status ?? null,
+			attachments: data?.attachments,
 		});
 		return data?.case ?? null;
 	} catch (err) {

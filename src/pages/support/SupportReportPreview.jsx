@@ -290,7 +290,7 @@ export default function SupportReportPreview() {
 									type="button"
 									onClick={handleSubmit}
 									disabled={!approved || confirming}
-									className={`inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-sky-500 px-6 py-3 text-sm font-semibold text-[#050b1d] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${focusRing}`}
+									className={`inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-sky-500 px-6 py-3 text-sm font-semibold text-[#050b1d] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${focusRing}`}
 								>
 									{confirming ? (
 										<ThreeDot variant="bounce" color="#050b1d" size="small" text="" textColor="" />

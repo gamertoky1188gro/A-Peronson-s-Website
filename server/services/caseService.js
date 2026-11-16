@@ -155,12 +155,39 @@ export async function listCasesForUser(userId) {
 }
 
 /**
+ * Attaches each case's linked ticket's priority to the case rows.
+ *
+ * SupportCase has no priority column; the priority lives on the
+ * SupportTicket the case was opened from. One findMany for every
+ * ticket_id keeps the join to a single extra query no matter how many
+ * cases are listed. Cases with no ticket (or a ticket that is gone)
+ * get `priority: null`; the rows are otherwise unchanged.
+ *
+ * @param {Object[]} rows Case rows.
+ * @returns {Promise<Object[]>} The same rows with `priority` attached.
+ */
+export async function attachTicketPriority(rows) {
+	const list = Array.isArray(rows) ? rows : [];
+	const ticketIds = [...new Set(list.map((row) => row?.ticket_id).filter(Boolean))];
+	if (ticketIds.length === 0) {
+		return list.map((row) => ({ ...row, priority: null }));
+	}
+	const tickets = await prisma.supportTicket.findMany({
+		where: { id: { in: ticketIds } },
+		select: { id: true, priority: true },
+	});
+	const priorityById = new Map(tickets.map((ticket) => [ticket.id, ticket.priority]));
+	return list.map((row) => ({ ...row, priority: priorityById.get(row?.ticket_id) ?? null }));
+}
+
+/**
  * Lists every case, most recently touched first. Staff view.
  *
  * @returns {Promise<Object[]>}
  */
 export async function listCasesAdmin() {
-	return prisma.supportCase.findMany({ orderBy: { updated_at: "desc" } });
+	const cases = await prisma.supportCase.findMany({ orderBy: { updated_at: "desc" } });
+	return attachTicketPriority(cases);
 }
 
 /**

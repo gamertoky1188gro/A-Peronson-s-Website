@@ -247,5 +247,7 @@ describe("the submitted page (src/pages/support/SupportSubmitted.jsx)", () => {
 		});
 		renderSubmitted();
 		expect(await screen.findByText("Failed")).toBeInTheDocument();
+		expect(screen.getByText(/couldn't send the report yet/i)).toBeInTheDocument();
+		expect(screen.queryByText(/a copy will be sent to your email/i)).not.toBeInTheDocument();
 	});
 });

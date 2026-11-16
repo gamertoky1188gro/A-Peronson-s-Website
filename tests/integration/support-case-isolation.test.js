@@ -284,6 +284,9 @@ const prismaMock = {
 	supportCaseMessage: collection(state.caseMessages),
 	supportCaseAttachment: collection(state.attachments),
 	supportInvestigation: collection(state.investigations),
+	// The admin case detail joins the case's ticket for its priority; no
+	// tickets exist in this fixture set.
+	supportTicket: { findMany: async () => [] },
 	$transaction: async (fn) => fn(prismaMock),
 };
 

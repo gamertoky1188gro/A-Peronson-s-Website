@@ -92,6 +92,10 @@ export default function SupportSubmitted() {
 	}, [caseId, jwt, supportToken]);
 
 	const pill = caseRow ? deliveryPill(caseRow) : null;
+	const failed =
+		String(caseRow?.report_status ?? "")
+			.toLowerCase()
+			.trim() === "failed";
 
 	return (
 		<div className="relative min-h-dvh overflow-hidden bg-[#050b1d] text-[#e8eefc]">
@@ -136,13 +140,15 @@ export default function SupportSubmitted() {
 				</GlassCard>
 
 				<p className="mt-6 inline-flex items-center gap-2 text-sm text-[#8ea3c8]">
-					<Mail className="h-4 w-4 text-cyan-400" aria-hidden="true" />A copy will be sent to your
-					email
+					<Mail className="h-4 w-4 text-cyan-400" aria-hidden="true" />
+					{failed
+						? "We couldn't send the report yet — we'll retry."
+						: "A copy will be sent to your email"}
 				</p>
 
 				<Link
 					to="/support"
-					className={`mt-8 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-sky-500 px-8 py-3 text-sm font-semibold text-[#050b1d] transition hover:-translate-y-0.5 ${focusRing}`}
+					className={`mt-8 inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-cyan-400 to-sky-500 px-8 py-3 text-sm font-semibold text-[#050b1d] transition motion-reduce:transition-none hover:-translate-y-0.5 ${focusRing}`}
 				>
 					Back to Support
 				</Link>
