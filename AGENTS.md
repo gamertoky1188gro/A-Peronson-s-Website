@@ -321,3 +321,12 @@
   - **The in-memory and disk loggers are two different sanitizers.** Hardening one is not hardening the other; audit every sink separately.
   - **Query strings are credentials.** `/api/files/content?path=&exp=&uid=&sig=` is replayable until expiry. Never log the query, never log a signed URL, never paste one into a transcript.
   - **Non-JSON bodies have no schema to redact against** — treat as opaque and omit, never "log the first 2000 bytes".
+
+## 25. The pre-commit gate never ran anywhere (Owner)
+
+- **Problem:** `core.hooksPath=.husky/_` (set by an old `husky install`), and every file under `.husky/_/` was `-rw-rw-r--` — not executable — so git ignored ALL hooks silently: no biome, no tests, no build ever ran on commit, anywhere. In the purple-theme worktree the gate did fire, but `.husky/_/husky.sh` didn't exist there, so the hook failed at line 2 and the subagent had to bypass with `--no-verify`. The subagent's bypass was correct in context; the gate itself was broken everywhere before that.
+- **Fix:** `.husky/pre-commit` de-sourced from the generated `.husky/_/husky.sh` and made `chmod 755`; it is now self-contained (biome on staged files → full `npm test` → `npm run build`). `core.hooksPath` in this clone points to `.husky` so git invokes exactly that file. Fresh clones must run `git config core.hooksPath .husky` (git still ignores non-executable hooks) or the gate silently turns off again.
+- **Gotchas:**
+  - **`git config core.hooksPath` is per-clone and not committable.** The `prepare: husky install || true` script is a no-op in this environment. Document hooks for every new machine.
+  - **Spawning an empty commit to verify the gate runs the FULL suite (~70-85s) plus a build; it does not need `--allow-empty` to be useful.**
+  - **The gate works. The suite's own flake does not:** `tests/unit/server-auth-hardening.test.js` ("a crash record … rotated", line ~177, asserts ≤2 `crash-history.*` files while `server/utils/crashReporter.js` defaults `CRASH_LOG_MAX_FILES=10`; coupling between `fs` mocks and rotation logic) intermittently fails under full-suite runs and passes standalone. Until that coupling is understood, commits may randomly bounce on an unrelated test. Do NOT weaken the gate to dodge it.
