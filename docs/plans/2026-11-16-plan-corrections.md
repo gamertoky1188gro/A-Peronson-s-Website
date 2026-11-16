@@ -1,0 +1,11 @@
+# Corrections to the pasted ChatGPT plan (2026-11-16)
+
+1. **"Build Next.js + Drizzle + R2 + separate worker"** — rejected. The repo is React+Vite+Express+Prisma+PostgreSQL with signed private uploads and an existing support-case API/console. We upgrade, we do not rebuild.
+2. **"OpenCode SDK quick start with createOpencodeClient() / @opencode-ai/sdk (V1)"** — the project targets **OpenCode V2** (`@opencode/client`, `opencode serve --port`, basic-auth via `OPENCODE_SERVER_PASSWORD`). V1 docs remain only as legacy reference.
+3. **"docs.opencode.ai pages with utm_source=chatgpt"** — V1 legacy set; the working reference is `opencode.ai/v2/docs/*`. Key pages verified live on 2026-11-16: build/client (valid), build/sdk (valid), api ("170 operations, 501 schemas", not 143/293), permissions (valid — V2 uses ordered `permissions` array, V1 `permission` is legacy), mcp-servers (valid — `mcp.servers`, `{env:NAME}` interpolation, `codemode: false`), migrate-v1 (valid).
+4. **"iceman-free may train on prompts"** — correct to exclude; keep `iceman-free` out of the allowlist everywhere.
+5. **"Inkling 2 Small Free trains on prompts" / "Beam Free 30-day retention" / "LongCat 2.5 Free 100-request limit"** — unverified catalog lore; the repo policy only excludes `iceman-free` (per owner's decision) and keeps `longcat-2.5-free` out of the default allowlist. No other model is excluded without an owner decision.
+6. **"Report defaults to Gmail SMTP App Password"** — history: `emailService` has `gmail_api` implemented; `INVESTIGATION_REPORT_EMAIL_PROVIDER=gmail` selects it; Brevo SMTP is IP-locked to Render and unusable here. The plan sets Gmail API via service-account/refresh-token in Render env.
+7. **"Two independent experiences, purple/cyan"** — correct goal; already partially done in Phase 1–3 (blue/cyan live, two modes done). Remaining cosmetic work is Phase C of the master plan.
+8. **`.opencode/` layout** — current committed frontmatter is V1-style; native V2 ordered-permissions is mandatory (master plan Task A.0). The operator's own opencode must remain untouched by investigation config (achieved: `.opencode/opencode.json` declares `$schema` only).
+9. **"Minimize: no read-only proof exists"** — confirmed. Unit tests pass; the live spike (`INVESTIGATION_SPIKE=1`) has never run against a live runtime. No merge/enable until A.1 passes.
