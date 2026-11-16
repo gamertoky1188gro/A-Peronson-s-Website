@@ -2496,7 +2496,7 @@ export function AdminPlatformSection({
 						<button
 							type="button"
 							onClick={() => refreshSupportCases()}
-							className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300"
+							class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300"
 						>
 							Refresh cases
 						</button>
@@ -2520,7 +2520,7 @@ export function AdminPlatformSection({
 									type="button"
 									aria-pressed={active}
 									onClick={() => setSupportCaseFilters((prev) => ({ ...prev, status: value }))}
-									className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] transition ${
+									class={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] transition ${
 										active
 											? "border-purple-500/50 bg-purple-500/15 text-purple-300"
 											: "border-white/10 bg-white/5 text-slate-400 hover:text-slate-200"
@@ -2530,7 +2530,7 @@ export function AdminPlatformSection({
 								</button>
 							);
 						})}
-						<span aria-hidden="true" className="mx-1 hidden h-4 w-px bg-white/10 sm:block" />
+						<span aria-hidden="true" class="mx-1 hidden h-4 w-px bg-white/10 sm:block" />
 						{[
 							["all", "All priority"],
 							["low", "Low"],
@@ -2545,7 +2545,7 @@ export function AdminPlatformSection({
 									type="button"
 									aria-pressed={active}
 									onClick={() => setSupportCaseFilters((prev) => ({ ...prev, priority: value }))}
-									className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] transition ${
+									class={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] transition ${
 										active
 											? "border-amber-400/50 bg-amber-500/15 text-amber-300"
 											: "border-white/10 bg-white/5 text-slate-400 hover:text-slate-200"
@@ -2561,34 +2561,34 @@ export function AdminPlatformSection({
 							onChange={(event) => setSupportCaseSearch(event.target.value)}
 							placeholder="Search cases, clients, subjects…"
 							aria-label="Search support cases"
-							className="min-w-48 flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] text-slate-100 placeholder:text-slate-500 focus:border-cyan-400/40 focus:outline-none"
+							class="min-w-48 flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] text-slate-100 placeholder:text-slate-500 focus:border-cyan-400/40 focus:outline-none"
 						/>
 					</div>
 
 					{/* Dense inbox table. Row click opens the case, as before. */}
-					<div className="mt-3 overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
-						<table className="w-full min-w-[56rem] border-collapse text-left text-[11px]">
+					<div class="mt-3 overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
+						<table class="w-full min-w-[56rem] border-collapse text-left text-[11px]">
 							<thead>
-								<tr className="border-b border-white/10 text-[10px] uppercase tracking-[0.18em] text-slate-500">
-									<th scope="col" className="px-3 py-2 font-semibold">
+								<tr class="border-b border-white/10 text-[10px] uppercase tracking-[0.18em] text-slate-500">
+									<th scope="col" class="px-3 py-2 font-semibold">
 										Case
 									</th>
-									<th scope="col" className="px-3 py-2 font-semibold">
+									<th scope="col" class="px-3 py-2 font-semibold">
 										Client
 									</th>
-									<th scope="col" className="px-3 py-2 font-semibold">
+									<th scope="col" class="px-3 py-2 font-semibold">
 										Subject
 									</th>
-									<th scope="col" className="px-3 py-2 font-semibold">
+									<th scope="col" class="px-3 py-2 font-semibold">
 										Priority
 									</th>
-									<th scope="col" className="px-3 py-2 font-semibold">
+									<th scope="col" class="px-3 py-2 font-semibold">
 										Status
 									</th>
-									<th scope="col" className="px-3 py-2 font-semibold">
+									<th scope="col" class="px-3 py-2 font-semibold">
 										Email
 									</th>
-									<th scope="col" className="px-3 py-2 font-semibold">
+									<th scope="col" class="px-3 py-2 font-semibold">
 										Submitted
 									</th>
 								</tr>
@@ -2596,14 +2596,14 @@ export function AdminPlatformSection({
 							<tbody>
 								{supportCasesLoading ? (
 									<tr>
-										<td colSpan={7} className="px-3 py-4 text-slate-500">
+										<td colSpan={7} class="px-3 py-4 text-slate-500">
 											Loading cases…
 										</td>
 									</tr>
 								) : null}
 								{!supportCasesLoading && supportCasesFiltered.length === 0 ? (
 									<tr>
-										<td colSpan={7} className="px-3 py-4 text-slate-500">
+										<td colSpan={7} class="px-3 py-4 text-slate-500">
 											{supportCases.length === 0
 												? "No support cases."
 												: "No support cases match the filters."}
@@ -2625,45 +2625,45 @@ export function AdminPlatformSection({
 													openSupportCase(item.id);
 												}
 											}}
-											className={`cursor-pointer border-b border-white/5 transition last:border-b-0 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-500/60 ${
+											class={`cursor-pointer border-b border-white/5 transition last:border-b-0 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-purple-500/60 ${
 												selected ? "bg-purple-500/10" : ""
 											}`}
 										>
-											<td className="px-3 py-2 font-mono text-slate-300">
+											<td class="px-3 py-2 font-mono text-slate-300">
 												{String(item.id || "").slice(0, 8)}
 												{item.escalated ? (
-													<span className="ml-1 text-[9px] font-semibold uppercase text-amber-300">
+													<span class="ml-1 text-[9px] font-semibold uppercase text-amber-300">
 														esc
 													</span>
 												) : null}
 												{item.retain ? (
-													<span className="ml-1 text-[9px] font-semibold uppercase text-purple-300">
+													<span class="ml-1 text-[9px] font-semibold uppercase text-purple-300">
 														retain
 													</span>
 												) : null}
 											</td>
-											<td className="px-3 py-2">
-												<p className="text-slate-200">{client?.name || client?.email || "--"}</p>
-												<p className="text-[10px] text-slate-500">
+											<td class="px-3 py-2">
+												<p class="text-slate-200">{client?.name || client?.email || "--"}</p>
+												<p class="text-[10px] text-slate-500">
 													{client?.email || item.user_id || ""}
 												</p>
 											</td>
 											<td
-												className="max-w-64 truncate px-3 py-2 text-slate-200"
+												class="max-w-64 truncate px-3 py-2 text-slate-200"
 												title={item.subject || ""}
 											>
 												{item.subject || "Support case"}
 											</td>
-											<td className="px-3 py-2">
+											<td class="px-3 py-2">
 												<PriorityChip priority={item.priority} />
 											</td>
-											<td className="px-3 py-2">
+											<td class="px-3 py-2">
 												<InvestigationStatusChip status={item.status} />
 											</td>
-											<td className="px-3 py-2">
+											<td class="px-3 py-2">
 												<ReportStatusPill status={item.report_status} />
 											</td>
-											<td className="px-3 py-2 tabular-nums text-slate-400">
+											<td class="px-3 py-2 tabular-nums text-slate-400">
 												{item.created_at ? new Date(item.created_at).toLocaleString() : "--"}
 											</td>
 										</tr>
@@ -2676,40 +2676,38 @@ export function AdminPlatformSection({
 					<div class="mt-4 space-y-3">
 						{supportCaseBusy ? <p class="text-xs text-slate-500">Working…</p> : null}
 						{supportCaseNotice ? (
-							<p className="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-3 text-[11px] text-emerald-300">
+							<p class="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-3 text-[11px] text-emerald-300">
 								{supportCaseNotice}
 							</p>
 						) : null}
 						{supportCaseDetailLoading ? (
-							<p className="text-xs text-slate-500">Loading the case…</p>
+							<p class="text-xs text-slate-500">Loading the case…</p>
 						) : null}
 						{supportCaseDetailLoading || supportCaseDetail ? null : (
-							<p className="text-xs text-slate-500">Select a case to review it.</p>
+							<p class="text-xs text-slate-500">Select a case to review it.</p>
 						)}
 						{supportCaseDetail ? (
 							<>
 								{/* Header + actions stay above the tab bar - the escalate/rerun contract is unchanged. */}
-								<div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-									<p className="text-sm font-semibold text-slate-100">
+								<div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+									<p class="text-sm font-semibold text-slate-100">
 										{supportCaseDetail.case?.subject || "Support case"}
 									</p>
-									<p className="mt-1 font-mono text-[11px] text-slate-500">
+									<p class="mt-1 font-mono text-[11px] text-slate-500">
 										{supportCaseDetail.case?.id} · {supportCaseDetail.case?.status || "collecting"}
 										{supportCaseDetail.case?.ticket_id
 											? ` · ticket ${supportCaseDetail.case.ticket_id}`
 											: ""}
 									</p>
 									{supportCaseDetail.case?.summary ? (
-										<p className="mt-2 text-[11px] text-slate-400">
-											{supportCaseDetail.case.summary}
-										</p>
+										<p class="mt-2 text-[11px] text-slate-400">{supportCaseDetail.case.summary}</p>
 									) : null}
-									<div className="mt-3 flex flex-wrap items-center gap-2">
+									<div class="mt-3 flex flex-wrap items-center gap-2">
 										<button
 											type="button"
 											disabled={supportCaseBusy}
 											onClick={() => runSupportCaseAction(supportCaseDetail.case?.id, "rerun", {})}
-											className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300 disabled:opacity-50"
+											class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300 disabled:opacity-50"
 										>
 											Re-run investigation
 										</button>
@@ -2721,7 +2719,7 @@ export function AdminPlatformSection({
 													reason: supportCaseNote,
 												})
 											}
-											className="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white transition disabled:opacity-50"
+											class="rounded-full bg-amber-600 px-3 py-1 text-[11px] font-semibold text-white transition disabled:opacity-50"
 										>
 											Escalate
 										</button>
@@ -2729,13 +2727,14 @@ export function AdminPlatformSection({
 											value={supportCaseNote}
 											onChange={(event) => setSupportCaseNote(event.target.value)}
 											placeholder="Escalation note (optional)"
-											className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-slate-100 placeholder:text-slate-500 focus:border-cyan-400/40 focus:outline-none"
+											class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-slate-100 placeholder:text-slate-500 focus:border-cyan-400/40 focus:outline-none"
 										/>
 									</div>
 								</div>
 
 								<CaseDetailTabs
 									caseRow={supportCaseDetail.case}
+									feedback={supportCaseDetail.feedback ?? null}
 									clientUser={selectedCaseClient}
 									messages={supportCaseDetail.messages}
 									investigations={supportCaseDetail.investigations}

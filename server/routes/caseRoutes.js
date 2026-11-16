@@ -7,8 +7,12 @@ import {
 	listCasesController,
 	postCaseMessageController,
 	streamCaseController,
+	submitCaseFeedbackController,
 } from "../controllers/caseController.js";
-import { getCaseModelController, putCaseModelController } from "../controllers/caseModelController.js";
+import {
+	getCaseModelController,
+	putCaseModelController,
+} from "../controllers/caseModelController.js";
 import { requireAuthOrSupportToken } from "../middleware/auth.js";
 import { createRateLimiter } from "../middleware/rateLimiter.js";
 
@@ -64,7 +68,13 @@ router.get("/:caseId/stream", requireAuthOrSupportToken, caseLimiter, streamCase
 // The model pick is a two-segment nested path: registered before the bare
 // `/:caseId` parameter route so the more specific path is matched first.
 router.get("/:caseId/model", requireAuthOrSupportToken, caseLimiter, getCaseModelController);
-router.put("/:caseId/model", requireAuthOrSupportToken, caseLimiter, caseWriteLimiter, putCaseModelController);
+router.put(
+	"/:caseId/model",
+	requireAuthOrSupportToken,
+	caseLimiter,
+	caseWriteLimiter,
+	putCaseModelController,
+);
 router.get("/:caseId", requireAuthOrSupportToken, caseLimiter, getCaseController);
 router.post(
 	"/:caseId/messages",
@@ -73,7 +83,26 @@ router.post(
 	caseWriteLimiter,
 	postCaseMessageController,
 );
-router.post("/:caseId/confirm", requireAuthOrSupportToken, caseLimiter, caseWriteLimiter, confirmCaseController);
-router.delete("/:caseId", requireAuthOrSupportToken, caseLimiter, caseWriteLimiter, deleteCaseController);
+router.post(
+	"/:caseId/confirm",
+	requireAuthOrSupportToken,
+	caseLimiter,
+	caseWriteLimiter,
+	confirmCaseController,
+);
+router.post(
+	"/:caseId/feedback",
+	requireAuthOrSupportToken,
+	caseLimiter,
+	caseWriteLimiter,
+	submitCaseFeedbackController,
+);
+router.delete(
+	"/:caseId",
+	requireAuthOrSupportToken,
+	caseLimiter,
+	caseWriteLimiter,
+	deleteCaseController,
+);
 
 export default router;

@@ -60,57 +60,77 @@ const subtleText = "text-[11px] text-slate-400";
 const monoLine = "font-mono text-[10px] text-slate-400";
 
 function Empty({ children }) {
-	return <p className="text-[11px] text-slate-500">{children}</p>;
+	return <p class="text-[11px] text-slate-500">{children}</p>;
 }
 
 /** Overview: who, what, when, where in the pipeline. */
-function OverviewPanel({ caseRow, clientUser, reportStatus }) {
+function OverviewPanel({ caseRow, clientUser, reportStatus, feedback = null }) {
 	const clientName = clientUser?.name || clientUser?.email || caseRow?.user_id || "--";
 	return (
-		<div className={panelClasses}>
-			<h3 className="text-sm font-semibold text-slate-100">{caseRow?.subject || "Support case"}</h3>
-			<div className="mt-3 grid grid-cols-1 gap-3 text-[11px] sm:grid-cols-2">
+		<div class={panelClasses}>
+			<h3 class="text-sm font-semibold text-slate-100">{caseRow?.subject || "Support case"}</h3>
+			<div class="mt-3 grid grid-cols-1 gap-3 text-[11px] sm:grid-cols-2">
 				<div>
-					<p className="uppercase tracking-[0.18em] text-slate-500">Client</p>
-					<p className="mt-1 text-slate-200">{clientName}</p>
+					<p class="uppercase tracking-[0.18em] text-slate-500">Client</p>
+					<p class="mt-1 text-slate-200">{clientName}</p>
 					{clientUser?.email && clientUser.name !== clientUser.email ? (
-						<p className="text-slate-500">{clientUser.email}</p>
+						<p class="text-slate-500">{clientUser.email}</p>
 					) : null}
 				</div>
 				<div>
-					<p className="uppercase tracking-[0.18em] text-slate-500">Case</p>
-					<p className="mt-1 font-mono text-slate-200" title={caseRow?.id}>
+					<p class="uppercase tracking-[0.18em] text-slate-500">Case</p>
+					<p class="mt-1 font-mono text-slate-200" title={caseRow?.id}>
 						{String(caseRow?.id || "--").slice(0, 12)}
 						{caseRow?.ticket_id ? ` · ticket ${caseRow.ticket_id}` : ""}
 					</p>
 				</div>
 				<div>
-					<p className="uppercase tracking-[0.18em] text-slate-500">Submitted</p>
-					<p className="mt-1 tabular-nums text-slate-200">{formatStamp(caseRow?.created_at)}</p>
+					<p class="uppercase tracking-[0.18em] text-slate-500">Submitted</p>
+					<p class="mt-1 tabular-nums text-slate-200">{formatStamp(caseRow?.created_at)}</p>
 				</div>
 				<div>
-					<p className="uppercase tracking-[0.18em] text-slate-500">Updated</p>
-					<p className="mt-1 tabular-nums text-slate-200">{formatStamp(caseRow?.updated_at)}</p>
+					<p class="uppercase tracking-[0.18em] text-slate-500">Updated</p>
+					<p class="mt-1 tabular-nums text-slate-200">{formatStamp(caseRow?.updated_at)}</p>
 				</div>
 			</div>
-			<div className="mt-4 flex flex-wrap items-center gap-2">
+			{feedback ? (
+				<div class="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-500/5 px-4 py-3 text-[11px]">
+					<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
+						Client feedback
+					</p>
+					<p class="mt-1 text-xs text-emerald-200/90">
+						{feedback.rating === "up"
+							? "Solved — useful investigation"
+							: "Not useful — investigation missed the mark"}
+					</p>
+					{feedback.note ? (
+						<p class="mt-2 whitespace-pre-wrap text-[11px] leading-5 text-emerald-100/80">
+							{feedback.note}
+						</p>
+					) : null}
+					<p class="mt-2 text-[10px] text-emerald-200/60">
+						Saved {new Date(feedback.updated_at).toLocaleString()}
+					</p>
+				</div>
+			) : null}
+			<div class="mt-4 flex flex-wrap items-center gap-2">
 				<PriorityChip priority={caseRow?.priority} />
 				<InvestigationStatusChip status={caseRow?.status} />
 				<ReportStatusPill status={reportStatus} />
 				{caseRow?.escalated ? (
-					<span className="inline-flex items-center rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-300">
+					<span class="inline-flex items-center rounded-full border border-amber-400/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-300">
 						Escalated
 					</span>
 				) : null}
 				{caseRow?.retain ? (
-					<span className="inline-flex items-center rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-purple-400">
+					<span class="inline-flex items-center rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-purple-400">
 						Retained
 					</span>
 				) : null}
 			</div>
-			<StageRail status={caseRow?.status} className="mt-4" />
+			<StageRail status={caseRow?.status} class="mt-4" />
 			{caseRow?.summary ? (
-				<p className="mt-4 border-t border-white/5 pt-4 text-[11px] leading-relaxed text-slate-300">
+				<p class="mt-4 border-t border-white/5 pt-4 text-[11px] leading-relaxed text-slate-300">
 					{caseRow.summary}
 				</p>
 			) : null}
@@ -124,29 +144,28 @@ function ConversationPanel({ messages = EMPTY }) {
 	const isClientSide = (role) =>
 		["client", "buyer", "user"].includes(String(role || "").toLowerCase());
 	return (
-		<div className={panelClasses}>
+		<div class={panelClasses}>
 			{list.length === 0 ? <Empty>No messages.</Empty> : null}
-			<div className="space-y-2">
+			<div class="space-y-2">
 				{list.map((message) => {
 					const clientSide = isClientSide(message?.role);
 					return (
-						<div
-							key={message.id}
-							className={clientSide ? "flex justify-end" : "flex justify-start"}
-						>
+						<div key={message.id} class={clientSide ? "flex justify-end" : "flex justify-start"}>
 							<div
-								className={`max-w-[80%] rounded-2xl border px-3 py-2 ${
-									clientSide ? "border-purple-500/30 bg-purple-500/15" : "border-white/10 bg-white/5"
+								class={`max-w-[80%] rounded-2xl border px-3 py-2 ${
+									clientSide
+										? "border-purple-500/30 bg-purple-500/15"
+										: "border-white/10 bg-white/5"
 								}`}
 							>
-								<p className={subtleText}>
+								<p class={subtleText}>
 									#{message.sequence} · {message.role}
 									{message.kind ? ` · ${message.kind}` : ""}
 									{message.agent ? ` · ${message.agent}` : ""}
 									{message.created_at ? ` · ${formatStamp(message.created_at)}` : ""}
 								</p>
 								{/* The stored content is HTML-escaped by the server, so it renders as TEXT. */}
-								<p className="mt-1 whitespace-pre-wrap text-xs text-slate-100">{message.content}</p>
+								<p class="mt-1 whitespace-pre-wrap text-xs text-slate-100">{message.content}</p>
 							</div>
 						</div>
 					);
@@ -199,9 +218,9 @@ function EvidencePanel({ attachments = EMPTY }) {
 	}));
 
 	return (
-		<div className={panelClasses}>
+		<div class={panelClasses}>
 			{list.length === 0 ? <Empty>No evidence attached to this case.</Empty> : null}
-			<div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+			<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
 				{list.map((attachment, index) => {
 					const path = attachment?.file_path;
 					const name = fileNameOf(path);
@@ -213,16 +232,16 @@ function EvidencePanel({ attachments = EMPTY }) {
 							type="button"
 							onClick={() => setViewerIndex(index)}
 							aria-label={`Open evidence ${name}`}
-							className="group overflow-hidden rounded-xl border border-white/10 bg-white/5 text-left transition hover:border-cyan-400/40"
+							class="group overflow-hidden rounded-xl border border-white/10 bg-white/5 text-left transition hover:border-cyan-400/40"
 						>
-							<span className="flex h-24 w-full items-center justify-center overflow-hidden bg-[#0b0714]">
+							<span class="flex h-24 w-full items-center justify-center overflow-hidden bg-[#0b0714]">
 								{isImage && url ? (
-									<img src={url} alt={name} loading="lazy" className="h-full w-full object-cover" />
+									<img src={url} alt={name} loading="lazy" class="h-full w-full object-cover" />
 								) : (
-									<FileText className="h-7 w-7 text-cyan-300/80" aria-hidden="true" />
+									<FileText class="h-7 w-7 text-cyan-300/80" aria-hidden="true" />
 								)}
 							</span>
-							<span className="block truncate px-2 py-1.5 text-[10px] text-slate-300">{name}</span>
+							<span class="block truncate px-2 py-1.5 text-[10px] text-slate-300">{name}</span>
 						</button>
 					);
 				})}
@@ -243,9 +262,9 @@ function EvidencePanel({ attachments = EMPTY }) {
 function FindingsPanel({ investigations = EMPTY }) {
 	const list = Array.isArray(investigations) ? investigations : EMPTY;
 	return (
-		<div className={panelClasses}>
+		<div class={panelClasses}>
 			{list.length === 0 ? <Empty>No investigation has run yet.</Empty> : null}
-			<div className="space-y-3">
+			<div class="space-y-3">
 				{list.map((investigation) => {
 					const findings = Array.isArray(investigation?.findings?.findings)
 						? investigation.findings.findings
@@ -254,39 +273,33 @@ function FindingsPanel({ investigations = EMPTY }) {
 						? investigation.findings.limitations
 						: [];
 					return (
-						<div
-							key={investigation.id}
-							className="rounded-xl border border-white/10 bg-white/5 p-3"
-						>
-							<div className="flex flex-wrap items-center gap-2">
-								<span className="rounded-md border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
+						<div key={investigation.id} class="rounded-xl border border-white/10 bg-white/5 p-3">
+							<div class="flex flex-wrap items-center gap-2">
+								<span class="rounded-md border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
 									{investigation.role}
 								</span>
-								<span className={subtleText}>
+								<span class={subtleText}>
 									{investigation.status} · attempt {investigation.attempt}
 									{investigation.model_id ? ` · ${investigation.model_id}` : ""}
 								</span>
 							</div>
 							{investigation.error ? (
-								<p className="mt-2 text-[11px] text-rose-400">{investigation.error}</p>
+								<p class="mt-2 text-[11px] text-rose-400">{investigation.error}</p>
 							) : null}
 							{investigation.findings?.summary ? (
-								<p className="mt-2 text-xs text-slate-200">{investigation.findings.summary}</p>
+								<p class="mt-2 text-xs text-slate-200">{investigation.findings.summary}</p>
 							) : null}
 							{findings.map((finding) => (
 								<div
 									key={`${investigation.id}-${finding.confidence}-${finding.detail}`}
-									className="mt-2 border-t border-white/5 pt-2"
+									class="mt-2 border-t border-white/5 pt-2"
 								>
 									<ConfidenceChip confidence={finding.confidence} />
-									<p className="mt-1 text-xs text-slate-100">{finding.detail}</p>
+									<p class="mt-1 text-xs text-slate-100">{finding.detail}</p>
 									{Array.isArray(finding.evidence) && finding.evidence.length > 0 ? (
-										<ul className="mt-1.5 space-y-1">
+										<ul class="mt-1.5 space-y-1">
 											{finding.evidence.map((entry) => (
-												<li
-													key={`${entry.file}-${entry.lines}-${entry.commit}`}
-													className={monoLine}
-												>
+												<li key={`${entry.file}-${entry.lines}-${entry.commit}`} class={monoLine}>
 													{entry.file}
 													{entry.lines ? `:${entry.lines}` : ""}
 													{entry.commit ? ` @ ${String(entry.commit).slice(0, 8)}` : ""}
@@ -297,7 +310,7 @@ function FindingsPanel({ investigations = EMPTY }) {
 																href={entry.url}
 																target="_blank"
 																rel="noreferrer"
-																className="text-cyan-300 hover:underline"
+																class="text-cyan-300 hover:underline"
 															>
 																{`Open ${entry.file || "evidence link"}`}
 															</a>
@@ -310,7 +323,7 @@ function FindingsPanel({ investigations = EMPTY }) {
 								</div>
 							))}
 							{limitations.length > 0 ? (
-								<p className="mt-2 text-[11px] text-slate-500">
+								<p class="mt-2 text-[11px] text-slate-500">
 									Limitations: {limitations.join(" · ")}
 								</p>
 							) : null}
@@ -336,23 +349,23 @@ function ActivityPanel({ toolLog = EMPTY }) {
 		return "text-slate-400";
 	};
 	return (
-		<div className={panelClasses}>
+		<div class={panelClasses}>
 			{list.length === 0 ? <Empty>No tool call was recorded.</Empty> : null}
-			<ol className="space-y-1">
+			<ol class="space-y-1">
 				{list.map((entry) => (
 					<li
 						key={entry.key}
-						className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 rounded-lg border border-white/5 bg-white/5 px-3 py-1.5"
+						class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 rounded-lg border border-white/5 bg-white/5 px-3 py-1.5"
 					>
-						<span className="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-300/80">
+						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-cyan-300/80">
 							{entry.role}
 						</span>
-						<span className="font-mono text-[11px] text-slate-100">{entry.tool}</span>
-						<span className={`font-mono text-[10px] uppercase ${statusClass(entry.status)}`}>
+						<span class="font-mono text-[11px] text-slate-100">{entry.tool}</span>
+						<span class={`font-mono text-[10px] uppercase ${statusClass(entry.status)}`}>
 							{entry.status}
 						</span>
 						{entry.error ? (
-							<span className="w-full text-[11px] text-rose-400">{entry.error}</span>
+							<span class="w-full text-[11px] text-rose-400">{entry.error}</span>
 						) : null}
 					</li>
 				))}
@@ -365,13 +378,13 @@ function ActivityPanel({ toolLog = EMPTY }) {
 function EmailReportPanel({ caseRow, report, busy, onResendReport }) {
 	const deliveredAt = caseRow?.report_delivered_at;
 	return (
-		<div className={panelClasses}>
-			<div className="flex flex-wrap items-center justify-between gap-3">
+		<div class={panelClasses}>
+			<div class="flex flex-wrap items-center justify-between gap-3">
 				<div>
-					<p className="uppercase tracking-[0.18em] text-slate-500">Report email</p>
-					<div className="mt-2 flex flex-wrap items-center gap-2">
+					<p class="uppercase tracking-[0.18em] text-slate-500">Report email</p>
+					<div class="mt-2 flex flex-wrap items-center gap-2">
 						<ReportStatusPill status={caseRow?.report_status} />
-						<span className={subtleText}>
+						<span class={subtleText}>
 							{deliveredAt ? `Delivered ${formatStamp(deliveredAt)}` : "Not delivered yet"}
 						</span>
 					</div>
@@ -380,17 +393,17 @@ function EmailReportPanel({ caseRow, report, busy, onResendReport }) {
 					type="button"
 					onClick={onResendReport}
 					disabled={busy}
-					className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-[11px] font-semibold text-cyan-300 transition hover:border-cyan-400/50 hover:bg-cyan-500/15 disabled:cursor-not-allowed disabled:opacity-50"
+					class="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-[11px] font-semibold text-cyan-300 transition hover:border-cyan-400/50 hover:bg-cyan-500/15 disabled:cursor-not-allowed disabled:opacity-50"
 				>
 					Resend report
 				</button>
 			</div>
 			{report ? (
-				<pre className="mt-4 max-h-96 overflow-auto whitespace-pre-wrap border-t border-white/5 pt-4 font-sans text-[11px] leading-relaxed text-slate-200">
+				<pre class="mt-4 max-h-96 overflow-auto whitespace-pre-wrap border-t border-white/5 pt-4 font-sans text-[11px] leading-relaxed text-slate-200">
 					{report}
 				</pre>
 			) : (
-				<p className="mt-4 border-t border-white/5 pt-4 text-[11px] text-slate-500">
+				<p class="mt-4 border-t border-white/5 pt-4 text-[11px] text-slate-500">
 					No report has been written yet.
 				</p>
 			)}
@@ -423,6 +436,7 @@ export function CaseDetailTabs({
 	report = "",
 	busy = false,
 	onResendReport,
+	feedback = null,
 }) {
 	const [activeTab, setActiveTab] = useState("overview");
 
@@ -443,6 +457,7 @@ export function CaseDetailTabs({
 				caseRow={caseRow}
 				clientUser={clientUser}
 				reportStatus={caseRow?.report_status}
+				feedback={feedback}
 			/>
 		),
 		conversation: <ConversationPanel messages={messages} />,
@@ -465,7 +480,7 @@ export function CaseDetailTabs({
 				role="tablist"
 				aria-label="Case detail"
 				onKeyDown={onTabKeyDown}
-				className="flex flex-wrap items-center gap-1 border-b border-white/10"
+				class="flex flex-wrap items-center gap-1 border-b border-white/10"
 			>
 				{TABS.map((tab) => {
 					const selected = activeTab === tab.id;
@@ -478,7 +493,7 @@ export function CaseDetailTabs({
 							aria-selected={selected}
 							aria-controls={`case-panel-${tab.id}`}
 							onClick={() => setActiveTab(tab.id)}
-							className={`rounded-t-lg border-b-2 px-3 py-2 text-[11px] font-semibold transition ${
+							class={`rounded-t-lg border-b-2 px-3 py-2 text-[11px] font-semibold transition ${
 								selected
 									? "border-cyan-400 text-cyan-300"
 									: "border-transparent text-slate-400 hover:text-slate-200"
@@ -496,7 +511,7 @@ export function CaseDetailTabs({
 					role="tabpanel"
 					aria-labelledby={`case-tab-${tab.id}`}
 					hidden={activeTab !== tab.id}
-					className="pt-3"
+					class="pt-3"
 				>
 					{panels[tab.id]}
 				</div>

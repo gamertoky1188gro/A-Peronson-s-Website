@@ -1,7 +1,9 @@
 import crypto from "node:crypto";
 import { CASE_EVENTS, emitCaseEvent } from "../realtime/realtimeBus.js";
+import { readLocalJson, writeLocalJson } from "../utils/localStore.js";
 import { isOwnerOrAdmin } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
+import { sanitizeString } from "../utils/validators.js";
 
 // A support case is the PARENT of a ticket: the thread a client opens, the
 // evidence attached to it, and the investigations run against it. The rows
@@ -297,4 +299,54 @@ export async function countClientMessages(caseId) {
 		where: { case_id: caseId, role: { in: [CLIENT_ROLE, LEGACY_CLIENT_ROLE] } },
 	});
 	return Number(count) || 0;
+}
+
+/**
+ * Buyer feedback on the finished investigation report.
+ *
+ * Stored out-of-line in local_json, not in the case row: the case is the
+ * demand-side investigation record, and the rating must not rewrite its
+ * existing contract (message shape, report contents, delivery status). An
+ * owner of the case may leave one rating; repeats overwrite the old one.
+ */
+export const MAX_FEEDBACK_NOTE = 500;
+export const FEEDBACK_RATINGS = new Set(["up", "down"]);
+
+export async function getCaseFeedback(caseId) {
+	try {
+		const store = await readLocalJson("support_case_feedback.json", {});
+		return store[caseId] ?? null;
+	} catch {
+		return null;
+	}
+}
+
+export async function setCaseFeedback(caseId, { rating, note }) {
+	if (!FEEDBACK_RATINGS.has(rating)) {
+		const error = new Error("rating must be one of: up, down");
+		error.status = 400;
+		throw error;
+	}
+	const safeNote = sanitizeString(String(note ?? ""), MAX_FEEDBACK_NOTE).trim();
+	const entry = {
+		rating,
+		note: safeNote,
+		updated_at: new Date().toISOString(),
+	};
+	const store = await readLocalJson("support_case_feedback.json", {});
+	const next = { ...(store || {}), [String(caseId)]: entry };
+	await writeLocalJson("support_case_feedback.json", next);
+	return entry;
+}
+
+/**
+ * Admin read-side for the owner console. Dropped unless asked for by caller.
+ */
+export async function listCaseFeedback() {
+	try {
+		const store = await readLocalJson("support_case_feedback.json", {});
+		return store && typeof store === "object" ? store : {};
+	} catch {
+		return {};
+	}
 }

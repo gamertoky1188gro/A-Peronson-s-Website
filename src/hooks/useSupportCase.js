@@ -22,6 +22,7 @@ const INITIAL_CASE_STATE = {
 	findings: [],
 	attachments: [],
 	loading: false,
+	feedback: null,
 };
 
 function compareBySequence(a, b) {
@@ -67,7 +68,7 @@ function mergeAttachments(existing, incoming) {
 		}
 		const id = attachment.id ?? null;
 		const filePath = attachment.file_path ?? null;
-		if (!id && !filePath) {
+		if (!(id || filePath)) {
 			continue;
 		}
 		const index = list.findIndex((entry) => {
@@ -216,6 +217,14 @@ function caseReducer(state, action) {
 				messages: Array.isArray(action.messages) ? action.messages : [],
 				status: action.status ?? null,
 				attachments: mergeAttachments(state.attachments, action.attachments),
+				feedback: action.feedback ?? null,
+			};
+		case "feedback:set":
+			return {
+				...state,
+				error: null,
+				errorStatus: null,
+				feedback: action.feedback ?? null,
 			};
 		case "error:set":
 			return {
@@ -268,6 +277,7 @@ async function loadCaseAction(caseId, dispatch, supportToken = "") {
 			messages: data?.messages,
 			status: data?.case?.status ?? null,
 			attachments: data?.attachments,
+			feedback: data?.feedback ?? null,
 		});
 		return data?.case ?? null;
 	} catch (err) {
@@ -364,6 +374,32 @@ async function attachFileAction(caseId, dispatch, file, supportToken = "") {
 	}
 }
 
+// POST /support/cases/:caseId/feedback
+async function submitFeedbackAction(caseId, dispatch, payload, supportToken = "") {
+	if (!caseId) {
+		dispatch({ type: "error:set", error: "No support case is open." });
+		return null;
+	}
+	try {
+		const data = await apiRequest(`/support/cases/${caseId}/feedback`, {
+			method: "POST",
+			token: getToken(),
+			headers: supportTokenHeaders(supportToken),
+			skipSessionClear: Boolean(supportToken),
+			body: payload,
+		});
+		dispatch({ type: "feedback:set", feedback: data?.feedback ?? null });
+		return data?.feedback ?? null;
+	} catch (err) {
+		dispatch({
+			type: "error:set",
+			error: err?.message || "Unable to save feedback.",
+			status: err?.status ?? null,
+		});
+		return null;
+	}
+}
+
 // POST /support/cases/:caseId/confirm
 async function confirmCaseAction(caseId, dispatch, supportToken = "") {
 	if (!caseId) {
@@ -429,6 +465,11 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 		[caseId, supportToken],
 	);
 
+	const submitFeedback = useCallback(
+		(feedback) => submitFeedbackAction(caseId, dispatch, feedback, supportToken),
+		[caseId, supportToken],
+	);
+
 	useEffect(() => {
 		refresh();
 		if (!caseId) {
@@ -457,9 +498,11 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 		findings: state.findings,
 		attachments: state.attachments,
 		loading: state.loading,
+		feedback: state.feedback,
 		send,
 		attach,
 		confirm,
+		submitFeedback,
 		refresh,
 		clearError,
 	};

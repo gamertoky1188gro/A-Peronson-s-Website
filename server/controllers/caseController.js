@@ -648,10 +648,12 @@ export async function getCaseController(req, res) {
 			where: { case_id: caseId },
 			orderBy: { created_at: "asc" },
 		});
+		const feedback = await caseService.getCaseFeedback(caseId).catch(() => null);
 		return res.json({
 			case: caseRow,
 			messages: messages || [],
 			attachments: Array.isArray(attachments) ? attachments : [],
+			feedback,
 		});
 	} catch (error) {
 		return handleControllerError(res, error);
@@ -948,6 +950,43 @@ export async function deleteCaseController(req, res) {
 		logInfo("support case deleted", { caseId, userId: req.user.id });
 
 		return res.json({ ok: true });
+	} catch (error) {
+		return handleControllerError(res, error);
+	}
+}
+
+/**
+ * POST /api/support/cases/:caseId/feedback — leave feedback on a case.
+ *
+ * Buyer writes one rating (up/down) plus an optional note. Repeats replace
+ * the stored entry. Out-of-line storage in local_json — not a column on
+ * support_cases, so the case contract and the wire shape stay unchanged.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ */
+export async function submitCaseFeedbackController(req, res) {
+	try {
+		const caseId = sanitizeString(String(req.params.caseId || ""), 120);
+		if (!caseId) {
+			return res.status(400).json({ error: "caseId is required" });
+		}
+
+		const found = await caseService.getCaseWithMessages(caseId);
+		if (!found) {
+			return res.status(404).json({ error: "Case not found" });
+		}
+		if (!caseService.canReadCase(req.user, found)) {
+			return res.status(403).json({ error: "Forbidden" });
+		}
+
+		const rating = String(req.body?.rating || "")
+			.toLowerCase()
+			.trim();
+		const note = req.body?.note;
+		const entry = await caseService.setCaseFeedback(caseId, { rating, note });
+		logInfo("support case feedback", { caseId, rating });
+		return res.json({ feedback: entry });
 	} catch (error) {
 		return handleControllerError(res, error);
 	}

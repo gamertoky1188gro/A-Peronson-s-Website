@@ -107,6 +107,7 @@ import { adminLimiter } from "../middleware/rateLimiter.js";
 import {
 	appendCaseMessage,
 	attachTicketPriority,
+	getCaseFeedback,
 	getCaseWithMessages,
 	listCasesAdmin,
 } from "../services/caseService.js";
@@ -184,11 +185,13 @@ async function getSupportCaseHandler(req, res) {
 		where: { case_id: caseId },
 		orderBy: { created_at: "asc" },
 	});
+	const feedback = await getCaseFeedback(caseId).catch(() => null);
 	return res.json({
 		case: caseRow,
 		messages: Array.isArray(messages) ? messages : [],
 		investigations: Array.isArray(investigations) ? investigations : [],
 		attachments: Array.isArray(attachments) ? attachments : [],
+		feedback,
 	});
 }
 

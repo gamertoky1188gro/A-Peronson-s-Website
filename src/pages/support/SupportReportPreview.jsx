@@ -60,7 +60,7 @@ const REPORT_MARKDOWN_COMPONENTS = {
 				width={640}
 				height={360}
 				loading="lazy"
-				className="max-w-full rounded-2xl"
+				class="max-w-full rounded-2xl"
 			/>
 		);
 	},
@@ -111,7 +111,8 @@ function splitReportSections(markdown) {
 	};
 }
 
-const focusRing = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60";
+const focusRing =
+	"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60";
 
 export default function SupportReportPreview() {
 	const { caseId } = useParams();
@@ -123,6 +124,22 @@ export default function SupportReportPreview() {
 	const [approved, setApproved] = useState(false);
 	const [confirming, setConfirming] = useState(false);
 	const [problem, setProblem] = useState("");
+	const [feedbackRating, setFeedbackRating] = useState("");
+	const [feedbackNote, setFeedbackNote] = useState("");
+	const [feedbackSaving, setFeedbackSaving] = useState(false);
+	const [feedbackSaved, setFeedbackSaved] = useState(null);
+
+	// Seed from the case's stored feedback (if any) once it loads.
+	useEffect(() => {
+		if (feedbackSaved || feedbackRating) return;
+		const fb = supportCase.feedback ?? null;
+		if (fb?.rating) {
+			setFeedbackRating(fb.rating);
+			setFeedbackNote(fb.note ?? "");
+			setFeedbackSaved(fb);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [supportCase.feedback]);
 
 	// A 401 from any case request means the token was revoked: drop it and go back to the landing.
 	const errorStatus = supportCase.errorStatus ?? null;
@@ -158,33 +175,33 @@ export default function SupportReportPreview() {
 	}
 
 	return (
-		<div className="relative min-h-dvh overflow-hidden bg-[#0b0714] text-[#f4eeff]">
+		<div class="relative min-h-dvh overflow-hidden bg-[#0b0714] text-[#f4eeff]">
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_-10%,rgba(168,85,247,0.14),transparent_70%),radial-gradient(40%_40%_at_100%_100%,rgba(217,70,239,0.10),transparent_70%)]"
+				class="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_-10%,rgba(168,85,247,0.14),transparent_70%),radial-gradient(40%_40%_at_100%_100%,rgba(217,70,239,0.10),transparent_70%)]"
 			/>
-			<div className="relative mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-				<div className="flex flex-wrap items-center justify-between gap-3">
+			<div class="relative mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+				<div class="flex flex-wrap items-center justify-between gap-3">
 					<Link
 						to={`/support/case/${caseId}`}
-						className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#a99bbd] transition hover:text-cyan-300 ${focusRing}`}
+						class={`inline-flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#a99bbd] transition hover:text-cyan-300 ${focusRing}`}
 					>
-						<ArrowLeft className="h-4 w-4" aria-hidden="true" />
+						<ArrowLeft class="h-4 w-4" aria-hidden="true" />
 						Back to conversation
 					</Link>
-					<p className="max-w-[12rem] truncate font-mono text-[11px] text-[#a99bbd]/70" title={caseId}>
+					<p class="max-w-[12rem] truncate font-mono text-[11px] text-[#a99bbd]/70" title={caseId}>
 						{caseId}
 					</p>
 				</div>
 
-				<header className="mt-6">
-					<p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-purple-400">
+				<header class="mt-6">
+					<p class="text-[11px] font-semibold uppercase tracking-[0.28em] text-purple-400">
 						Report preview
 					</p>
-					<h1 className="mt-2 text-3xl font-semibold tracking-tight text-[#f4eeff] sm:text-4xl">
+					<h1 class="mt-2 text-3xl font-semibold tracking-tight text-[#f4eeff] sm:text-4xl">
 						Investigation report
 					</h1>
-					<p className="mt-2 max-w-xl text-sm leading-6 text-[#a99bbd]">
+					<p class="mt-2 max-w-xl text-sm leading-6 text-[#a99bbd]">
 						Review what the investigation found. Nothing goes to the support team until you approve
 						it below.
 					</p>
@@ -194,17 +211,17 @@ export default function SupportReportPreview() {
 					<>
 						{preamble ? (
 							<GlassCard
-								className={`mt-6 p-5 ${incomplete ? "border-amber-400/30 bg-amber-500/5" : ""}`}
+								class={`mt-6 p-5 ${incomplete ? "border-amber-400/30 bg-amber-500/5" : ""}`}
 							>
-								<div className="flex flex-wrap items-center gap-2">
+								<div class="flex flex-wrap items-center gap-2">
 									{incomplete ? (
-										<AlertTriangle className="h-4 w-4 text-amber-300" aria-hidden="true" />
+										<AlertTriangle class="h-4 w-4 text-amber-300" aria-hidden="true" />
 									) : null}
-									<p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+									<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
 										{incomplete ? "Incomplete investigation" : "Report summary"}
 									</p>
 								</div>
-								<div className="mt-2 text-sm leading-6 text-[#f4eeff]">
+								<div class="mt-2 text-sm leading-6 text-[#f4eeff]">
 									<ReactMarkdown
 										remarkPlugins={[remarkGfm]}
 										components={REPORT_MARKDOWN_COMPONENTS}
@@ -216,9 +233,9 @@ export default function SupportReportPreview() {
 						) : null}
 
 						{sections.length === 0 ? (
-							<GlassCard className="mt-6 p-5">
-								<h2 className="text-base font-semibold text-[#f4eeff]">Investigation report</h2>
-								<div className="mt-3 break-words text-sm leading-6 text-[#f4eeff]">
+							<GlassCard class="mt-6 p-5">
+								<h2 class="text-base font-semibold text-[#f4eeff]">Investigation report</h2>
+								<div class="mt-3 break-words text-sm leading-6 text-[#f4eeff]">
 									<ReactMarkdown
 										remarkPlugins={[remarkGfm]}
 										components={REPORT_MARKDOWN_COMPONENTS}
@@ -228,22 +245,22 @@ export default function SupportReportPreview() {
 								</div>
 							</GlassCard>
 						) : (
-							<div className="mt-6 space-y-4">
+							<div class="mt-6 space-y-4">
 								{sections.map((section) => (
-									<GlassCard key={`${section.index}-${section.title}`} className="p-5">
-										<div className="flex items-baseline gap-4">
+									<GlassCard key={`${section.index}-${section.title}`} class="p-5">
+										<div class="flex items-baseline gap-4">
 											<span
 												aria-hidden="true"
-												className="font-mono text-sm font-semibold tracking-widest text-purple-400"
+												class="font-mono text-sm font-semibold tracking-widest text-purple-400"
 											>
 												{String(section.index + 1).padStart(2, "0")}
 											</span>
-											<h2 className="text-base font-semibold leading-snug text-[#f4eeff]">
+											<h2 class="text-base font-semibold leading-snug text-[#f4eeff]">
 												{section.title}
 											</h2>
 										</div>
 										{section.body ? (
-											<div className="mt-3 break-words text-sm leading-6 text-[#f4eeff]">
+											<div class="mt-3 break-words text-sm leading-6 text-[#f4eeff]">
 												<ReactMarkdown
 													remarkPlugins={[remarkGfm]}
 													components={REPORT_MARKDOWN_COMPONENTS}
@@ -257,32 +274,96 @@ export default function SupportReportPreview() {
 							</div>
 						)}
 
-						<GlassCard className="mt-6 p-5">
+						{/* Buyer feedback — quick thumbs up/down before approval. */}
+						<GlassCard class="mt-6 p-5">
+							<p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-purple-400">
+								Was this useful?
+							</p>
+							<div class="mt-3 flex flex-wrap items-center gap-3">
+								<div class="flex flex-wrap items-center gap-3">
+									{["up", "down"].map((rating) => (
+										<button
+											key={rating}
+											type="button"
+											onClick={async () => {
+												setFeedbackRating(rating);
+												try {
+													setFeedbackSaving(true);
+													const result = await supportCase.submitFeedback({
+														rating,
+														note: feedbackNote,
+													});
+													if (result) setFeedbackSaved(result);
+												} finally {
+													setFeedbackSaving(false);
+												}
+											}}
+											disabled={feedbackSaving}
+											class={`inline-flex min-h-11 items-center gap-2 rounded-2xl border px-4 py-2.5 text-xs font-semibold transition motion-reduce:transition-none disabled:opacity-60 ${
+												feedbackRating === rating
+													? rating === "up"
+														? "border-emerald-400/40 bg-emerald-500/15 text-emerald-300"
+														: "border-rose-400/40 bg-rose-500/15 text-rose-300"
+													: "border-white/10 bg-white/5 text-[#f4eeff] hover:border-purple-500/40 hover:bg-purple-500/10"
+											}`}
+											aria-pressed={feedbackRating === rating}
+										>
+											{rating === "up" ? "Worked — thanks" : "Wrong — sorry"}
+										</button>
+									))}
+								</div>
+								{feedbackSaved ? (
+									<span class="text-[11px] font-semibold text-emerald-300">Feedback saved</span>
+								) : null}
+							</div>
+							<textarea
+								aria-label="Feedback note"
+								maxLength={500}
+								value={feedbackNote}
+								onChange={(event) => setFeedbackNote(event.target.value)}
+								onBlur={async () => {
+									if (feedbackRating) {
+										setFeedbackSaving(true);
+										const result = await supportCase.submitFeedback({
+											rating: feedbackRating,
+											note: feedbackNote,
+										});
+										if (result) setFeedbackSaved(result);
+										setFeedbackSaving(false);
+									}
+								}}
+								placeholder="Why? What did it get wrong? (optional)"
+								class={`mt-3 w-full resize-y focus:outline-none rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm leading-6 text-[#f4eeff] placeholder:text-[#a99bbd]/70 ${focusRing}`}
+								rows={2}
+							/>
+						</GlassCard>
+
+						<GlassCard class="mt-6 p-5">
 							<label
-								htmlFor="report-approval"
-								className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl"
+								for="report-approval"
+								class="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl"
 							>
 								<input
 									id="report-approval"
 									type="checkbox"
 									checked={approved}
 									onChange={(event) => setApproved(event.target.checked)}
-									className={`h-5 w-5 shrink-0 accent-purple-500 ${focusRing}`}
+									class={`h-5 w-5 shrink-0 accent-purple-500 ${focusRing}`}
 								/>
-								<span className="text-sm leading-6 text-[#f4eeff]">
+								<span class="text-sm leading-6 text-[#f4eeff]">
 									I&apos;ve reviewed this report and I&apos;m ready to send it
 								</span>
 							</label>
 							{problem ? (
 								<p
 									role="alert"
-									className="mt-4 rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
+									class="mt-4 rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300"
 								>
 									{problem}
 								</p>
 							) : null}
-							<div className="mt-4 flex flex-wrap items-center justify-between gap-4">
-								<p className="max-w-xs text-xs leading-5 text-[#a99bbd]">
+							<div class="mt-4 flex flex-wrap items-center justify-between gap-4">
+								<p class="max-w-xs text-xs leading-5 text-[#a99bbd]">
 									The support team receives this exact report. There is no way to edit it after
 									sending.
 								</p>
@@ -290,12 +371,12 @@ export default function SupportReportPreview() {
 									type="button"
 									onClick={handleSubmit}
 									disabled={!approved || confirming}
-									className={`inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${focusRing}`}
+									class={`inline-flex min-h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-[#f4eeff] transition motion-reduce:transition-none hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 ${focusRing}`}
 								>
 									{confirming ? (
 										<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
 									) : (
-										<Check className="h-4 w-4" aria-hidden="true" />
+										<Check class="h-4 w-4" aria-hidden="true" />
 									)}
 									Finish &amp; Submit Report
 								</button>
@@ -303,17 +384,17 @@ export default function SupportReportPreview() {
 						</GlassCard>
 					</>
 				) : (
-					<GlassCard className="mt-6 p-10 text-center">
-						<FileText className="mx-auto h-10 w-10 text-cyan-300/70" aria-hidden="true" />
-						<h2 className="mt-4 text-lg font-semibold text-[#f4eeff]">
+					<GlassCard class="mt-6 p-10 text-center">
+						<FileText class="mx-auto h-10 w-10 text-cyan-300/70" aria-hidden="true" />
+						<h2 class="mt-4 text-lg font-semibold text-[#f4eeff]">
 							The report isn&apos;t ready yet
 						</h2>
-						<p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#a99bbd]">
+						<p class="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#a99bbd]">
 							It appears here as soon as the investigation finishes writing it.
 						</p>
 						<Link
 							to={`/support/case/${caseId}`}
-							className={`mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-[#f4eeff] transition hover:border-cyan-400/40 hover:text-cyan-200 ${focusRing}`}
+							class={`mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-[#f4eeff] transition hover:border-cyan-400/40 hover:text-cyan-200 ${focusRing}`}
 						>
 							Back to conversation
 						</Link>
