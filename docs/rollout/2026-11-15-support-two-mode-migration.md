@@ -413,3 +413,22 @@ screen.
 deletions; the footer fix, .gitignore, docs and the dist/ untracking itself
 were committed in 31666c23 and 0a853ad8. History was not rewritten because it
 was already pushed.
+
+## Phase 11 — independent a11y audit folded in (2026-11-16)
+
+An independent read-only WCAG 2.1 AA audit (subagent) was run against the
+support and AI Support surfaces. Its findings were applied in `435d6a33`
+(six majors, ~20 minors). The highlights: the investigation transcript now
+announces itself (`role=log`, `aria-live=polite`), the brand CTA gradient
+passed 3.0–3.5:1 and was darkened to violet-600/fuchsia-600 (4.7:1), the
+three `role="dialog"`s and two drawer panels now manage focus (trap,
+Escape, return) via a shared `useModalFocus` hook, and the invisible
+1.3–1.4:1 focus rings are now purple-500/60.
+
+React `class=`/`className=` usage across these files is the established
+pattern of the codebase; React renders `class` on DOM elements (with one
+dev-only warning per name), so it was left alone on purpose.
+
+No live-screen-reader verification has been done. Everything else is
+verified by build, the suite (1131 green), the gate, and local screenshots
+(see /tmp/opencode/qa-screenshots/).
