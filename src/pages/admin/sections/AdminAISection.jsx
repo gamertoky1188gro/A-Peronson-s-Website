@@ -9,7 +9,6 @@ import {
 	CheckCircle,
 	Code2,
 	Copy,
-	Cpu,
 	KeyRound,
 	Lightbulb,
 	ListChecks,
@@ -61,17 +60,6 @@ export function AdminAISection({ activeCategory, adminDark }) {
 	});
 	const [showAddForm, setShowAddForm] = useState(false);
 
-	const [modelsInfo, setModelsInfo] = useState({
-		models: [],
-		active: null,
-		source: null,
-		serverAvailable: false,
-	});
-	const [modelsLoading, setModelsLoading] = useState(false);
-	const [modelsSaving, setModelsSaving] = useState(false);
-	const [modelsNotice, setModelsNotice] = useState("");
-	const [modelsError, setModelsError] = useState("");
-
 	const [tokens, setTokens] = useState([]);
 	const [tokensLoading, setTokensLoading] = useState(false);
 	const [tokensError, setTokensError] = useState("");
@@ -91,52 +79,6 @@ export function AdminAISection({ activeCategory, adminDark }) {
 	const [modelsAdminSaving, setModelsAdminSaving] = useState(false);
 	const [modelsAdminError, setModelsAdminError] = useState("");
 	const [modelsAdminNotice, setModelsAdminNotice] = useState("");
-
-	async function fetchModels() {
-		try {
-			setModelsLoading(true);
-			setModelsError("");
-			const data = await apiRequest("/api/assistant/models", { token: true });
-			if (data) {
-				setModelsInfo({
-					models: data.models || [],
-					active: data.active || null,
-					source: data.source || null,
-					serverAvailable: Boolean(data.serverAvailable),
-				});
-			}
-		} catch (err) {
-			setModelsError(err?.message || "Failed to load the model list");
-		} finally {
-			setModelsLoading(false);
-		}
-	}
-
-	async function saveModel(modelId) {
-		try {
-			setModelsSaving(true);
-			setModelsNotice("");
-			setModelsError("");
-			const data = await apiRequest("/api/assistant/models", {
-				method: "PUT",
-				token: true,
-				body: { modelId },
-			});
-			if (data) {
-				setModelsInfo({
-					models: data.models || [],
-					active: data.active || null,
-					source: data.source || null,
-					serverAvailable: Boolean(data.serverAvailable),
-				});
-			}
-			setModelsNotice("Active model saved");
-		} catch (err) {
-			setModelsError(err?.message || "Failed to switch the model");
-		} finally {
-			setModelsSaving(false);
-		}
-	}
 
 	async function fetchModelsAdmin(refresh = false) {
 		try {
@@ -366,12 +308,6 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		fetchData,
 	]);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: fetch once on mount
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect
-		fetchModels();
-	}, []);
-
 	// biome-ignore lint/correctness/useExhaustiveDependencies: fetch when the tab opens
 	useEffect(() => {
 		if (activeTab === "tokens") {
@@ -480,53 +416,50 @@ export function AdminAISection({ activeCategory, adminDark }) {
 		{ id: "settings", label: "Settings", icon: Settings },
 		{ id: "global", label: "Global Rules", icon: Lightbulb },
 		{ id: "smalltalk", label: "Small Talk", icon: MessageSquare },
-		{ id: "models", label: "OpenCode Models", icon: Cpu },
 		{ id: "tokens", label: "Support Tokens", icon: KeyRound },
 		{ id: "models-admin", label: "Investigation Models", icon: ListChecks },
 	];
 
 	return (
-		<div className="space-y-6">
+		<div class="space-y-6">
 			<div
-				className={cn(
+				class={cn(
 					"rounded-3xl border p-6",
 					adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 				)}
 			>
-				<div className="flex items-center gap-4">
-					<div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-400 text-white">
-						<Bot className="h-6 w-6" />
+				<div class="flex items-center gap-4">
+					<div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-400 text-white">
+						<Bot class="h-6 w-6" />
 					</div>
 					<div>
-						<h2
-							className={cn("text-2xl font-semibold", adminDark ? "text-white" : "text-slate-900")}
-						>
-							AI Assistant Configuration
+						<h2 class={cn("text-2xl font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+							AI Support
 						</h2>
-						<p className={adminDark ? "text-slate-400" : "text-slate-500"}>
-							Configure AI behavior, prompts, and response rules
+						<p class={adminDark ? "text-slate-400" : "text-slate-500"}>
+							Investigation models, assistant rules, and buyer-token support
 						</p>
 					</div>
 				</div>
 			</div>
 
 			{notice && (
-				<div className="flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-400">
-					<CheckCircle className="h-5 w-5" />
+				<div class="flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-400">
+					<CheckCircle class="h-5 w-5" />
 					{notice}
 				</div>
 			)}
 
 			{error && (
-				<div className="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-400">
-					<AlertCircle className="h-5 w-5" />
+				<div class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-400">
+					<AlertCircle class="h-5 w-5" />
 					{error}
 				</div>
 			)}
 
 			{/* Tabs */}
 			<div
-				className={cn(
+				class={cn(
 					"flex gap-2 rounded-2xl border p-1",
 					adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-slate-50",
 				)}
@@ -536,7 +469,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 						key={tab.id}
 						type="button"
 						onClick={() => setActiveTab(tab.id)}
-						className={cn(
+						class={cn(
 							"flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
 							activeTab === tab.id
 								? adminDark
@@ -547,7 +480,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 									: "text-slate-600 hover:text-slate-900",
 						)}
 					>
-						<tab.icon className="h-4 w-4" />
+						<tab.icon class="h-4 w-4" />
 						{tab.label}
 					</button>
 				))}
@@ -556,21 +489,21 @@ export function AdminAISection({ activeCategory, adminDark }) {
 			{loading ? (
 				<Mosaic color="#337ab0" size="large" style={{ fontSize: "40px" }} text="" textColor="" />
 			) : activeTab === "settings" ? (
-				<div className="space-y-6">
+				<div class="space-y-6">
 					{/* System Prompt */}
 					<div
-						className={cn(
+						class={cn(
 							"rounded-3xl border p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
-						<div className="mb-4 flex items-center gap-2">
-							<Code2 className="h-5 w-5 text-indigo-400" />
-							<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+						<div class="mb-4 flex items-center gap-2">
+							<Code2 class="h-5 w-5 text-indigo-400" />
+							<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 								System Prompt
 							</h3>
 						</div>
-						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 							Short instruction that defines AI's role. Sent as "system" message to AI.
 						</p>
 						<textarea
@@ -578,7 +511,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							onChange={(e) => setConfig((prev) => ({ ...prev, systemPrompt: e.target.value }))}
 							rows={3}
 							placeholder="You are a helpful GarTex assistant."
-							className={cn(
+							class={cn(
 								"w-full rounded-2xl border px-4 py-3 text-sm outline-none resize-none",
 								adminDark
 									? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -589,18 +522,18 @@ export function AdminAISection({ activeCategory, adminDark }) {
 
 					{/* Agent Prompt */}
 					<div
-						className={cn(
+						class={cn(
 							"rounded-3xl border p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
-						<div className="mb-4 flex items-center gap-2">
-							<Bot className="h-5 w-5 text-indigo-400" />
-							<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+						<div class="mb-4 flex items-center gap-2">
+							<Bot class="h-5 w-5 text-indigo-400" />
+							<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 								Agent Prompt
 							</h3>
 						</div>
-						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 							Full prompt with role description. Appended before knowledge base and user question.
 						</p>
 						<textarea
@@ -608,7 +541,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							onChange={(e) => setConfig((prev) => ({ ...prev, agentPrompt: e.target.value }))}
 							rows={6}
 							placeholder="You are the GarTex Assistant, an expert on the GarTexHub textile marketplace platform..."
-							className={cn(
+							class={cn(
 								"w-full rounded-2xl border px-4 py-3 text-sm outline-none resize-none font-mono",
 								adminDark
 									? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -619,15 +552,15 @@ export function AdminAISection({ activeCategory, adminDark }) {
 
 					{/* Code Context Settings */}
 					<div
-						className={cn(
+						class={cn(
 							"rounded-3xl border p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
-						<div className="mb-4 flex items-center justify-between">
-							<div className="flex items-center gap-2">
-								<Code2 className="h-5 w-5 text-indigo-400" />
-								<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+						<div class="mb-4 flex items-center justify-between">
+							<div class="flex items-center gap-2">
+								<Code2 class="h-5 w-5 text-indigo-400" />
+								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 									Code Context Search
 								</h3>
 							</div>
@@ -639,22 +572,22 @@ export function AdminAISection({ activeCategory, adminDark }) {
 										codeContextEnabled: !prev.codeContextEnabled,
 									}))
 								}
-								className="text-indigo-400"
+								class="text-indigo-400"
 							>
 								{config.codeContextEnabled ? (
-									<ToggleRight className="h-6 w-6" />
+									<ToggleRight class="h-6 w-6" />
 								) : (
-									<ToggleLeft className="h-6 w-6" />
+									<ToggleLeft class="h-6 w-6" />
 								)}
 							</button>
 						</div>
-						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 							When enabled, AI will search your codebase for relevant code snippets when questions
 							contain these keywords.
 						</p>
 						<div>
 							<label
-								className={cn(
+								class={cn(
 									"mb-1.5 block text-sm font-medium",
 									adminDark ? "text-slate-300" : "text-slate-700",
 								)}
@@ -672,7 +605,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								}
 								placeholder="api, route, server, code, bug, error"
 								disabled={!config.codeContextEnabled}
-								className={cn(
+								class={cn(
 									"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none",
 									adminDark
 										? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -688,128 +621,28 @@ export function AdminAISection({ activeCategory, adminDark }) {
 						type="button"
 						onClick={saveConfig}
 						disabled={saving}
-						className="flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/20 px-6 py-3 text-sm font-medium text-indigo-300 transition-all hover:bg-indigo-500/30 disabled:opacity-50"
+						class="flex w-full items-center justify-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/20 px-6 py-3 text-sm font-medium text-indigo-300 transition-all hover:bg-indigo-500/30 disabled:opacity-50"
 					>
 						{saving ? (
 							<ThreeDot variant="bounce" color="#337ab0" size="small" text="" textColor="" />
 						) : (
-							<Save className="h-4 w-4" />
+							<Save class="h-4 w-4" />
 						)}
 						{saving ? "Saving..." : "Save Settings"}
 					</button>
 				</div>
-			) : activeTab === "models" ? (
-				<div className="space-y-6">
-					<div
-						className={cn(
-							"rounded-3xl border p-6",
-							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
-						)}
-					>
-						<div className="mb-4 flex items-center justify-between gap-4">
-							<div className="flex items-center gap-2">
-								<Cpu className="h-5 w-5 text-indigo-400" />
-								<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
-									OpenCode Models
-								</h3>
-								{modelsInfo.source && (
-									<span className="rounded-full border border-indigo-400/40 bg-indigo-500/10 px-3 py-0.5 text-xs text-indigo-300">
-										{modelsInfo.source === "admin"
-											? "Admin pick"
-											: modelsInfo.source === "env"
-												? "Env default"
-												: "Default"}
-									</span>
-								)}
-							</div>
-							<button
-								type="button"
-								onClick={fetchModels}
-								disabled={modelsLoading}
-								className="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
-							>
-								<RefreshCw className={cn("h-3.5 w-3.5", modelsLoading && "animate-spin")} />
-								Refresh
-							</button>
-						</div>
-						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
-							Free-tier models offered by the embedded opencode server. Switching takes effect for
-							new turns immediately; existing sessions are rebound on their next turn. Free models
-							only — paid models are never listed.
-						</p>
-
-						{modelsError && (
-							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
-								<AlertCircle className="h-4 w-4" />
-								{modelsError}
-							</div>
-						)}
-						{modelsNotice && (
-							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm text-green-400">
-								<CheckCircle className="h-4 w-4" />
-								{modelsNotice}
-							</div>
-						)}
-						{!modelsInfo.serverAvailable && (
-							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-sm text-yellow-300">
-								<AlertCircle className="h-4 w-4" />
-								The opencode server is not running (or is memory-guarded on this host). The
-								persisted choice will apply when it starts.
-							</div>
-						)}
-
-						<div className="space-y-2">
-							{(modelsInfo.models.length
-								? modelsInfo.models
-								: [{ id: modelsInfo.active || "minimax-m3.1-flash-free", providerID: "opencode" }]
-							).map((model) => (
-								<label
-									key={model.id}
-									className={cn(
-										"flex cursor-pointer items-center justify-between rounded-2xl border px-4 py-3 transition-all",
-										modelsInfo.active === model.id
-											? "border-indigo-500/60 bg-indigo-500/10"
-											: adminDark
-												? "border-white/10 hover:border-white/20"
-												: "border-slate-200 hover:border-slate-300",
-									)}
-								>
-									<input
-										type="radio"
-										name="opencode-model"
-										className="sr-only"
-										checked={modelsInfo.active === model.id}
-										disabled={modelsSaving}
-										onChange={() => saveModel(model.id)}
-									/>
-									<span
-										className={cn(
-											"font-mono text-sm",
-											adminDark ? "text-slate-100" : "text-slate-800",
-										)}
-									>
-										{model.id}
-									</span>
-									<span className={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
-										{model.providerID}
-									</span>
-								</label>
-							))}
-						</div>
-					</div>
-				</div>
 			) : activeTab === "tokens" ? (
-				<div className="space-y-6">
+				<div class="space-y-6">
 					<div
-						className={cn(
+						class={cn(
 							"rounded-3xl border p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
-						<div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-							<div className="flex items-center gap-2">
-								<KeyRound className="h-5 w-5 text-indigo-400" />
-								<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+						<div class="mb-4 flex flex-wrap items-center justify-between gap-4">
+							<div class="flex items-center gap-2">
+								<KeyRound class="h-5 w-5 text-indigo-400" />
+								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 									Support Tokens
 								</h3>
 							</div>
@@ -817,38 +650,38 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								type="button"
 								onClick={fetchTokens}
 								disabled={tokensLoading}
-								className="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
+								class="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
 							>
-								<RefreshCw className={cn("h-3.5 w-3.5", tokensLoading && "animate-spin")} />
+								<RefreshCw class={cn("h-3.5 w-3.5", tokensLoading && "animate-spin")} />
 								Refresh
 							</button>
 						</div>
-						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 							Issue a support token so any account can reach the AI investigation care path. Any
 							account role is eligible; the token is shown once, at creation time.
 						</p>
 
 						{tokensError && (
-							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
-								<AlertCircle className="h-4 w-4" />
+							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+								<AlertCircle class="h-4 w-4" />
 								{tokensError}
 							</div>
 						)}
 						{tokensNotice && (
-							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm text-green-400">
-								<CheckCircle className="h-4 w-4" />
+							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm text-green-400">
+								<CheckCircle class="h-4 w-4" />
 								{tokensNotice}
 							</div>
 						)}
 
-						<form onSubmit={searchBuyers} className="flex gap-2">
+						<form onSubmit={searchBuyers} class="flex gap-2">
 							<input
 								type="text"
 								value={buyerQuery}
 								onChange={(event) => setBuyerQuery(event.target.value)}
 								placeholder="Search accounts by name or email…"
 								aria-label="Search accounts"
-								className={cn(
+								class={cn(
 									"flex-1 rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
 									adminDark
 										? "border-white/10 bg-slate-900/70 placeholder:text-slate-500 text-white focus:border-indigo-400"
@@ -858,12 +691,12 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							<button
 								type="submit"
 								disabled={buyerSearching}
-								className="flex items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-2.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20 disabled:opacity-50"
+								class="flex items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-2.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20 disabled:opacity-50"
 							>
 								{buyerSearching ? (
 									<ThreeDot variant="bounce" color="#6366f1" size="small" text="" textColor="" />
 								) : (
-									<KeyRound className="h-4 w-4" />
+									<KeyRound class="h-4 w-4" />
 								)}
 								Search
 							</button>
@@ -871,7 +704,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 
 						{buyerResults.length > 0 && (
 							<ul
-								className={cn(
+								class={cn(
 									"mt-2 divide-y overflow-hidden rounded-2xl border",
 									adminDark
 										? "divide-white/5 border-white/10 bg-slate-900/40"
@@ -886,20 +719,20 @@ export function AdminAISection({ activeCategory, adminDark }) {
 												setPickedBuyer(user);
 												setBuyerResults([]);
 											}}
-											className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition-colors hover:bg-indigo-500/5"
+											class="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition-colors hover:bg-indigo-500/5"
 										>
-											<span className="min-w-0">
+											<span class="min-w-0">
 												<span
-													className={cn(
+													class={cn(
 														"block truncate text-sm font-medium",
 														adminDark ? "text-slate-100" : "text-slate-800",
 													)}
 												>
 													{user.name || user.email}
 												</span>
-												<span className="block truncate text-xs text-slate-500">{user.email}</span>
+												<span class="block truncate text-xs text-slate-500">{user.email}</span>
 											</span>
-											<span className="shrink-0 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2.5 py-0.5 text-xs text-indigo-300">
+											<span class="shrink-0 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-2.5 py-0.5 text-xs text-indigo-300">
 												{user.role}
 											</span>
 										</button>
@@ -910,33 +743,33 @@ export function AdminAISection({ activeCategory, adminDark }) {
 
 						{pickedBuyer && (
 							<div
-								className={cn(
+								class={cn(
 									"mt-3 flex items-center justify-between gap-4 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-sm",
 									adminDark ? "text-indigo-200" : "text-indigo-700",
 								)}
 							>
-								<span className="min-w-0 truncate">
+								<span class="min-w-0 truncate">
 									Issuing to: <strong>{pickedBuyer.name || pickedBuyer.email}</strong> (
 									{pickedBuyer.email})
 								</span>
 								<button
 									type="button"
 									onClick={() => setPickedBuyer(null)}
-									className="shrink-0 text-xs text-slate-400 hover:text-white"
+									class="shrink-0 text-xs text-slate-400 hover:text-white"
 								>
 									Clear
 								</button>
 							</div>
 						)}
 
-						<div className="mt-4 grid gap-4 sm:grid-cols-2">
+						<div class="mt-4 grid gap-4 sm:grid-cols-2">
 							<input
 								type="text"
 								value={newLabel}
 								onChange={(event) => setNewLabel(event.target.value)}
 								placeholder="Label — e.g. Acme Corp, Nov issue"
 								aria-label="Token label"
-								className={cn(
+								class={cn(
 									"rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
 									adminDark
 										? "border-white/10 bg-slate-900/70 placeholder:text-slate-500 text-white focus:border-indigo-400"
@@ -947,7 +780,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								value={newExpiry}
 								onChange={(event) => setNewExpiry(event.target.value)}
 								aria-label="Token expiry"
-								className={cn(
+								class={cn(
 									"rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
 									adminDark
 										? "border-white/10 bg-slate-900/70 text-white focus:border-indigo-400"
@@ -961,13 +794,13 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							</select>
 						</div>
 						{newExpiry === "custom" && (
-							<div className="mt-3">
+							<div class="mt-3">
 								<input
 									type="date"
 									value={customDate}
 									onChange={(event) => setCustomDate(event.target.value)}
 									aria-label="Custom expiry date"
-									className={cn(
+									class={cn(
 										"rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
 										adminDark
 											? "border-white/10 bg-slate-900/70 text-white focus:border-indigo-400"
@@ -980,12 +813,12 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							type="button"
 							onClick={issueToken}
 							disabled={issuedBusy || !pickedBuyer || !newLabel.trim()}
-							className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-400 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+							class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-400 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
 						>
 							{issuedBusy ? (
 								<ThreeDot variant="bounce" color="#6366f1" size="small" text="" textColor="" />
 							) : (
-								<KeyRound className="h-4 w-4" />
+								<KeyRound class="h-4 w-4" />
 							)}
 							{issuedBusy ? "Issuing…" : "Issue token"}
 						</button>
@@ -994,26 +827,26 @@ export function AdminAISection({ activeCategory, adminDark }) {
 					{/* The token is shown exactly once, right after issue. */}
 					{issuedToken && (
 						<div
-							className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+							class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
 							role="dialog"
 							aria-modal="true"
 							aria-label="Support token issued"
 						>
 							<div
-								className={cn(
+								class={cn(
 									"w-full max-w-lg rounded-3xl border p-6",
 									adminDark
 										? "border-white/10 bg-slate-900 text-white"
 										: "border-slate-200 bg-white text-slate-900",
 								)}
 							>
-								<h3 className="text-lg font-semibold">Token issued</h3>
-								<p className="mt-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-300">
+								<h3 class="text-lg font-semibold">Token issued</h3>
+								<p class="mt-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-300">
 									This token will not be shown again. Store it somewhere safe.
 								</p>
-								<div className="mt-4 flex items-stretch gap-2">
+								<div class="mt-4 flex items-stretch gap-2">
 									<code
-										className={cn(
+										class={cn(
 											"flex-1 select-all break-all rounded-2xl border px-4 py-3 font-mono text-xs leading-5",
 											adminDark
 												? "border-white/10 bg-slate-950 text-emerald-300"
@@ -1025,17 +858,17 @@ export function AdminAISection({ activeCategory, adminDark }) {
 									<button
 										type="button"
 										onClick={copyIssuedToken}
-										className="flex items-center gap-1.5 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
+										class="flex items-center gap-1.5 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
 									>
-										{tokenCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+										{tokenCopied ? <Check class="h-4 w-4" /> : <Copy class="h-4 w-4" />}
 										{tokenCopied ? "Copied" : "Copy"}
 									</button>
 								</div>
-								<div className="mt-4 flex justify-end">
+								<div class="mt-4 flex justify-end">
 									<button
 										type="button"
 										onClick={() => setIssuedToken(null)}
-										className="rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-400 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
+										class="rounded-2xl bg-gradient-to-r from-indigo-500 to-blue-400 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:-translate-y-0.5"
 									>
 										Done
 									</button>
@@ -1045,18 +878,18 @@ export function AdminAISection({ activeCategory, adminDark }) {
 					)}
 
 					<div
-						className={cn(
+						class={cn(
 							"overflow-x-auto rounded-3xl border",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
-						<div className="border-b border-slate-200/10 px-6 py-4">
-							<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+						<div class="border-b border-slate-200/10 px-6 py-4">
+							<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 								Issued tokens ({tokens.length})
 							</h3>
 						</div>
 						{tokensLoading ? (
-							<div className="flex justify-center px-6 py-12">
+							<div class="flex justify-center px-6 py-12">
 								<Mosaic
 									color="#6366f1"
 									size="large"
@@ -1066,45 +899,35 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								/>
 							</div>
 						) : tokens.length === 0 ? (
-							<div className="px-6 py-12 text-center">
+							<div class="px-6 py-12 text-center">
 								<KeyRound
-									className={cn(
+									class={cn(
 										"mx-auto h-12 w-12 mb-4",
 										adminDark ? "text-slate-600" : "text-slate-300",
 									)}
 								/>
-								<p className={adminDark ? "text-slate-400" : "text-slate-500"}>
-									No tokens issued yet
-								</p>
+								<p class={adminDark ? "text-slate-400" : "text-slate-500"}>No tokens issued yet</p>
 							</div>
 						) : (
-							<table className="min-w-full text-sm">
+							<table class="min-w-full text-sm">
 								<thead>
-									<tr className={cn("text-left", adminDark ? "text-slate-400" : "text-slate-500")}>
-										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+									<tr class={cn("text-left", adminDark ? "text-slate-400" : "text-slate-500")}>
+										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
 											Account
 										</th>
-										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
-											Label
-										</th>
-										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Label</th>
+										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
 											Created
 										</th>
-										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
+										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
 											Last used
 										</th>
-										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
-											Expiry
-										</th>
-										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider">
-											Status
-										</th>
-										<th className="px-6 py-3 text-xs font-semibold uppercase tracking-wider" />
+										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Expiry</th>
+										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider">Status</th>
+										<th class="px-6 py-3 text-xs font-semibold uppercase tracking-wider" />
 									</tr>
 								</thead>
-								<tbody
-									className={cn("divide-y", adminDark ? "divide-white/5" : "divide-slate-100")}
-								>
+								<tbody class={cn("divide-y", adminDark ? "divide-white/5" : "divide-slate-100")}>
 									{tokens.map((row) => {
 										const revoked = Boolean(row.revoked_at);
 										const expired = row.expires_at
@@ -1118,30 +941,30 @@ export function AdminAISection({ activeCategory, adminDark }) {
 												: "border-emerald-500/30 bg-emerald-500/10 text-emerald-400";
 										return (
 											<tr key={row.id}>
-												<td className="px-6 py-3">
+												<td class="px-6 py-3">
 													<span
-														className={cn(
+														class={cn(
 															"block font-medium",
 															adminDark ? "text-slate-100" : "text-slate-800",
 														)}
 													>
 														{row.buyer?.name || row.buyer?.email || row.buyer_id}
 													</span>
-													<span className="block text-xs text-slate-500">{row.buyer?.email}</span>
+													<span class="block text-xs text-slate-500">{row.buyer?.email}</span>
 												</td>
-												<td className="px-6 py-3">{row.label}</td>
-												<td className="px-6 py-3 whitespace-nowrap">
+												<td class="px-6 py-3">{row.label}</td>
+												<td class="px-6 py-3 whitespace-nowrap">
 													{formatTokenDate(row.created_at)}
 												</td>
-												<td className="px-6 py-3 whitespace-nowrap">
+												<td class="px-6 py-3 whitespace-nowrap">
 													{row.last_used_at ? formatTokenDate(row.last_used_at) : "—"}
 												</td>
-												<td className="px-6 py-3 whitespace-nowrap">
+												<td class="px-6 py-3 whitespace-nowrap">
 													{row.expires_at ? formatTokenDate(row.expires_at) : "Never"}
 												</td>
-												<td className="px-6 py-3">
+												<td class="px-6 py-3">
 													<span
-														className={cn(
+														class={cn(
 															"inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium",
 															statusClass,
 														)}
@@ -1149,14 +972,14 @@ export function AdminAISection({ activeCategory, adminDark }) {
 														{status}
 													</span>
 												</td>
-												<td className="px-6 py-3 text-right">
+												<td class="px-6 py-3 text-right">
 													{!revoked && (
 														<button
 															type="button"
 															onClick={() => revokeToken(row.id)}
-															className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-400 transition-all hover:bg-rose-500/20"
+															class="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-400 transition-all hover:bg-rose-500/20"
 														>
-															<Trash2 className="h-3.5 w-3.5" />
+															<Trash2 class="h-3.5 w-3.5" />
 															Revoke
 														</button>
 													)}
@@ -1170,21 +993,21 @@ export function AdminAISection({ activeCategory, adminDark }) {
 					</div>
 				</div>
 			) : activeTab === "models-admin" ? (
-				<div className="space-y-6">
+				<div class="space-y-6">
 					<div
-						className={cn(
+						class={cn(
 							"rounded-3xl border p-6",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
-						<div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-							<div className="flex flex-wrap items-center gap-2">
-								<ListChecks className="h-5 w-5 text-indigo-400" />
-								<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+						<div class="mb-4 flex flex-wrap items-center justify-between gap-4">
+							<div class="flex flex-wrap items-center gap-2">
+								<ListChecks class="h-5 w-5 text-indigo-400" />
+								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 									Investigation Models
 								</h3>
 								{modelsAdmin?.catalogStale && (
-									<span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-0.5 text-xs text-yellow-300">
+									<span class="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-0.5 text-xs text-yellow-300">
 										stale catalog
 									</span>
 								)}
@@ -1193,39 +1016,39 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								type="button"
 								onClick={() => fetchModelsAdmin(true)}
 								disabled={modelsAdminLoading}
-								className="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
+								class="flex items-center gap-2 rounded-xl border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:text-white disabled:opacity-50"
 							>
-								<RefreshCw className={cn("h-3.5 w-3.5", modelsAdminLoading && "animate-spin")} />
+								<RefreshCw class={cn("h-3.5 w-3.5", modelsAdminLoading && "animate-spin")} />
 								Refresh
 							</button>
 						</div>
-						<p className={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
+						<p class={cn("mb-4 text-sm", adminDark ? "text-slate-400" : "text-slate-500")}>
 							Owner-controlled. Free OpenCode models only.
 						</p>
 
 						{modelsAdminError && (
-							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
-								<AlertCircle className="h-4 w-4" />
+							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-400">
+								<AlertCircle class="h-4 w-4" />
 								{modelsAdminError}
 							</div>
 						)}
 						{modelsAdminNotice && (
-							<div className="mb-3 flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm text-green-400">
-								<CheckCircle className="h-4 w-4" />
+							<div class="mb-3 flex items-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm text-green-400">
+								<CheckCircle class="h-4 w-4" />
 								{modelsAdminNotice}
 							</div>
 						)}
 
-						<div className="space-y-2">
+						<div class="space-y-2">
 							{(modelsAdmin?.catalog ?? []).length === 0 && !modelsAdminLoading ? (
-								<p className={cn("text-sm", adminDark ? "text-slate-500" : "text-slate-400")}>
+								<p class={cn("text-sm", adminDark ? "text-slate-500" : "text-slate-400")}>
 									The live catalog is unavailable — the persisted allowlist is kept as-is.
 								</p>
 							) : null}
 							{(modelsAdmin?.catalog ?? []).map((model) => (
 								<label
 									key={model.id}
-									className={cn(
+									class={cn(
 										"flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-3 transition-all",
 										adminDark
 											? "border-white/10 hover:border-white/20"
@@ -1237,18 +1060,18 @@ export function AdminAISection({ activeCategory, adminDark }) {
 										checked={modelsAdmin?.allowed.includes(model.id) ?? false}
 										onChange={() => toggleAllowedModel(model.id)}
 										disabled={modelsAdminSaving}
-										className="h-4 w-4 accent-indigo-500"
+										class="h-4 w-4 accent-indigo-500"
 										aria-label={`Allow ${model.id}`}
 									/>
 									<span
-										className={cn(
+										class={cn(
 											"min-w-0 flex-1 font-mono text-sm",
 											adminDark ? "text-slate-100" : "text-slate-800",
 										)}
 									>
 										{model.id}
 									</span>
-									<span className={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
+									<span class={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
 										{model.ownedBy ?? model.providerID}
 									</span>
 								</label>
@@ -1262,28 +1085,28 @@ export function AdminAISection({ activeCategory, adminDark }) {
 							.map((id) => (
 								<div
 									key={id}
-									className={cn(
+									class={cn(
 										"mt-2 flex items-center gap-3 rounded-2xl border border-dashed px-4 py-3 text-xs",
 										adminDark
 											? "border-white/15 text-slate-400"
 											: "border-slate-300 text-slate-500",
 									)}
 								>
-									<span className="font-mono">{id}</span>
-									<span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-yellow-300">
+									<span class="font-mono">{id}</span>
+									<span class="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-yellow-300">
 										persisted
 									</span>
 								</div>
 							))}
 
-						<div className="mt-4 grid gap-4 sm:grid-cols-2">
+						<div class="mt-4 grid gap-4 sm:grid-cols-2">
 							<div>
 								<label
-									className={cn(
+									class={cn(
 										"mb-1.5 block text-sm font-medium",
 										adminDark ? "text-slate-300" : "text-slate-700",
 									)}
-									htmlFor="investigation-default-model"
+									for="investigation-default-model"
 								>
 									Default model
 								</label>
@@ -1297,7 +1120,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 									}
 									disabled={modelsAdminSaving || (modelsAdmin?.allowed.length ?? 0) === 0}
 									aria-label="Default model"
-									className={cn(
+									class={cn(
 										"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none transition-all",
 										adminDark
 											? "border-white/10 bg-slate-900/70 text-white focus:border-indigo-400"
@@ -1312,23 +1135,23 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								</select>
 							</div>
 
-							<div className="flex items-end">
+							<div class="flex items-end">
 								<div
-									className={cn(
+									class={cn(
 										"flex w-full items-center justify-between gap-3 rounded-2xl border px-4 py-3",
 										adminDark ? "border-white/10" : "border-slate-200",
 									)}
 								>
-									<div className="min-w-0">
+									<div class="min-w-0">
 										<p
-											className={cn(
+											class={cn(
 												"text-sm font-medium",
 												adminDark ? "text-slate-200" : "text-slate-700",
 											)}
 										>
 											Buyers can change model per message
 										</p>
-										<p className={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
+										<p class={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
 											Exposes the picker in the buyer's composer
 										</p>
 									</div>
@@ -1342,32 +1165,32 @@ export function AdminAISection({ activeCategory, adminDark }) {
 										disabled={modelsAdminSaving}
 										aria-label="Buyers can change model per message"
 										aria-pressed={modelsAdmin?.buyerSelectEnabled ?? true}
-										className="shrink-0 text-indigo-400 disabled:opacity-50"
+										class="shrink-0 text-indigo-400 disabled:opacity-50"
 									>
 										{(modelsAdmin?.buyerSelectEnabled ?? true) ? (
-											<ToggleRight className="h-7 w-7" />
+											<ToggleRight class="h-7 w-7" />
 										) : (
-											<ToggleLeft className="h-7 w-7" />
+											<ToggleLeft class="h-7 w-7" />
 										)}
 									</button>
 								</div>
 							</div>
 						</div>
 
-						<div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-							<p className={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
+						<div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+							<p class={cn("text-xs", adminDark ? "text-slate-500" : "text-slate-400")}>
 								iceman-free is permanently excluded (trains on prompts).
 							</p>
 							<button
 								type="button"
 								onClick={saveModelsAdmin}
 								disabled={modelsAdminSaving || !modelsAdmin}
-								className="flex items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-5 py-2.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+								class="flex items-center gap-2 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-5 py-2.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20 disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								{modelsAdminSaving ? (
 									<ThreeDot variant="bounce" color="#6366f1" size="small" text="" textColor="" />
 								) : (
-									<Save className="h-4 w-4" />
+									<Save class="h-4 w-4" />
 								)}
 								{modelsAdminSaving ? "Saving…" : "Save"}
 							</button>
@@ -1375,52 +1198,52 @@ export function AdminAISection({ activeCategory, adminDark }) {
 					</div>
 				</div>
 			) : (
-				<div className="space-y-4">
+				<div class="space-y-4">
 					{/* Rules List */}
 					<div
-						className={cn(
+						class={cn(
 							"rounded-3xl border",
 							adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 						)}
 					>
-						<div className="border-b border-slate-200/10 px-6 py-4">
-							<div className="flex items-center justify-between">
-								<h3 className={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+						<div class="border-b border-slate-200/10 px-6 py-4">
+							<div class="flex items-center justify-between">
+								<h3 class={cn("font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 									{activeTab === "global" ? "Global Rules" : "Small Talk Rules"} (
 									{currentRules.length})
 								</h3>
 								<button
 									type="button"
 									onClick={() => setShowAddForm(!showAddForm)}
-									className="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
+									class="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
 								>
-									<Plus className="h-4 w-4" />
+									<Plus class="h-4 w-4" />
 									Add Rule
 								</button>
 							</div>
 						</div>
 
 						{currentRules.length === 0 ? (
-							<div className="px-6 py-12 text-center">
+							<div class="px-6 py-12 text-center">
 								<Bot
-									className={cn(
+									class={cn(
 										"mx-auto h-12 w-12 mb-4",
 										adminDark ? "text-slate-600" : "text-slate-300",
 									)}
 								/>
-								<p className={adminDark ? "text-slate-400" : "text-slate-500"}>
+								<p class={adminDark ? "text-slate-400" : "text-slate-500"}>
 									No rules configured yet
 								</p>
 							</div>
 						) : (
-							<div className="divide-y divide-slate-200/10">
+							<div class="divide-y divide-slate-200/10">
 								{currentRules.map((rule) => (
-									<div key={rule.id} className="px-6 py-4 hover:bg-white/5">
-										<div className="flex items-start justify-between gap-4">
-											<div className="min-w-0 flex-1">
-												<div className="flex items-center gap-2 flex-wrap">
+									<div key={rule.id} class="px-6 py-4 hover:bg-white/5">
+										<div class="flex items-start justify-between gap-4">
+											<div class="min-w-0 flex-1">
+												<div class="flex items-center gap-2 flex-wrap">
 													<span
-														className={cn(
+														class={cn(
 															"text-sm font-medium",
 															adminDark ? "text-white" : "text-slate-900",
 														)}
@@ -1428,11 +1251,11 @@ export function AdminAISection({ activeCategory, adminDark }) {
 														{rule.source}
 													</span>
 												</div>
-												<div className="mt-2 flex items-center gap-2 flex-wrap">
+												<div class="mt-2 flex items-center gap-2 flex-wrap">
 													{rule.keywords?.map((kw, idx) => (
 														<span
 															key={idx}
-															className={cn(
+															class={cn(
 																"rounded-full border px-2 py-0.5 text-xs",
 																adminDark
 																	? "border-indigo-500/30 bg-indigo-500/10 text-indigo-300"
@@ -1444,7 +1267,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 													))}
 												</div>
 												<p
-													className={cn(
+													class={cn(
 														"mt-2 text-sm",
 														adminDark ? "text-slate-300" : "text-slate-600",
 													)}
@@ -1455,9 +1278,9 @@ export function AdminAISection({ activeCategory, adminDark }) {
 											<button
 												type="button"
 												onClick={() => deleteRule(rule.id)}
-												className="shrink-0 rounded-xl border border-red-500/30 bg-red-500/10 p-2 text-red-400 transition-all hover:bg-red-500/20"
+												class="shrink-0 rounded-xl border border-red-500/30 bg-red-500/10 p-2 text-red-400 transition-all hover:bg-red-500/20"
 											>
-												<Trash2 className="h-4 w-4" />
+												<Trash2 class="h-4 w-4" />
 											</button>
 										</div>
 									</div>
@@ -1469,18 +1292,18 @@ export function AdminAISection({ activeCategory, adminDark }) {
 					{/* Add Rule Form */}
 					{showAddForm && (
 						<div
-							className={cn(
+							class={cn(
 								"rounded-3xl border p-6",
 								adminDark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white",
 							)}
 						>
-							<h3 className={cn("mb-4 font-semibold", adminDark ? "text-white" : "text-slate-900")}>
+							<h3 class={cn("mb-4 font-semibold", adminDark ? "text-white" : "text-slate-900")}>
 								Add New Rule
 							</h3>
-							<div className="space-y-4">
+							<div class="space-y-4">
 								<div>
 									<label
-										className={cn(
+										class={cn(
 											"mb-1.5 block text-sm font-medium",
 											adminDark ? "text-slate-300" : "text-slate-700",
 										)}
@@ -1497,7 +1320,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 											}))
 										}
 										placeholder="e.g., custom_rule_name"
-										className={cn(
+										class={cn(
 											"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none",
 											adminDark
 												? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -1507,7 +1330,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								</div>
 								<div>
 									<label
-										className={cn(
+										class={cn(
 											"mb-1.5 block text-sm font-medium",
 											adminDark ? "text-slate-300" : "text-slate-700",
 										)}
@@ -1524,7 +1347,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 											}))
 										}
 										placeholder="e.g., setup, onboarding, profile"
-										className={cn(
+										class={cn(
 											"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none",
 											adminDark
 												? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -1534,7 +1357,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 								</div>
 								<div>
 									<label
-										className={cn(
+										class={cn(
 											"mb-1.5 block text-sm font-medium",
 											adminDark ? "text-slate-300" : "text-slate-700",
 										)}
@@ -1551,7 +1374,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 										}
 										rows={3}
 										placeholder="The response the AI should give when keywords match"
-										className={cn(
+										class={cn(
 											"w-full rounded-2xl border px-4 py-2.5 text-sm outline-none resize-none",
 											adminDark
 												? "border-slate-700 bg-slate-800 text-white placeholder:text-slate-500 focus:border-indigo-500"
@@ -1559,13 +1382,13 @@ export function AdminAISection({ activeCategory, adminDark }) {
 										)}
 									/>
 								</div>
-								<div className="flex gap-2">
+								<div class="flex gap-2">
 									<button
 										type="button"
 										onClick={addRule}
-										className="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
+										class="flex items-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-400 transition-all hover:bg-indigo-500/20"
 									>
-										<Plus className="h-4 w-4" />
+										<Plus class="h-4 w-4" />
 										Add Rule
 									</button>
 									<button
@@ -1574,7 +1397,7 @@ export function AdminAISection({ activeCategory, adminDark }) {
 											setShowAddForm(false);
 											setNewRule({ source: "", keywords: "", response: "" });
 										}}
-										className={cn(
+										class={cn(
 											"rounded-xl border px-4 py-2 text-sm font-medium transition-all",
 											adminDark
 												? "border-slate-700 text-slate-400 hover:text-white"
