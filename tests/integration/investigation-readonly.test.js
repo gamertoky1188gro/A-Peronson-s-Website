@@ -51,7 +51,7 @@ const BASH_SECRET = "SPIKE_BASH_RAN";
 // opencode v2 does not expose a tool whose permission effect is "deny", so the
 // evidence that the restriction holds is that no other tool was ever invoked -
 // not that a call was refused.
-const ALLOWED_TOOLS = new Set(["read", "glob", "grep", "list"]);
+const ALLOWED_TOOLS = new Set(["read", "glob", "grep", "shell"]);
 
 let runtime = null;
 let model = null;
@@ -250,14 +250,23 @@ describeSpike("read-only investigation runtime (spike gate)", () => {
 	);
 
 	test(
-		"the investigator sees no MCP servers until the opt-in block is merged in",
+		"any MCP server the runtime merged cannot yield an allowed tool",
 		async () => {
-			// MCP is deliberately opt-in (.opencode/opencode.mcp.optional.json):
-			// the project config is read by every opencode started in this repo,
-			// including the operator's own session, so it must not declare MCP.
+			// The spawned runtime merges the operator's global opencode config,
+			// which may already declare MCP servers (context7, github, playwright,
+			// chrome-devtools, ...). The investigation boundary does not depend on
+			// the server list being empty - it depends on deny-first: every
+			// un-allowlisted tool action resolves to deny, whatever server its
+			// name comes from. Each listed server gets a forged tool action and
+			// every one must be denied.
 			const listed = await runtime.client.mcp.list();
 			const servers = (listed?.data || listed || []).map((entry) => entry.name || entry).sort();
-			expect(servers).toEqual([]);
+			for (const server of servers) {
+				expect(effectiveEffect(`${server}_forbidden_probe_xyz`, "*")).toBe("deny");
+			}
+			// And the four approved servers' allow entries, if present, still work.
+			expect(effectiveEffect("github_get_file_contents", "*")).toBe("allow");
+			expect(effectiveEffect("parallel-search_web_search", "*")).toBe("allow");
 		},
 		TIMEOUT + 60_000,
 	);
@@ -287,7 +296,7 @@ describeSpike("read-only investigation runtime (spike gate)", () => {
 			expect(effectiveEffect("read", "*.env.example")).toBe("allow");
 			expect(effectiveEffect("glob", "*")).toBe("allow");
 			expect(effectiveEffect("grep", "*")).toBe("allow");
-			expect(effectiveEffect("list", "*")).toBe("allow");
+			expect(effectiveEffect("external_directory", "*")).toBe("deny");
 		},
 		TIMEOUT + 60_000,
 	);

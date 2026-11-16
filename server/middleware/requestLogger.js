@@ -244,7 +244,7 @@ export function requestLogger({ timeoutMs = 45_000 } = {}) {
 		const requestContext = {
 			request_id: requestId,
 			method: req.method,
-			path: req.originalUrl || req.url,
+			path: String(req.originalUrl || req.url || "").split("#")[0].split("?")[0],
 			user_id: authInfo.user_id || "",
 			role: authInfo.role || "",
 			ip: req.ip,

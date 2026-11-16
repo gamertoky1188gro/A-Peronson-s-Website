@@ -251,7 +251,7 @@ function FileAttachmentCard({
 				if (!alive) {
 					return;
 				}
-				logger.warn("[FileAttachmentCard] PDF thumbnail failed", { error: error?.message, url });
+				logger.warn("[FileAttachmentCard] PDF thumbnail failed", { error: error?.message });
 				setPdfPreview({
 					loading: false,
 					error: error?.message || "Unable to preview PDF",
@@ -324,7 +324,6 @@ function FileAttachmentCard({
 				}
 				logger.warn("[FileAttachmentCard] text snippet fetch failed", {
 					error: error?.message,
-					url,
 					status: error?.status,
 				});
 				setTextPreview({
@@ -472,7 +471,7 @@ function FileAttachmentCard({
 					onClick={() => {
 						void signAndDownload(url, safeDownloadName(name)).then((saved) => {
 							if (!saved) {
-								logger.warn("[FileAttachmentCard] sign-and-download refused", { url });
+								logger.warn("[FileAttachmentCard] sign-and-download refused", {});
 							}
 						});
 					}}

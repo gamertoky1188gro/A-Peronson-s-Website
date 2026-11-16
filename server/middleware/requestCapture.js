@@ -1,7 +1,29 @@
 import { requestLogWriter } from "../log/requestLogWriter.js";
 
 const MAX_BODY_BYTES = 1024 * 100;
-const SENSITIVE_HEADERS = new Set(["authorization", "cookie", "set-cookie", "x-api-key"]);
+const SENSITIVE_HEADERS = new Set(["authorization", "cookie", "set-cookie", "x-api-key", "x-support-token"]);
+
+const SENSITIVE_VALUE = /^gtk_sup_/;
+const SENSITIVE_KEY = /password|token|secret|refresh|authorization|api_?key|private_?key|credential|code/i;
+
+function redactBodyValue(value, depth = 0) {
+	if (depth > 6 || value === null || value === undefined) return value;
+	if (typeof value === "string") return SENSITIVE_VALUE.test(value) ? "[redacted]" : value;
+	if (Array.isArray(value)) return value.map((item) => redactBodyValue(item, depth + 1));
+	if (typeof value === "object") {
+		const out = {};
+		for (const [key, child] of Object.entries(value)) {
+			out[key] = SENSITIVE_KEY.test(key) ? "[redacted]" : redactBodyValue(child, depth + 1);
+		}
+		return out;
+	}
+	return value;
+}
+
+function pathOnly(value) {
+	const raw = String(value || "");
+	return raw.split("#")[0].split("?")[0];
+}
 
 function redactHeaders(headers) {
 	const out = {};
@@ -50,6 +72,8 @@ function getClientIp(req) {
 	return req.socket?.remoteAddress || req.ip || "unknown";
 }
 
+export { redactBodyValue, pathOnly };
+
 export function requestCapture() {
 	return (req, res, next) => {
 		if (req.method === "GET" && req.headers.upgrade === "websocket") {
@@ -92,7 +116,7 @@ export function requestCapture() {
 			if (chunks.length > 0) {
 				try {
 					const raw = Buffer.concat(chunks).toString("utf-8");
-					body = JSON.parse(raw);
+					body = redactBodyValue(JSON.parse(raw));
 				} catch {
 					body = Buffer.concat(chunks).toString("utf-8").slice(0, 2000);
 				}
@@ -102,10 +126,9 @@ export function requestCapture() {
 				ts: new Date(startTime).toISOString(),
 				request: {
 					method: req.method,
-					uri: req.originalUrl || req.url,
+					uri: pathOnly(req.originalUrl || req.url),
 					httpVersion: `HTTP/${req.httpVersion || "1.1"}`,
 					path: parsedUrl.path,
-					query: Object.keys(parsedUrl.query).length > 0 ? parsedUrl.query : undefined,
 					fragment: parsedUrl.fragment || undefined,
 					url: {
 						scheme: parsedUrl.scheme,
@@ -113,7 +136,6 @@ export function requestCapture() {
 						domain: parsedUrl.domain,
 						port: parsedUrl.port,
 						path: parsedUrl.path,
-						query: Object.keys(parsedUrl.query).length > 0 ? parsedUrl.query : undefined,
 						fragment: parsedUrl.fragment || undefined,
 					},
 					headers: redactHeaders(req.headers),

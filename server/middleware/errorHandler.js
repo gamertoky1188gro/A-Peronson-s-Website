@@ -44,7 +44,7 @@ export function errorHandler(err, req, res, next) {
 	}
 	const status = clientErrorStatus(err);
 	if (status) {
-		logWarn("API request rejected", { status, path: req?.path, message: err?.message });
+		logWarn("API request rejected", { status, path: req?.path, message: String(err?.message || "").slice(0, 300) });
 		const message =
 			err?.type === "entity.parse.failed"
 				? "Invalid JSON body"
