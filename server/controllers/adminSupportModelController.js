@@ -2,6 +2,7 @@ import {
 	getInvestigationModelConfig,
 	setInvestigationModelConfig,
 } from "../services/investigation/investigationModelConfigService.js";
+import { getModelHealth } from "../services/investigation/modelHealthService.js";
 import { handleControllerError } from "../utils/permissions.js";
 
 // GET/PUT /api/admin/support-models — the investigation model configuration
@@ -9,7 +10,7 @@ import { handleControllerError } from "../utils/permissions.js";
 // validates against the live catalog and writes the admin_config_history
 // audit row itself; this controller only shapes the request and the answer.
 
-function shape(config) {
+function shape(config, health) {
 	return {
 		allowed: config.allowed,
 		default: config.default,
@@ -19,6 +20,8 @@ function shape(config) {
 		// The catalog array ({ id, name, providerID, created, ownedBy }) — the
 		// admin "Investigation Models" tab renders it.
 		catalog: Array.isArray(config.catalog) ? config.catalog : [],
+		// What those models actually did over the recent window.
+		health: health ?? { windowDays: 0, runs: 0, models: {} },
 	};
 }
 
@@ -29,7 +32,11 @@ export async function getAdminSupportModels(req, res) {
 		const config = await getInvestigationModelConfig({
 			forceCatalogRefresh: req.query?.refresh === "1",
 		});
-		return res.json({ ok: true, ...shape(config) });
+		// Health is a read of run history; a failure there must not take the
+		// configuration down with it, so the service answers empty rather than
+		// throwing and the config still renders.
+		const health = await getModelHealth().catch(() => ({ windowDays: 0, runs: 0, models: {} }));
+		return res.json({ ok: true, ...shape(config, health) });
 	} catch (error) {
 		return handleControllerError(res, error);
 	}

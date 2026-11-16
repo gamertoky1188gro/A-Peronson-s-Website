@@ -31,6 +31,27 @@ const PANEL =
 	"bg-[#151020]/80 border-purple-400/10 text-slate-200 " +
 	"shadow-[0_30px_80px_-40px_rgba(168,85,247,0.45)] backdrop-blur-xl";
 
+/**
+ * One line of live health for a model: what its investigation runs actually
+ * did over the recent window. Empty when the model has not been picked yet —
+ * "no runs" is not the same as "healthy", so it says nothing rather than
+ * claiming a clean record.
+ */
+function describeModelHealth(stats) {
+	if (!(stats && Number(stats.runs))) {
+		return "";
+	}
+	const parts = [`${stats.runs} run${stats.runs === 1 ? "" : "s"}`];
+	if (Number(stats.failed)) {
+		const refusals = Number(stats.quotaRefusals) + Number(stats.otherRefusals);
+		parts.push(`${stats.failed} failed${refusals ? ` (${refusals} refused)` : ""}`);
+	}
+	if (stats.avgMs != null) {
+		parts.push(`avg ${Math.max(1, Math.round(stats.avgMs / 1000))}s`);
+	}
+	return parts.join(" · ");
+}
+
 export function AdminAISection() {
 	const [activeTab, setActiveTab] = useState("tokens");
 
@@ -55,6 +76,7 @@ export function AdminAISection() {
 				default: data?.default ?? "",
 				buyerSelectEnabled: data?.buyerSelectEnabled !== false,
 				catalogStale: Boolean(data?.catalogStale),
+				health: data?.health ?? { windowDays: 0, runs: 0, models: {} },
 			});
 		} catch (err) {
 			setModelsAdminError(err?.message || "Failed to load investigation models");
@@ -527,6 +549,12 @@ export function AdminAISection() {
 					<p class="mb-4 text-xs text-slate-400">
 						Owner-controlled. Free OpenCode models only; iceman-free is permanently excluded.
 					</p>
+					{modelsAdmin?.health?.windowDays ? (
+						<p class="mb-3 text-[11px] text-slate-500">
+							Last {modelsAdmin.health.windowDays} days · {modelsAdmin.health.runs || 0}{" "}
+							investigation run{modelsAdmin.health.runs === 1 ? "" : "s"} recorded
+						</p>
+					) : null}
 
 					{modelsAdminError && (
 						<div class="mb-3 flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-400">
@@ -574,6 +602,14 @@ export function AdminAISection() {
 											<span class="shrink-0 text-[10px] uppercase tracking-wider text-slate-500">
 												{model.ownedBy ?? model.providerID}
 											</span>
+											{describeModelHealth(modelsAdmin?.health?.models?.[model.id]) ? (
+												<span
+													class="shrink-0 rounded-full border border-white/10 bg-black/30 px-2 py-0.5 text-[10px] text-slate-400"
+													title={`Last ${modelsAdmin?.health?.windowDays ?? 14} days`}
+												>
+													{describeModelHealth(modelsAdmin?.health?.models?.[model.id])}
+												</span>
+											) : null}
 										</label>
 									);
 								})}

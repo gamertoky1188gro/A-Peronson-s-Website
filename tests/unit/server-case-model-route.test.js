@@ -41,8 +41,20 @@ jest.unstable_mockModule("../../server/services/userService.js", () => ({
 }));
 
 const CATALOG = [
-	{ id: "minimax-m3.1-flash-free", name: "MiniMax M3.1 Flash", providerID: "opencode", created: 1730000000000, ownedBy: "minimax" },
-	{ id: "deepseek-v4.1-flash-free", name: "DeepSeek V4.1 Flash", providerID: "opencode", created: 1730000000001, ownedBy: "deepseek" },
+	{
+		id: "minimax-m3.1-flash-free",
+		name: "MiniMax M3.1 Flash",
+		providerID: "opencode",
+		created: 1_730_000_000_000,
+		ownedBy: "minimax",
+	},
+	{
+		id: "deepseek-v4.1-flash-free",
+		name: "DeepSeek V4.1 Flash",
+		providerID: "opencode",
+		created: 1_730_000_000_001,
+		ownedBy: "deepseek",
+	},
 ];
 const configState = {
 	allowed: ["minimax-m3.1-flash-free", "deepseek-v4.1-flash-free"],
@@ -50,7 +62,7 @@ const configState = {
 	buyerSelectEnabled: true,
 	catalog: CATALOG,
 	catalogStale: false,
-	catalogFetchedAt: 1730000000000,
+	catalogFetchedAt: 1_730_000_000_000,
 };
 const getBuyerSelectableConfig = jest.fn(async () => ({ ...configState }));
 const getInvestigationModelConfig = jest.fn(async () => ({ ...configState }));
@@ -62,19 +74,47 @@ const setInvestigationModelConfig = jest.fn(async (input, actorId) => {
 	}
 	if (input?.allowed !== undefined) configState.allowed = [...input.allowed];
 	if (input?.default !== undefined) configState.default = input.default;
-	if (typeof input?.buyerSelectEnabled === "boolean") configState.buyerSelectEnabled = input.buyerSelectEnabled;
+	if (typeof input?.buyerSelectEnabled === "boolean")
+		configState.buyerSelectEnabled = input.buyerSelectEnabled;
 	return { ...configState, previousActor: actorId };
 });
 
-jest.unstable_mockModule("../../server/services/investigation/investigationModelConfigService.js", () => ({
-	getBuyerSelectableConfig,
-	getInvestigationModelConfig,
-	setInvestigationModelConfig,
+jest.unstable_mockModule(
+	"../../server/services/investigation/investigationModelConfigService.js",
+	() => ({
+		getBuyerSelectableConfig,
+		getInvestigationModelConfig,
+		setInvestigationModelConfig,
+	}),
+);
+
+// The health readout reads the run history; the routes must not depend on
+// that table existing, so it is mocked here and asserted as part of the
+// response shape.
+const HEALTH = {
+	windowDays: 14,
+	runs: 2,
+	models: {
+		"minimax-m3.1-flash-free": {
+			runs: 2,
+			completed: 2,
+			failed: 0,
+			quotaRefusals: 0,
+			otherRefusals: 0,
+			avgMs: 42_000,
+			lastRunAt: "2026-11-16T10:00:00.000Z",
+		},
+	},
+};
+const getModelHealth = jest.fn(async () => ({ ...HEALTH }));
+jest.unstable_mockModule("../../server/services/investigation/modelHealthService.js", () => ({
+	getModelHealth,
 }));
 
 const { signToken } = await import("../../server/middleware/auth.js");
 const caseRoutes = (await import("../../server/routes/caseRoutes.js")).default;
-const adminSupportModelRoutes = (await import("../../server/routes/adminSupportModelRoutes.js")).default;
+const adminSupportModelRoutes = (await import("../../server/routes/adminSupportModelRoutes.js"))
+	.default;
 
 const USERS = {
 	"buyer-1": { id: "buyer-1", role: "buyer", email: "buyer@example.com" },
@@ -113,12 +153,12 @@ beforeEach(() => {
 	configState.default = "minimax-m3.1-flash-free";
 	configState.buyerSelectEnabled = true;
 	configState.catalogStale = false;
-	configState.catalogFetchedAt = 1730000000000;
+	configState.catalogFetchedAt = 1_730_000_000_000;
 	jest.clearAllMocks();
 });
 
 describe("PUT /api/support/cases/:caseId/model", () => {
-	test("a stranger is refused with 403, and the case is not written", async () => {
+	it("a stranger is refused with 403, and the case is not written", async () => {
 		seedCase();
 		const res = await request(buildApp())
 			.put("/api/support/cases/case-1/model")
@@ -129,7 +169,7 @@ describe("PUT /api/support/cases/:caseId/model", () => {
 		expect(supportCase.update).not.toHaveBeenCalled();
 	});
 
-	test("the buyer sets the model on their own case", async () => {
+	it("the buyer sets the model on their own case", async () => {
 		seedCase();
 		const res = await request(buildApp())
 			.put("/api/support/cases/case-1/model")
@@ -140,7 +180,7 @@ describe("PUT /api/support/cases/:caseId/model", () => {
 		expect(state.cases.get("case-1").model_id).toBe("deepseek-v4.1-flash-free");
 	});
 
-	test("a model outside the allowlist is refused with 400", async () => {
+	it("a model outside the allowlist is refused with 400", async () => {
 		seedCase();
 		const res = await request(buildApp())
 			.put("/api/support/cases/case-1/model")
@@ -150,7 +190,7 @@ describe("PUT /api/support/cases/:caseId/model", () => {
 		expect(state.cases.get("case-1").model_id).toBeNull();
 	});
 
-	test("the buyer toggle being off refuses the pick with 403", async () => {
+	it("the buyer toggle being off refuses the pick with 403", async () => {
 		configState.buyerSelectEnabled = false;
 		seedCase();
 		const res = await request(buildApp())
@@ -161,7 +201,7 @@ describe("PUT /api/support/cases/:caseId/model", () => {
 		expect(state.cases.get("case-1").model_id).toBeNull();
 	});
 
-	test("null clears the pick", async () => {
+	it("null clears the pick", async () => {
 		seedCase({ model_id: "deepseek-v4.1-flash-free" });
 		const res = await request(buildApp())
 			.put("/api/support/cases/case-1/model")
@@ -172,7 +212,7 @@ describe("PUT /api/support/cases/:caseId/model", () => {
 		expect(state.cases.get("case-1").model_id).toBeNull();
 	});
 
-	test("an unknown case is a 404, not a 403", async () => {
+	it("an unknown case is a 404, not a 403", async () => {
 		const res = await request(buildApp())
 			.put("/api/support/cases/no-such-case/model")
 			.set(AUTH.owner)
@@ -182,19 +222,15 @@ describe("PUT /api/support/cases/:caseId/model", () => {
 });
 
 describe("GET /api/support/cases/:caseId/model", () => {
-	test("a stranger is refused with 403", async () => {
+	it("a stranger is refused with 403", async () => {
 		seedCase();
-		const res = await request(buildApp())
-			.get("/api/support/cases/case-1/model")
-			.set(AUTH.stranger);
+		const res = await request(buildApp()).get("/api/support/cases/case-1/model").set(AUTH.stranger);
 		expect(res.status).toBe(403);
 	});
 
-	test("returns the shape with the effective model", async () => {
+	it("returns the shape with the effective model", async () => {
 		seedCase({ model_id: "deepseek-v4.1-flash-free" });
-		const res = await request(buildApp())
-			.get("/api/support/cases/case-1/model")
-			.set(AUTH.owner);
+		const res = await request(buildApp()).get("/api/support/cases/case-1/model").set(AUTH.owner);
 		expect(res.status).toBe(200);
 		expect(res.body).toEqual({
 			modelId: "deepseek-v4.1-flash-free",
@@ -205,11 +241,9 @@ describe("GET /api/support/cases/:caseId/model", () => {
 		});
 	});
 
-	test("a stored pick that is no longer allowed falls back to the default", async () => {
+	it("a stored pick that is no longer allowed falls back to the default", async () => {
 		seedCase({ model_id: "retired-free" });
-		const res = await request(buildApp())
-			.get("/api/support/cases/case-1/model")
-			.set(AUTH.owner);
+		const res = await request(buildApp()).get("/api/support/cases/case-1/model").set(AUTH.owner);
 		expect(res.status).toBe(200);
 		expect(res.body.effectiveModelId).toBe("minimax-m3.1-flash-free");
 		expect(res.body.modelId).toBe("retired-free");
@@ -217,10 +251,8 @@ describe("GET /api/support/cases/:caseId/model", () => {
 });
 
 describe("GET /api/admin/support-models", () => {
-	test("an owner/admin reads the config plus the catalog markers", async () => {
-		const res = await request(buildApp())
-			.get("/api/admin/support-models")
-			.set(AUTH.admin);
+	it("an owner/admin reads the config plus the catalog markers", async () => {
+		const res = await request(buildApp()).get("/api/admin/support-models").set(AUTH.admin);
 		expect(res.status).toBe(200);
 		expect(res.body).toEqual({
 			ok: true,
@@ -229,11 +261,12 @@ describe("GET /api/admin/support-models", () => {
 			buyerSelectEnabled: true,
 			catalog: CATALOG,
 			catalogStale: false,
-			catalogFetchedAt: 1730000000000,
+			catalogFetchedAt: 1_730_000_000_000,
+			health: HEALTH,
 		});
 	});
 
-	test("?refresh=1 forwards forceCatalogRefresh to the service", async () => {
+	it("?refresh=1 forwards forceCatalogRefresh to the service", async () => {
 		getInvestigationModelConfig.mockClear();
 		const res = await request(buildApp())
 			.get("/api/admin/support-models?refresh=1")
@@ -242,16 +275,14 @@ describe("GET /api/admin/support-models", () => {
 		expect(getInvestigationModelConfig).toHaveBeenCalledWith({ forceCatalogRefresh: true });
 	});
 
-	test("a buyer is refused", async () => {
-		const res = await request(buildApp())
-			.get("/api/admin/support-models")
-			.set(AUTH.owner);
+	it("a buyer is refused", async () => {
+		const res = await request(buildApp()).get("/api/admin/support-models").set(AUTH.owner);
 		expect([401, 403]).toContain(res.status);
 	});
 });
 
 describe("PUT /api/admin/support-models", () => {
-	test("persists a validated config and returns the same shape", async () => {
+	it("persists a validated config and returns the same shape", async () => {
 		const res = await request(buildApp())
 			.put("/api/admin/support-models")
 			.set(AUTH.admin)
@@ -276,7 +307,7 @@ describe("PUT /api/admin/support-models", () => {
 		});
 	});
 
-	test("a validation failure from the service surfaces as 400", async () => {
+	it("a validation failure from the service surfaces as 400", async () => {
 		const res = await request(buildApp())
 			.put("/api/admin/support-models")
 			.set(AUTH.admin)
