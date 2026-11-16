@@ -276,3 +276,19 @@ carried a permission error - matching how the live run actually refuses.
 
 **Attempt 3 result: pending.** The spike must pass 8/8 on a live spawn
 before investigations are enabled or merged.
+
+## Phase 6 — merged to main and pushed (2026-11-16 PM)
+
+- Spike (attempt 2, assertions fixed): 8/8 on a live spawn (.env refused, writes refused,
+  subagent refused, shell absent, merged-MCP deny-guard holds).
+- MCP Option 2 (owner-approved) merged: .opencode/opencode.json declares github,
+  render, parallel-search; context7 omitted (no credential). README documents the split.
+- One canary email sent to admin@gmail.com via Gmail SMTP: {ok:true,status:sent}; email
+  notifications flag restored to false in the same script.
+- feat/support-mcp-wiring fast-forward merged to main; 1088 tests pass; build clean.
+- Pushed to origin/main (Render will auto-deploy). NO production behavior change:
+  investigations require an owner-issued support token (gtk_sup_…); tokens are issued
+  only by the owner via /owner? Admin console additions unchanged.
+- render.yaml plaintext secrets remain in git history (owner decision: leave as-is 2026-11-16).
+- Browser-based buyer/owner walk-through NOT performed (browser tooling is remote-device
+  only; localhost unreachable). Workflow coverage is via integration tests and boot smoke test.

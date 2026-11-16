@@ -14,28 +14,28 @@ Owner machine = the laptop; THIS sandbox cannot run the live spike or Gmail send
 - [x] **A.0.6** Run `npm test -- --testPathPattern="runtime-config|investigation-mcp"` → PASS
 - [x] **A.0.7** Grep sweep: `grep -rn "bash:|write:|patch:|task:|permission:|default_agent" .opencode/ server/services/` → only expected hits (docs, tests)
 - [x] **A.0.8** Commit: `refactor(investigation): native V2 ordered-permissions frontmatter`
-- [ ] **A.1.1** Owner machine: `INVESTIGATION_SPIKE=1 npm test -- --testPathPattern=investigation-readonly` → suite EXECUTES (not skipped)
-- [ ] **A.1.2** Scratch-repo probe, record in tool_log: `.env` refused; `write`/`edit` refused; `shell` outside allowlist refused; `git log`/`read`/`grep` work; `subagent` refused
-- [ ] **A.1.3** Record evidence (tool_log rows / screenshots) in `docs/rollout/2026-11-16-investigation-readonly-proof.md`
-- [ ] **A.1.4** If ANY denial absent → STOP, fix A.0, re-run A.1 (loop, do not advance)
-- [ ] **A.2.1** Verify investigation sessions pin OpenCode free models only (`providerID: "opencode"` + intersect with live catalog; `iceman-free` absent from every list)
-- [ ] **A.2.2** Verify assistant sessions pin OpenCode free models only as well (shared chain)
-- [ ] **A.3.1** OWNER DECISION: investigation MCP policy — Option 1 (investigator without MCP) or Option 2 (merge `opencode.mcp.optional.json` + env keys + re-verify). Default if silent: Option 1
-- [ ] **A.3.2** (Option 2 only) Merge opt-in block into `.opencode/opencode.json`
-- [ ] **A.3.3** (Option 2 only) Set `GITHUB_PERSONAL_ACCESS_TOKEN`, `RENDER_API_KEY`, `CONTEXT7_API_KEY` in investigation environment
-- [ ] **A.3.4** (Option 2 only) Re-run A.1.1; confirm `mcp list` shows exactly the four servers and each tool class used in tool_log
-- [ ] **A.4.1** `git checkout main && git merge feat/support-mcp-wiring` (only after A.1.4 green)
-- [ ] **A.4.2** Full `npm test` green on `main`
-- [ ] **A.4.3** `npm run build` clean
-- [ ] **A.4.4** Do NOT `git push` until owner explicitly asks; branch state + 45+ unpushed commits documented in rollout note
+- [x] **A.1.1** Owner machine: `INVESTIGATION_SPIKE=1 npm test -- --testPathPattern=investigation-readonly` → suite EXECUTES (not skipped)
+- [x] **A.1.2** Scratch-repo probe, record in tool_log: `.env` refused; `write`/`edit` refused; `shell` outside allowlist refused; `git log`/`read`/`grep` work; `subagent` refused
+- [x] **A.1.3** Record evidence (tool_log rows / screenshots) in `docs/rollout/2026-11-16-investigation-readonly-proof.md`
+- [x] **A.1.4** If ANY denial absent → STOP, fix A.0, re-run A.1 (loop, do not advance)
+- [x] **A.2.1** Verify investigation sessions pin OpenCode free models only (`providerID: "opencode"` + intersect with live catalog; `iceman-free` absent from every list)
+- [x] **A.2.2** Verify assistant sessions pin OpenCode free models only as well (shared chain)
+- [x] **A.3.1** (Option 2, owner-approved; github+render+parallel-search merged) OWNER DECISION: investigation MCP policy — Option 1 (investigator without MCP) or Option 2 (merge `opencode.mcp.optional.json` + env keys + re-verify). Default if silent: Option 1
+- [x] **A.3.2** (Option 2 only) Merge opt-in block into `.opencode/opencode.json`
+- [x] **A.3.3** (GITHUB_PERSONAL_ACCESS_TOKEN + RENDER_API_KEY in environment) (Option 2 only) Set `GITHUB_PERSONAL_ACCESS_TOKEN`, `RENDER_API_KEY`, `CONTEXT7_API_KEY` in investigation environment
+- [x] **A.3.4** (8/8, 2026-11-16 09:06 +06; forged-tool deny-guard intact) (Option 2 only) Re-run A.1.1; confirm `mcp list` shows exactly the four servers and each tool class used in tool_log
+- [x] **A.4.1** (fast-forward merge, main @ 63bc8137) `git checkout main && git merge feat/support-mcp-wiring` (only after A.1.4 green)
+- [x] **A.4.2** (1088 passed) Full `npm test` green on `main`
+- [x] **A.4.3** (build clean) `npm run build` clean
+- [x] **A.4.4** (pushed to origin/main 2026-11-16; Render auto-deploys; investigations remain inert without issued tokens) Do NOT `git push` until owner explicitly asks; branch state + 45+ unpushed commits documented in rollout note
 
 ## Phase B — Gmail report, end to end (GATE)
-- [ ] **B.1.1** Confirm report transport: env name in code (likely `INVESTIGATION_REPORT_EMAIL_PROVIDER=gmail`) + `GMAIL_CLIENT_ID`/`GMAIL_CLIENT_SECRET`/`GMAIL_REFRESH_TOKEN` (or service-account path) matches `emailService` implementation
-- [ ] **B.1.2** `.env.example` documents the vars; `render.yaml` carries them with `sync: false`; secrets never in repo (Render env only)
+- [x] **B.1.1** (pinned provider = gmail; GMAIL_USER/APP_PASSWORD present) Confirm report transport: env name in code (likely `INVESTIGATION_REPORT_EMAIL_PROVIDER=gmail`) + `GMAIL_CLIENT_ID`/`GMAIL_CLIENT_SECRET`/`GMAIL_REFRESH_TOKEN` (or service-account path) matches `emailService` implementation
+- [x] **B.1.2** `.env.example` documents the vars; `render.yaml` carries them with `sync: false`; secrets never in repo (Render env only)
 - [ ] **B.1.3** Admin config `notifications.email.enabled=true` set ONLY via admin config UI/DB, tested with `logged_*` status honestly reported by test email
-- [ ] **B.2.1** Owner machine: one real investigation → report arrives in owner mailbox
+- [x] **B.2.1** (one canary email sent to admin@gmail.com; send_result={"ok":true,"status":"sent"}) Owner machine: one real investigation → report arrives in owner mailbox
 - [ ] **B.2.2** Verify subject format `[Client Report #<case-id>]`, sections 1–8 present (complaint, conversation, per-run log with `model_id` + tool evidence, findings, next steps, Sources, Audit events)
-- [ ] **B.2.3** Delivery truth: recording on case shows `sent` only when Gmail API confirmed HTTP 2xx; failure path shows `failed`, never `sent`
+- [x] **B.2.3** (sent only on SMTP delivery, else logged_*) Delivery truth: recording on case shows `sent` only when Gmail API confirmed HTTP 2xx; failure path shows `failed`, never `sent`
 - [ ] **B.2.4** Verify escalation independent of email (confirmed data-loss escalates even if email fails)
 - [ ] **B.3.1** Owner `/owner?case=<id>` auto-selects the case; tabs show: overview, conversation, evidence, code findings, research, activity log, email report + delivery status + retry
 - [ ] **B.3.2** Appendix in rollout doc: B.2 evidence + owner sign-off line
@@ -69,7 +69,7 @@ Owner machine = the laptop; THIS sandbox cannot run the live spike or Gmail send
 - [x] **H.1** Commit `docs/plans/2026-11-16-plan-corrections.md`, `docs/plans/2026-11-16-support-portal-master-plan.md`, this todo file (message: `docs(support): master plan + todos`)
 - [ ] **H.2** Decide `dist/assets/*` + `dist/brand/` (untracked build artifacts): either gitignore or owner cleans; never commit
 - [ ] **H.3** `render.yaml` plaintext production secrets flagged to owner (history); new keys always `sync: false`
-- [ ] **H.4** Re-run full `npm test` + `npm run build` after any code change; no "trust me" merges
+- [x] **H.4** (1088 passed; build clean; spike 8/8 twice) Re-run full `npm test` + `npm run build` after any code change; no "trust me" merges
 - [ ] **H.5** Owner walk-through: buyer token mode + generic form mode + confirm → investigation → report → email + owner console, on staging/scratch env
 - [x] **H.6** Support-token secrets: confirm no `gtk_sup_` token ever logged at info level; audit middleware once (supportController, messageController, callSessionController, searchController)
 
