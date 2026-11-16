@@ -42,7 +42,7 @@ const ROLE_ORDER = ["lead", "code", "repo", "research", "verify"];
 const CLIENT_ROLES = new Set(["client", "user"]);
 
 /** The line break used to split a multi-line detail. */
-const LINE_BREAK = /\r?\n/;
+const LINE_BREAK = /\r?\n/u;
 
 /** The placeholder used for an absent value. */
 const EMPTY = "-";
@@ -72,7 +72,7 @@ function text(value) {
 }
 
 function singleLine(value) {
-	return text(value).replace(/\s+/g, " ");
+	return text(value).replace(/\s+/gu, " ");
 }
 
 function asArray(value) {
@@ -113,7 +113,7 @@ function formatTimestamp(value) {
 }
 
 function tableCell(value) {
-	return singleLine(value).replace(/\|/g, "\\|");
+	return singleLine(value).replace(/\|/gu, "\\|");
 }
 
 function describeValue(value) {
@@ -708,13 +708,23 @@ function renderSourcesSection(runs) {
 	const queries = new Set();
 	const urls = new Set();
 	for (const run of runs) {
-		for (const file of run.files) files.add(file);
-		for (const commit of run.commits) commits.add(commit);
-		for (const query of run.queries) queries.add(query);
+		for (const file of run.files) {
+			files.add(file);
+		}
+		for (const commit of run.commits) {
+			commits.add(commit);
+		}
+		for (const query of run.queries) {
+			queries.add(query);
+		}
 		for (const finding of run.findings) {
 			for (const evidence of finding.evidence || []) {
-				if (evidence.url) urls.add(evidence.url);
-				if (evidence.file) files.add(evidence.file);
+				if (evidence.url) {
+					urls.add(evidence.url);
+				}
+				if (evidence.file) {
+					files.add(evidence.file);
+				}
 			}
 		}
 	}
@@ -724,22 +734,30 @@ function renderSourcesSection(runs) {
 	}
 	if (files.size > 0) {
 		lines.push("### Files read", "");
-		for (const f of [...files].sort()) lines.push(`- ${f}`);
+		for (const f of [...files].sort()) {
+			lines.push(`- ${f}`);
+		}
 		lines.push("");
 	}
 	if (commits.size > 0) {
 		lines.push("### Commits referenced", "");
-		for (const c of [...commits].sort()) lines.push(`- ${c}`);
+		for (const c of [...commits].sort()) {
+			lines.push(`- ${c}`);
+		}
 		lines.push("");
 	}
 	if (queries.size > 0) {
 		lines.push("### Search queries", "");
-		for (const q of [...queries].sort()) lines.push(`- ${q}`);
+		for (const q of [...queries].sort()) {
+			lines.push(`- ${q}`);
+		}
 		lines.push("");
 	}
 	if (urls.size > 0) {
 		lines.push("### Web sources", "");
-		for (const u of [...urls].sort()) lines.push(`- ${u}`);
+		for (const u of [...urls].sort()) {
+			lines.push(`- ${u}`);
+		}
 		lines.push("");
 	}
 	return lines;

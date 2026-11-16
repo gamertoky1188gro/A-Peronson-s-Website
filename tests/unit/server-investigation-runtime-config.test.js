@@ -17,37 +17,30 @@ import path from "node:path";
 // The last matching rule wins, so ordering is the contract under test.
 
 const ROOT = process.cwd();
-const config = JSON.parse(
-	fs.readFileSync(path.join(ROOT, ".opencode", "opencode.json"), "utf8"),
-);
+const config = JSON.parse(fs.readFileSync(path.join(ROOT, ".opencode", "opencode.json"), "utf8"));
 const investigator = fs.readFileSync(
 	path.join(ROOT, ".opencode", "agents", "investigator.md"),
 	"utf8",
 );
-const assistant = fs.readFileSync(
-	path.join(ROOT, ".opencode", "agents", "assistant.md"),
-	"utf8",
-);
+const assistant = fs.readFileSync(path.join(ROOT, ".opencode", "agents", "assistant.md"), "utf8");
 
 function actions(file) {
-	return [...file.matchAll(/- action: ([^\n]+)/g)].map((m) =>
-		m[1].trim().replace(/^"|"$/g, ""),
-	);
+	return [...file.matchAll(/- action: ([^\n]+)/gu)].map((m) => m[1].trim().replace(/^"|"$/gu, ""));
 }
 
 describe("investigation runtime project config (.opencode/)", () => {
-	test("the project config declares nothing that binds other sessions", () => {
+	it("the project config declares nothing that binds other sessions", () => {
 		expect(config.default_agent).toBeUndefined();
 		expect(config.permission).toBeUndefined();
 		expect(config.permissions).toBeUndefined();
 		expect(config.mcp).toBeUndefined();
 	});
 
-	test("the opt-in MCP block exists but is not merged into the project config", () => {
+	it("the opt-in MCP block exists but is not merged into the project config", () => {
 		const optionalPath = path.join(ROOT, ".opencode", "opencode.mcp.optional.json");
 		expect(fs.existsSync(optionalPath)).toBe(true);
 		const optional = JSON.parse(fs.readFileSync(optionalPath, "utf8"));
-		expect(Object.keys(optional.mcp?.servers ?? {}).sort()).toEqual([
+		expect(Object.keys(optional.mcp?.servers ?? {}).sort((a, b) => a.localeCompare(b))).toEqual([
 			"context7",
 			"github",
 			"parallel-search",
@@ -59,69 +52,75 @@ describe("investigation runtime project config (.opencode/)", () => {
 describe.each([
 	["investigator", investigator],
 	["assistant", assistant],
-])("agent %s (.opencode/agents/)", (name, file) => {
-	test("uses native V2 ordered permissions, not the legacy grouped map", () => {
-		expect(file).toMatch(/^permissions:$/m);
-		expect(file).not.toMatch(/^permission:$/m);
+])("agent %s (.opencode/agents/)", (_name, file) => {
+	it("uses native V2 ordered permissions, not the legacy grouped map", () => {
+		expect(file).toMatch(/^permissions:$/mu);
+		expect(file).not.toMatch(/^permission:$/mu);
 		// V1-only actions that silently vanish under V2 must not appear
 		for (const bad of ["bash", "write", "patch", "task", "list", "doom_loop"]) {
 			expect(actions(file)).not.toContain(bad);
 		}
 	});
 
-	test("first rule is a catch-all deny", () => {
-		expect(file).toMatch(
-			/^permissions:\n\s+- action: "\*"\n\s+resource: "\*"\n\s+effect: deny/m,
-		);
+	it("first rule is a catch-all deny", () => {
+		expect(file).toMatch(/^permissions:\n\s+- action: "\*"\n\s+resource: "\*"\n\s+effect: deny/mu);
 	});
 
-	test("read/glob/grep allowed; .env denied AFTER the read allow; .env.example re-allowed", () => {
-		const readAllow = file.search(/resource: "\*"\n\s+effect: allow/);
-		const envDeny = file.search(/resource: "\*\.env"/);
-		const envGlobDeny = file.search(/resource: "\*\*\/\.env"/);
-		const envExample = file.search(/resource: "\*\.env\.example"/);
+	it("read/glob/grep allowed; .env denied AFTER the read allow; .env.example re-allowed", () => {
+		const readAllow = file.search(/resource: "\*"\n\s+effect: allow/u);
+		const envDeny = file.search(/resource: "\*\.env"/u);
+		const envGlobDeny = file.search(/resource: "\*\*\/\.env"/u);
+		const envExample = file.search(/resource: "\*\.env\.example"/u);
 		expect(readAllow).toBeGreaterThan(-1);
 		expect(envDeny).toBeGreaterThan(readAllow);
 		expect(envGlobDeny).toBeGreaterThan(readAllow);
 		expect(envExample).toBeGreaterThan(envGlobDeny);
-		expect(file).toMatch(/action: glob\n\s+resource: "\*"\n\s+effect: allow/);
-		expect(file).toMatch(/action: grep\n\s+resource: "\*"\n\s+effect: allow/);
+		expect(file).toMatch(/action: glob\n\s+resource: "\*"\n\s+effect: allow/u);
+		expect(file).toMatch(/action: grep\n\s+resource: "\*"\n\s+effect: allow/u);
 	});
 
-	test("expensive/mutating actions carry explicit denies", () => {
+	it("expensive/mutating actions carry explicit denies", () => {
 		for (const action of ["edit", "webfetch", "websearch", "subagent", "question"]) {
 			expect(file).toMatch(
 				new RegExp(`action: ${action}\\n\\s+resource: "\\*"\\n\\s+effect: deny`),
 			);
 		}
-		expect(file).toMatch(
-			/action: external_directory\n\s+resource: "\*"\n\s+effect: deny/,
-		);
+		expect(file).toMatch(/action: external_directory\n\s+resource: "\*"\n\s+effect: deny/u);
 	});
 
-	test("the agent has NO shell at all - command execution is fully denied", () => {
+	it("the agent has NO shell at all - command execution is fully denied", () => {
 		const shellAllows = [
-			...file.matchAll(/- action: shell\n\s+resource: "[^"]*"\n\s+effect: allow/g),
+			...file.matchAll(/- action: shell\n\s+resource: "[^"]*"\n\s+effect: allow/gu),
 		];
 		expect(shellAllows).toHaveLength(0);
 	});
 });
 
 describe("investigator MCP allowlist (inert until .opencode.mcp.optional.json is merged)", () => {
-	test("github/render/context7/parallel-search read tools allowed", () => {
-		expect(investigator).toMatch(/action: github_get_file_contents\n\s+resource: "\*"\n\s+effect: allow/);
-		expect(investigator).toMatch(/action: parallel-search_web_search\n\s+resource: "\*"\n\s+effect: allow/);
-		expect(investigator).toMatch(/action: context7_query-docs\n\s+resource: "\*"\n\s+effect: allow/);
-		expect(investigator).toMatch(/action: render_list_services\n\s+resource: "\*"\n\s+effect: allow/);
+	it("github/render/context7/parallel-search read tools allowed", () => {
+		expect(investigator).toMatch(
+			/action: github_get_file_contents\n\s+resource: "\*"\n\s+effect: allow/u,
+		);
+		expect(investigator).toMatch(
+			/action: parallel-search_web_search\n\s+resource: "\*"\n\s+effect: allow/u,
+		);
+		expect(investigator).toMatch(
+			/action: context7_query-docs\n\s+resource: "\*"\n\s+effect: allow/u,
+		);
+		expect(investigator).toMatch(
+			/action: render_list_services\n\s+resource: "\*"\n\s+effect: allow/u,
+		);
 	});
 
-	test("no MCP write-capable tool is allowed", () => {
-		expect(investigator).not.toMatch(/github_create_|github_push_|github_merge_|delete_file|pull_request_review_write|render_create_|render_update_|render_trigger_|render_delete_/);
+	it("no MCP write-capable tool is allowed", () => {
+		expect(investigator).not.toMatch(
+			/github_create_|github_push_|github_merge_|delete_file|pull_request_review_write|render_create_|render_update_|render_trigger_|render_delete_/u,
+		);
 	});
 });
 
 describe("assistant agent mirrors the same read-only rules", () => {
-	test("assistant has no MCP tools at all", () => {
-		expect(assistant).not.toMatch(/github_|render_|context7_|parallel-search_/);
+	it("assistant has no MCP tools at all", () => {
+		expect(assistant).not.toMatch(/github_|render_|context7_|parallel-search_/u);
 	});
 });
