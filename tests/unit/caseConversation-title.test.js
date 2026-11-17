@@ -74,6 +74,43 @@ it("extractTitleFromAnswer handles a marker-only reply (empty cleaned)", () => {
 	expect(cleaned).toBe("");
 });
 
+it("extractTitleFromAnswer strips a glued TITLE: prefix (title and question on one line)", () => {
+	const raw =
+		"TITLE: Coupon WELCOME3M missing months Did this happen only for this one buyer, or have other buyers redeemed WELCOME3M the same way?";
+	const { title, cleaned } = extractTitleFromAnswer(raw, { enabled: true });
+	expect(title).toBeNull();
+	expect(cleaned).not.toContain("TITLE:");
+	expect(cleaned).toBe(
+		"Coupon WELCOME3M missing months Did this happen only for this one buyer, or have other buyers redeemed WELCOME3M the same way?",
+	);
+});
+
+it("extractTitleFromAnswer strips an overlong TITLE: first line glued with a question", () => {
+	const overlongTitle = `TITLE: ${"Coupon WELCOME3M missing months ".repeat(6).trim()}\nWhich page were you on?`;
+	expect(overlongTitle.split("\n")[0].length).toBeGreaterThan(80);
+	const { title, cleaned } = extractTitleFromAnswer(overlongTitle, { enabled: true });
+	expect(title).toBeNull();
+	expect(cleaned).not.toContain("TITLE:");
+	expect(cleaned).toContain("Which page were you on?");
+});
+
+it("answerClarification never leaks a glued TITLE: prefix to the buyer's bubble", async () => {
+	setClarificationProvider(
+		async () =>
+			"TITLE: Coupon WELCOME3M missing months Did this happen only for this one buyer, or have other buyers redeemed WELCOME3M the same way?",
+	);
+	const answer = await answerClarification({
+		subject: "",
+		history: [{ role: "client", content: FIRST_MESSAGE }],
+		clientMessage: FIRST_MESSAGE,
+	});
+	expect(answer.reply).not.toContain("TITLE:");
+	expect(answer.reply.length).toBeGreaterThan(0);
+	expect(answer.title).toBeTruthy();
+	expect(answer.title).not.toMatch(/^TITLE:/iu);
+	expect(FIRST_MESSAGE).toContain(String(answer.title).split(" ")[0]);
+});
+
 it("extractTitleFromAnswer ignores a marker on a later line", () => {
 	const { title, cleaned } = extractTitleFromAnswer("Question?\nTITLE: Too late", {
 		enabled: true,

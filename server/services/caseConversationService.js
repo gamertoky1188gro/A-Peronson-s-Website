@@ -92,10 +92,16 @@ function extractTitleFromAnswer(raw, { enabled = true } = {}) {
 		return { title: null, cleaned: stripped.trim() };
 	}
 	const extracted = firstLineTitle(text0);
-	if (!extracted) {
-		return { title: null, cleaned: text0 };
+	if (extracted) {
+		return { title: extracted.title || null, cleaned: extracted.cleaned };
 	}
-	return { title: extracted.title || null, cleaned: extracted.cleaned };
+	if (/^TITLE:/iu.test(text0)) {
+		// Glued or over-long marker line: the strict regex cannot match, but
+		// the prefix must never reach the buyer's bubble. The remainder is kept
+		// verbatim and the caller derives the title deterministically.
+		return { title: null, cleaned: text0.replace(/^TITLE:\s*/iu, "") };
+	}
+	return { title: null, cleaned: text0 };
 }
 
 function deriveCaseSubject({ modelTitle = "", firstMessage = "" } = {}) {
