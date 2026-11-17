@@ -44,8 +44,10 @@ Full endpoint list: [api-reference.md](api-reference.md).
 - **WebSocket `/ws`** (`server/server.js`): origin-checked (`ALLOWED_WS_ORIGINS`); carries chat rooms
   (`chat_message`, join/leave, policy status), call rooms (WebRTC signalling, participants),
   notifications (`notification_created`, `notification_read`) and the assistant (`ask` → streamed reply).
-- **Server-Sent Events:** `GET /api/feed/stream` (feed updates) and support-case progress
-  (`server/realtime/realtimeBus.js`).
+- **Server-Sent Events:** `GET /api/feed/stream` (feed updates) and support-case progress and
+  support.case.activity (`server/realtime/realtimeBus.js`). `caseRealtime.js` whitelists both;
+  the activity event carries only server-sanitized basename labels (see `activityLabel.js`),
+  never paths or reasoning.
 
 ## Auth & sessions
 
