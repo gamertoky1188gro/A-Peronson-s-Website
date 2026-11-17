@@ -622,6 +622,7 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 		findings: state.findings,
 		activity: state.activity,
 		attachments: state.attachments,
+		usage: state.usage,
 		loading: state.loading,
 		feedback: state.feedback,
 		send,

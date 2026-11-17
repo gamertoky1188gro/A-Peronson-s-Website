@@ -593,6 +593,32 @@ describe("useSupportCase activity (Task 7)", () => {
 		expect(result.current.activity[0].label).toBe("Reading routes (updated)");
 	});
 
+	it("a support.case.usage frame updates the hook's usage state", async () => {
+		installApi();
+		const { result } = renderHook(() => useSupportCase(CASE_ID));
+		await waitFor(() => expect(typeof eventHandler).toBe("function"));
+
+		act(() => {
+			eventHandler("support.case.usage", {
+				caseId: CASE_ID,
+				role: "lead",
+				used: 62_464,
+				output: 80,
+				reasoning: 207,
+				cacheRead: 62_464,
+				cacheWrite: 0,
+			});
+		});
+
+		expect(result.current.usage).toEqual({
+			used: 62_464,
+			output: 80,
+			reasoning: 207,
+			cacheRead: 62_464,
+			cacheWrite: 0,
+		});
+	});
+
 	it("an activity frame without an id is ignored", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
