@@ -116,6 +116,20 @@ function upsertActivityRow(list, entry) {
 	return rows.slice(-200);
 }
 
+// Merges the persisted seed rows with the live rows (which arrive over SSE
+// after mount and carry server uuids — they never collide with the seeded
+// persist:* ids, but dedupe by id anyway). Live rows are kept; the cap is 200.
+function mergeActivity(live, seeds) {
+	const merged = [...(Array.isArray(seeds) ? seeds : []), ...(Array.isArray(live) ? live : [])];
+	const byId = new Map();
+	for (const row of merged) {
+		if (row && typeof row === "object" && row.id) {
+			byId.set(row.id, { ...byId.get(row.id), ...row });
+		}
+	}
+	return [...byId.values()].slice(-200);
+}
+
 // Reduces the persisted investigation projection (GET /support/cases/:caseId)
 // to activity rows, so a page reload re-seeds the tree from what the server
 // actually recorded. Labels come from the server's tool log verbatim (already
@@ -129,6 +143,7 @@ function seedActivityFromInvestigations(investigations) {
 		const completedAt = investigation?.completed_at;
 		const date = completedAt ? new Date(completedAt) : null;
 		const at = date && !Number.isNaN(date.getTime()) ? date.toISOString() : "";
+		const seedTag = Date.parse(at) || "x";
 		const entries = Array.isArray(investigation?.tool_log) ? investigation.tool_log : [];
 		entries.forEach((entry, index) => {
 			const kind = typeof entry?.kind === "string" ? entry.kind : "other";
@@ -138,7 +153,7 @@ function seedActivityFromInvestigations(investigations) {
 					: `Using ${String(entry?.tool ?? "tool").slice(0, 32)}`;
 			const failed = entry?.status === "failed" || entry?.status === "error";
 			rows.push({
-				id: `persist:${role}:${index}`,
+				id: `persist:${role}:${index}:${seedTag}`,
 				role,
 				kind,
 				label: String(label).slice(0, 80),
@@ -293,18 +308,11 @@ function caseReducer(state, action) {
 				status: action.status ?? null,
 				attachments: mergeAttachments(state.attachments, action.attachments),
 				feedback: action.feedback ?? null,
-				activity: (() => {
-					const seeds = seedActivityFromInvestigations(action.investigations);
-					return seeds.length > 0 ? seeds : (state.activity ?? []);
-				})(),
+				activity: mergeActivity(
+					state.activity,
+					seedActivityFromInvestigations(action.investigations),
+				),
 			};
-		case "activity": {
-			const entry = action.entry;
-			if (!entry?.id) {
-				return state;
-			}
-			return { ...state, activity: upsertActivityRow(state.activity, entry) };
-		}
 		case "feedback:set":
 			return {
 				...state,

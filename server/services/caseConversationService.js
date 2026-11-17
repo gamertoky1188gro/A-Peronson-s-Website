@@ -83,25 +83,54 @@ function firstLineTitle(raw) {
 	return { title: sanitizeTitle(match[1]), cleaned: lines.slice(1).join("\n").trim() };
 }
 
+// The marker must never reach the buyer, on any line, on any turn. Drops every
+// TITLE: fragment to end-of-line (a line that leads with the marker loses the
+// whole line; a glued inline marker loses only its own tail), then collapses
+// blank runs and trims.
+function scrubTitleMarkers(text) {
+	const lines = String(text ?? "")
+		.split("\n")
+		.map((line) => line.replace(/\s*\bTITLE\s*:[^\n]*/giu, "").trimEnd());
+	const out = [];
+	let blankRun = 0;
+	for (const line of lines) {
+		if (line.trim() === "") {
+			blankRun += 1;
+			if (blankRun > 1) {
+				continue;
+			}
+			out.push("");
+			continue;
+		}
+		blankRun = 0;
+		out.push(line);
+	}
+	return out.join("\n").trim();
+}
+
 function extractTitleFromAnswer(raw, { enabled = true } = {}) {
 	const text0 = String(raw ?? "").trim();
 	if (!(enabled && text0)) {
 		// The marker must never cross the wire, even on turns where it is not
-		// armed: a leading TITLE: line is dropped and reported as no title.
-		const stripped = text0.replace(/^TITLE:[^\n]*(?:\n|$)/u, "");
-		return { title: null, cleaned: stripped.trim() };
+		// armed: every TITLE: line is dropped and reported as no title.
+		return { title: null, cleaned: scrubTitleMarkers(text0) };
 	}
 	const extracted = firstLineTitle(text0);
 	if (extracted) {
-		return { title: extracted.title || null, cleaned: extracted.cleaned };
+		// The title used is the strict-extracted one; later lines may still
+		// carry a stray marker, so the cleaned text is scrubbed too.
+		return { title: extracted.title || null, cleaned: scrubTitleMarkers(extracted.cleaned) };
 	}
-	if (/^TITLE:/iu.test(text0)) {
+	if (/^\s*TITLE\s*:/iu.test(text0)) {
 		// Glued or over-long marker line: the strict regex cannot match, but
-		// the prefix must never reach the buyer's bubble. The remainder is kept
-		// verbatim and the caller derives the title deterministically.
-		return { title: null, cleaned: text0.replace(/^TITLE:\s*/iu, "") };
+		// the prefix must never reach the buyer's bubble. The line's remainder
+		// is kept verbatim and the caller derives the title deterministically.
+		return {
+			title: null,
+			cleaned: scrubTitleMarkers(text0.replace(/^\s*TITLE\s*:\s*/iu, "")),
+		};
 	}
-	return { title: null, cleaned: text0 };
+	return { title: null, cleaned: scrubTitleMarkers(text0) };
 }
 
 function deriveCaseSubject({ modelTitle = "", firstMessage = "" } = {}) {

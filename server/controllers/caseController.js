@@ -689,13 +689,43 @@ export async function getCaseController(req, res) {
 				select: { role: true, status: true, completed_at: true, tool_log: true },
 				orderBy: { started_at: "asc" },
 			})
-			.catch(() => []);
+			.catch((error) => {
+				logWarn("support case investigations projection failed; continuing without it", {
+					caseId,
+					message: String(error),
+				});
+				return [];
+			});
+		// Scrub the projection: only role/status/completed_at and the tool_log
+		// keys the client renders cross the wire. Raw provider errors (which can
+		// embed host paths) and everything else stay server-side. Fail-safe: a
+		// malformed tool_log entry is dropped, not passed through.
+		const safeInvestigations = (Array.isArray(investigations) ? investigations : []).map(
+			(investigation) => ({
+				role: typeof investigation?.role === "string" ? investigation.role : null,
+				status: typeof investigation?.status === "string" ? investigation.status : null,
+				completed_at: investigation?.completed_at ?? null,
+				tool_log: Array.isArray(investigation?.tool_log)
+					? investigation.tool_log
+							.filter((entry) => entry && typeof entry === "object")
+							.map((entry) => {
+								const scrubbed = {};
+								for (const key of ["tool", "status", "kind", "label"]) {
+									if (typeof entry[key] === "string") {
+										scrubbed[key] = entry[key];
+									}
+								}
+								return scrubbed;
+							})
+					: [],
+			}),
+		);
 		return res.json({
 			case: caseRow,
 			messages: messages || [],
 			attachments: Array.isArray(attachments) ? attachments : [],
 			feedback,
-			investigations: Array.isArray(investigations) ? investigations : [],
+			investigations: safeInvestigations,
 		});
 	} catch (error) {
 		return handleControllerError(res, error);

@@ -111,12 +111,29 @@ it("answerClarification never leaks a glued TITLE: prefix to the buyer's bubble"
 	expect(FIRST_MESSAGE).toContain(String(answer.title).split(" ")[0]);
 });
 
-it("extractTitleFromAnswer ignores a marker on a later line", () => {
-	const { title, cleaned } = extractTitleFromAnswer("Question?\nTITLE: Too late", {
+it("a marker on a later line is removed (a)", () => {
+	const { title, cleaned } = extractTitleFromAnswer("Question?\nSome context.\nTITLE: Too late", {
 		enabled: true,
 	});
 	expect(title).toBeNull();
-	expect(cleaned).toBe("Question?\nTITLE: Too late");
+	expect(cleaned).toBe("Question?\nSome context.");
+	expect(cleaned).not.toContain("TITLE:");
+});
+
+it("a marker glued mid-sentence in line 1 never reaches the wire (b)", () => {
+	const { title, cleaned } = extractTitleFromAnswer(
+		"Sure! TITLE: Coupon broke and renewals may be skipped\nWhich page were you on?",
+		{ enabled: true },
+	);
+	expect(title).toBeNull();
+	expect(cleaned).not.toContain("TITLE:");
+});
+
+it("a disarmed turn echoing a mixed-case Title: marker is stripped (c)", () => {
+	const reply = extractTitleFromAnswer("Title: Coupon\nWhich plan are you on?", {
+		enabled: false,
+	});
+	expect(reply).toEqual({ title: null, cleaned: "Which plan are you on?" });
 });
 
 it("deriveCaseSubject model title wins; falls back to the message's first words", () => {

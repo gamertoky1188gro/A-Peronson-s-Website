@@ -22,19 +22,31 @@ const rows = [
 ];
 
 it("renders labels with no paths and collapses on toggle", () => {
-	const { container } = render(<ActivityTree activity={rows} status="completed" />);
+	const { container } = render(<ActivityTree activity={rows} status="investigating" />);
 	expect(screen.getByText("Reading walletService.js")).toBeTruthy();
 	expect(screen.getByText("Searching code")).toBeTruthy();
 	expect(container.textContent).not.toContain("server/");
-	const toggle = screen.getByRole("button", { name: /investigat/iu });
+	const toggle = screen.getByRole("button", { name: /working/iu });
 	fireEvent.click(toggle);
 	expect(screen.queryByText("Reading walletService.js")).toBeNull(); // body collapses
-	expect(screen.getByRole("button", { name: /investigat/iu })).toBeTruthy(); // header stays
+	expect(screen.getByRole("button", { name: /working/iu })).toBeTruthy(); // header stays
 });
 
 it("shows How this was investigated when completed and no rows leak tool errors", () => {
 	render(<ActivityTree activity={rows.map((r) => ({ ...r, error: "no" }))} status="completed" />);
 	expect(screen.getByText(/How this was investigated/iu)).toBeTruthy();
+});
+
+it("renders collapsed by default once the investigation is completed", () => {
+	render(<ActivityTree activity={rows} status="completed" />);
+	expect(screen.queryByText("Reading walletService.js")).toBeNull(); // rows hidden
+	expect(screen.getByRole("button", { name: /investigat/iu })).toBeTruthy(); // header stays
+});
+
+it("renders open by default while the investigation is running", () => {
+	render(<ActivityTree activity={rows} status="investigating" />);
+	expect(screen.getByText("Reading walletService.js")).toBeTruthy(); // rows visible
+	expect(screen.getByRole("button", { name: /working/iu })).toBeTruthy();
 });
 
 it("renders nothing when there are no rows and nothing is running", () => {

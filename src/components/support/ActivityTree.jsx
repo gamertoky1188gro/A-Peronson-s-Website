@@ -3,6 +3,12 @@ import { useState } from "react";
 import { cn } from "../../lib/cn.js";
 
 const STAGE_ORDER = ["lead", "code", "repo", "research", "verify"];
+const STAGE_ORDER_END = 99;
+
+function orderOf(role) {
+	const index = STAGE_ORDER.indexOf(role ?? "");
+	return index === -1 ? STAGE_ORDER_END : index;
+}
 
 function summarize(rows) {
 	// duration from live timestamps; absent or 0 => omit (never lie)
@@ -24,14 +30,13 @@ export function ActivityTree({ activity = [], status = "collecting" }) {
 	const running = ["investigating", "verifying", "reporting"].includes(
 		String(status ?? "").toLowerCase(),
 	);
-	const [open, setOpen] = useState(true);
+	const [open, setOpen] = useState(() =>
+		["investigating", "verifying", "reporting"].includes(String(status ?? "").toLowerCase()),
+	);
 	if (rows.length === 0 && !running) {
 		return null;
 	}
-	const ordered = [...rows].sort(
-		(left, right) =>
-			STAGE_ORDER.indexOf(left?.role ?? "") - STAGE_ORDER.indexOf(right?.role ?? "") || 0,
-	);
+	const ordered = [...rows].sort((left, right) => orderOf(left?.role) - orderOf(right?.role) || 0);
 	const duration = summarize(rows);
 	const heading = running
 		? "Working…"

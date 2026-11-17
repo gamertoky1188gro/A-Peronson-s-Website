@@ -549,15 +549,15 @@ describe("useSupportCase activity (Task 7)", () => {
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(result.current.activity).toHaveLength(2));
 		expect(result.current.activity[0]).toMatchObject({
-			id: "persist:lead:0",
 			role: "lead",
 			label: "Reading walletService.js",
 			status: "done",
 		});
+		expect(result.current.activity[0].id).toMatch(/^persist:lead:0:/u);
 		expect(result.current.activity[1]).toMatchObject({
-			id: "persist:lead:1",
 			status: "failed",
 		});
+		expect(result.current.activity[1].id).toMatch(/^persist:lead:1:/u);
 	});
 
 	it("a support.case.activity frame merges a row by id instead of duplicating it", async () => {
@@ -629,8 +629,8 @@ describe("useSupportCase activity seeds (fix round 1)", () => {
 		});
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(result.current.activity).toHaveLength(200));
-		expect(result.current.activity[0].id).toBe("persist:lead:10");
-		expect(result.current.activity[199].id).toBe("persist:lead:209");
+		expect(result.current.activity[0].id).toMatch(/^persist:lead:10:/u);
+		expect(result.current.activity[199].id).toMatch(/^persist:lead:209:/u);
 	});
 
 	it("survives a non-date completed_at and produces an empty at", async () => {
@@ -652,5 +652,49 @@ describe("useSupportCase activity seeds (fix round 1)", () => {
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(result.current.activity).toHaveLength(1));
 		expect(result.current.activity[0].at).toBe("");
+	});
+});
+
+describe("useSupportCase activity seeds (fix round 2)", () => {
+	it("keeps live activity rows when a reload seeds the persisted projection", async () => {
+		installApi({
+			case: {
+				case: caseRow(),
+				messages: [],
+				attachments: [],
+				investigations: [
+					{
+						role: "lead",
+						status: "completed",
+						completed_at: "2026-11-17T06:00:06.000Z",
+						tool_log: [{ kind: "read", label: "Reading walletService.js", status: "done" }],
+					},
+				],
+			},
+		});
+		const { result } = renderHook(() => useSupportCase(CASE_ID));
+		await waitFor(() => expect(result.current.activity).toHaveLength(1));
+
+		act(() => {
+			eventHandler("support.case.activity", {
+				caseId: CASE_ID,
+				id: "live-1",
+				role: "code",
+				kind: "read",
+				label: "Reading routes (live)",
+				status: "done",
+				at: "2026-11-17T06:01:00.000Z",
+			});
+		});
+		expect(result.current.activity).toHaveLength(2);
+
+		await act(async () => {
+			await result.current.refresh();
+		});
+
+		expect(result.current.activity.map((row) => row.id)).toEqual(
+			expect.arrayContaining([expect.stringMatching(/^persist:lead:0:/u), "live-1"]),
+		);
+		expect(result.current.activity).toHaveLength(2);
 	});
 });
