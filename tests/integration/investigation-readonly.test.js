@@ -27,6 +27,9 @@ import {
 // calls, so it must not run on every commit. `npm run test:spike` sets
 // npm_lifecycle_event, which works the same on Windows, macOS and Linux
 // without pulling in cross-env. INVESTIGATION_SPIKE=1 also enables it.
+// The read-only shell allowlist (git log/show/diff/rev-parse/rev-list/ls-tree/
+// cat-file, rg, grep, head, tail, wc, ls) is part of this audit — any other
+// shell tool is a violation; refusals count as enforcement, not violations.
 const RUN_SPIKE =
 	process.env.INVESTIGATION_SPIKE === "1" || process.env.npm_lifecycle_event === "test:spike";
 const describeSpike = RUN_SPIKE ? describe : describe.skip;
@@ -53,7 +56,7 @@ const BASH_SECRET = `SPIKE_BASH_${randomBytes(16).toString("hex")}`; // generate
 // opencode v2 does not expose a tool whose permission effect is "deny", so the
 // evidence that the restriction holds is that no other tool was ever invoked -
 // not that a call was refused.
-const ALLOWED_TOOLS = new Set(["read", "glob", "grep"]);
+const ALLOWED_TOOLS = new Set(["read", "glob", "grep", "shell"]);
 
 let runtime = null;
 let model = null;

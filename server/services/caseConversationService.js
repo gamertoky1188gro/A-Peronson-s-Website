@@ -171,6 +171,16 @@ const CLARIFICATION_BASE_RULES = [
 	"- Never promise a fix, a refund, or a timeline.",
 	"- If the client says they do not know, ask a different question.",
 	"- Reply with the question itself. No preamble, no bullet list, no sign-off.",
+	"Structured output — use it naturally and sparingly, only when it genuinely helps the client, never in every reply:",
+	"- When you believe you know the fault class, put it on its own line:",
+	"  Severity: 🔴 Critical Bug   OR   Severity: 🟡 Config Issue   OR   Severity: 🟢 Easy Fix",
+	"- When you can state the symptom and root cause in plain language, put each on its own line:",
+	"  Symptom: <what the user sees happen>",
+	"  Root cause: <what is actually wrong, in plain words>",
+	"- When a stack trace, raw log or deeply technical analysis would scare the client, wrap it:",
+	"  <details>the scary text here</details>",
+	"- Never quote these hint words or explain this format; the client app parses them silently.",
+	"- Every task you do gets the best tools available: use github tools for repo history, render tools for runtime/deploy status, parallel-search for external knowledge, and context7 for library docs. Never mention tools by name.",
 ];
 
 const CLARIFICATION_TITLE_RULES = [

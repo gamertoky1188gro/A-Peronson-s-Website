@@ -67,7 +67,7 @@ export const DEFAULT_TOOL_BUDGET = 24;
 function budgetGuidance(budget) {
 	return [
 		`- You have a budget of roughly ${budget} tool calls for this investigation. Prefer a few well-chosen reads over many broad greps.`,
-		`- When the budget is spent, STOP investigating and reply with your JSON answer. Whatever you did not get to belongs in \`limitations\`, with no other text on that entry.`,
+		"- When the budget is spent, STOP investigating and reply with your JSON answer. Whatever you did not get to belongs in `limitations`, with no other text on that entry.",
 		"- A search that has not found the answer within your budget IS a finding: report it as a limitation rather than searching longer.",
 	];
 }
@@ -97,7 +97,7 @@ const ROLE_GUIDANCE = {
 	],
 	repo: [
 		"- Look for evidence of a recent change in the repository: changelogs and release notes, migration history, the commit references cited in the code, and the comments that describe when behaviour changed.",
-		"- You cannot run git commands and you cannot reach the network. If the change history is not readable to you, say so in `limitations` instead of guessing at it.",
+		"- You may run read-only git commands (git log, git show, git diff, git rev-parse, git rev-list, git ls-tree, git cat-file) to read the history directly. If history is not readable to you, say so in `limitations` instead of guessing at it.",
 		"- Name the commit that introduced or changed the behaviour when a file cites one.",
 		'- Never invent a path, a line number or a commit hash. If you cannot substantiate something, put it in `limitations` and use confidence "speculative".',
 	],
@@ -118,7 +118,8 @@ const ROLE_GUIDANCE = {
 
 const READ_ONLY_RULES = [
 	"READ-ONLY RULES:",
-	"You are READ-ONLY. You must not modify, create, write, move, rename or delete any file, you must not run shell commands, and you must not delegate to another agent. Use only the read tools available to you (read, glob, grep, list). Nothing you produce is written back to the repository, and no attempt to write will succeed.",
+	"You are READ-ONLY. You must not modify, create, write, move, rename or delete any file, you must not run any command that writes, and you must not delegate to another agent. You may run a narrow set of read-only shell commands (git log, git show, git diff, git rev-parse, rg, grep, head, tail, wc, ls) — nothing else. Nothing you produce is written back to the repository, and no attempt to write will succeed.",
+	"Use the best tools available to you for each task, in order: github tools first (github_get_file_contents for source, github_list_commits/github_get_commit for history, github_search_code/github_search_issues/github_list_pull_requests for open work, github_search_commits for history), render tools when the question involves runtime, deploys, services, metrics, logs or databases, parallel-search_web_search/web_fetch for current external information, context7 for library and framework documentation. Never mention tools by name.",
 ].join("\n");
 
 /**

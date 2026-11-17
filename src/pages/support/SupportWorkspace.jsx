@@ -32,6 +32,7 @@ import {
 	PanelRight,
 	ShieldCheck,
 	Sparkles,
+	Trash2,
 	X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -46,7 +47,7 @@ import InvestigationModelPicker from "../../components/support/InvestigationMode
 import { StageRail } from "../../components/support/StageRail.jsx";
 import { useModalFocus } from "../../hooks/useModalFocus.js";
 import { useSupportCase } from "../../hooks/useSupportCase.js";
-import { apiRequest, getToken } from "../../lib/auth.js";
+import { apiRequest, getCurrentUser, getToken } from "../../lib/auth.js";
 import { cn } from "../../lib/cn.js";
 import { formatBytes } from "../../lib/formatBytes.js";
 import { signOne } from "../../lib/signedFile.js";
@@ -263,8 +264,158 @@ function attachmentIcon(attachment) {
 	return File;
 }
 
-/** One message in the transcript. The body is rendered as TEXT, never markup. */
-function MessageBubble({ message }) {
+// Inline tags the intake assistant may emit that this bubble renders as
+// structure: severity pills, symptom / root-cause callouts and <details>
+// collapsible tech sections. Everything else stays plain whitespace-pre-wrap
+// text — never markup.
+const SEVERITY_EMOJI_TONE = {
+	"🔴": "border-rose-500/40 bg-rose-500/15 text-rose-200",
+	"🟠": "border-amber-400/40 bg-amber-500/15 text-amber-200",
+	"🟡": "border-yellow-400/40 bg-yellow-500/15 text-yellow-200",
+	"🟢": "border-emerald-400/40 bg-emerald-500/15 text-emerald-200",
+	"🔵": "border-cyan-400/40 bg-cyan-500/15 text-cyan-200",
+};
+const SEVERITY_PATTERN = /^Severity:\s*(🔴|🟠|🟡|🟢|🔵)\s*(.+)$/u;
+const SYMPTOM_PATTERN = /^Symptom:\s*(.+)$/iu;
+const ROOT_CAUSE_PATTERN = /^Root cause:\s*(.+)$/iu;
+const DETAILS_OPEN_PATTERN = /^<details>$/u;
+const DETAILS_CLOSE_PATTERN = /^<\/details>$/u;
+
+/** Split a block of text into sections the bubble renders distinctly. */
+function parseStructuredBlocks(body) {
+	const lines = String(body || "").split("\n");
+	const blocks = [];
+	let text = [];
+	let details = null;
+	const pushText = () => {
+		if (text.length > 0) {
+			const joined = text
+				.join("\n")
+				.replace(/\n{3,}/gu, "\n\n")
+				.trim();
+			if (joined) {
+				blocks.push({ kind: "text", text: joined });
+			}
+			text = [];
+		}
+	};
+	for (const line of lines) {
+		const trimmed = line.trim();
+		if (details) {
+			if (DETAILS_CLOSE_PATTERN.test(trimmed)) {
+				blocks.push({ kind: "details", content: details.join("\n").trim() });
+				details = null;
+				continue;
+			}
+			details.push(line);
+			continue;
+		}
+		const severity = trimmed.match(SEVERITY_PATTERN);
+		if (severity) {
+			pushText();
+			blocks.push({ kind: "severity", emoji: severity[1], label: severity[2].trim() });
+			continue;
+		}
+		const symptom = trimmed.match(SYMPTOM_PATTERN);
+		if (symptom) {
+			pushText();
+			blocks.push({ kind: "symptom", text: symptom[1].trim() });
+			continue;
+		}
+		const rootCause = trimmed.match(ROOT_CAUSE_PATTERN);
+		if (rootCause) {
+			pushText();
+			blocks.push({ kind: "rootcause", text: rootCause[1].trim() });
+			continue;
+		}
+		if (DETAILS_OPEN_PATTERN.test(trimmed)) {
+			pushText();
+			details = [];
+			continue;
+		}
+		text.push(line);
+	}
+	pushText();
+	if (details) {
+		blocks.push({ kind: "details", content: details.join("\n").trim() });
+	}
+	return blocks;
+}
+
+const DETAILS_SUMMARY = "View technical details";
+
+function BubbleRichBody({ body }) {
+	const blocks = parseStructuredBlocks(body);
+	return (
+		<div class="mt-1 space-y-2">
+			{blocks.map((block, index) => {
+				switch (block.kind) {
+					case "severity":
+						return (
+							<span
+								key={index}
+								class={cn(
+									"inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+									SEVERITY_EMOJI_TONE[block.emoji] ?? "border-white/10 bg-white/5 text-[#a99bbd]",
+								)}
+							>
+								{block.emoji} {block.label}
+							</span>
+						);
+					case "symptom":
+						return (
+							<div
+								key={index}
+								class="rounded-xl border border-amber-400/30 bg-amber-500/10 px-3 py-2"
+							>
+								<p class="text-[10px] font-semibold uppercase tracking-wider text-amber-300/90">
+									Symptom
+								</p>
+								<p class="mt-0.5 text-[12px] leading-5 text-amber-100">{block.text}</p>
+							</div>
+						);
+					case "rootcause":
+						return (
+							<div
+								key={index}
+								class="rounded-xl border border-violet-400/30 bg-violet-500/10 px-3 py-2"
+							>
+								<p class="text-[10px] font-semibold uppercase tracking-wider text-violet-300/90">
+									Root cause
+								</p>
+								<p class="mt-0.5 text-[12px] leading-5 text-violet-100">{block.text}</p>
+							</div>
+						);
+					case "details":
+						return (
+							<details
+								key={index}
+								class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 [&_summary]:cursor-pointer [&_summary]:text-[11px] [&_summary]:font-semibold [&_summary]:text-[#a99bbd] [&_summary]:outline-none"
+							>
+								<summary class="select-none">{DETAILS_SUMMARY}</summary>
+								<pre class="mt-2 whitespace-pre-wrap break-words font-mono text-[11px] leading-5 text-[#cfc3e6]">
+									{block.content}
+								</pre>
+							</details>
+						);
+					default:
+						return (
+							<p key={index} class="whitespace-pre-wrap break-words text-sm leading-6">
+								{block.text}
+							</p>
+						);
+				}
+			})}
+		</div>
+	);
+}
+
+/** One message in the transcript. The body is rendered as TEXT, never markup.
+ * Assistant messages additionally parse the SERVER-LESS structured hints the
+ * intake assistant may emit (severity pill, symptom/root-cause cards,
+ * <details> technical sections) and, when the parent wires `onFeedback`, two
+ * buttons asking whether the last reply helped. */
+function MessageBubble({ message, onFeedback, feedbackDisabled = false }) {
 	const role = String(message?.role || "system");
 	const kind = String(message?.kind || "answer");
 	const body = decodeStoredText(message?.content);
@@ -297,6 +448,8 @@ function MessageBubble({ message }) {
 		);
 	}
 
+	const showFeedback = typeof onFeedback === "function" && !isClient && !isAdmin && !isNotice;
+
 	return (
 		<div class={`flex ${isClient ? "justify-end" : "justify-start"}`}>
 			<div class={cn("max-w-[85%] rounded-2xl border px-4 py-3", bubbleClass)}>
@@ -304,7 +457,27 @@ function MessageBubble({ message }) {
 					{label}
 					{message?.agent ? ` · ${message.agent}` : ""}
 				</p>
-				<p class="mt-1 whitespace-pre-wrap break-words text-sm leading-6">{body}</p>
+				<BubbleRichBody body={body} />
+				{showFeedback ? (
+					<div class="mt-2.5 flex flex-wrap items-center gap-2">
+						<button
+							type="button"
+							disabled={feedbackDisabled}
+							onClick={() => onFeedback("fixed")}
+							class="rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-300 transition hover:border-emerald-400/50 hover:bg-emerald-500/15 disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							✅ Fixed it
+						</button>
+						<button
+							type="button"
+							disabled={feedbackDisabled}
+							onClick={() => onFeedback("broken")}
+							class="rounded-lg border border-rose-400/30 bg-rose-500/10 px-2.5 py-1 text-[11px] font-semibold text-rose-300 transition hover:border-rose-400/50 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							❌ Still broken
+						</button>
+					</div>
+				) : null}
 			</div>
 		</div>
 	);
@@ -407,8 +580,8 @@ const REPORT_MARKDOWN_COMPONENTS = {
 	},
 };
 
-/** The finished report, and the action that confirms it. */
-function ReportPanel({ report, confirming, confirmed, onConfirm }) {
+/** The finished report, plus the ticket preview for the team. */
+function ReportPanel({ report, confirming, confirmed, onConfirm, preview }) {
 	return (
 		<section
 			aria-label="Investigation report"
@@ -427,6 +600,50 @@ function ReportPanel({ report, confirming, confirmed, onConfirm }) {
 					{String(report?.report ?? "")}
 				</ReactMarkdown>
 			</div>
+			{preview ? (
+				<div class="mt-4 rounded-2xl border border-cyan-400/20 bg-cyan-500/5 p-4">
+					<p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-300">
+						Ticket preview — what goes to the support team
+					</p>
+					<dl class="mt-3 grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+						<div class="min-w-0">
+							<dt class="text-[10px] font-semibold uppercase tracking-wider text-[#a99bbd]">
+								Client
+							</dt>
+							<dd class="mt-0.5 truncate text-[#f4eeff]">{preview.client}</dd>
+						</div>
+						<div class="min-w-0">
+							<dt class="text-[10px] font-semibold uppercase tracking-wider text-[#a99bbd]">
+								Severity
+							</dt>
+							<dd class="mt-0.5 text-[#f4eeff]">{preview.severity}</dd>
+						</div>
+						<div class="min-w-0 sm:col-span-2">
+							<dt class="text-[10px] font-semibold uppercase tracking-wider text-[#a99bbd]">
+								Problem
+							</dt>
+							<dd class="mt-0.5 text-[#f4eeff]">{preview.problem}</dd>
+						</div>
+						<div>
+							<dt class="text-[10px] font-semibold uppercase tracking-wider text-[#a99bbd]">
+								Steps tried
+							</dt>
+							<dd class="mt-0.5 tabular-nums text-[#f4eeff]">
+								{preview.stepsTried} {preview.stepsTried === 1 ? "message" : "messages"}
+							</dd>
+						</div>
+						<div>
+							<dt class="text-[10px] font-semibold uppercase tracking-wider text-[#a99bbd]">
+								Findings
+							</dt>
+							<dd class="mt-0.5 tabular-nums text-[#f4eeff]">{preview.findingCount} total</dd>
+						</div>
+					</dl>
+					{preview.note ? (
+						<p class="mt-3 text-[11px] leading-5 text-cyan-200">{preview.note}</p>
+					) : null}
+				</div>
+			) : null}
 			<div class="mt-4 flex flex-wrap items-center gap-3">
 				<button
 					type="button"
@@ -679,6 +896,33 @@ export default function SupportWorkspace() {
 		});
 	}, []);
 
+	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+	const [deleting, setDeleting] = useState(false);
+
+	async function deleteCase() {
+		if (!caseId) {
+			setDeleteConfirmOpen(false);
+			return;
+		}
+		setDeleting(true);
+		setProblem("");
+		try {
+			await apiRequest(`/support/cases/${encodeURIComponent(caseId)}`, {
+				method: "DELETE",
+				token: jwt ?? undefined,
+				headers: supportToken ? { "x-support-token": supportToken } : undefined,
+				skipSessionClear: Boolean(supportToken),
+			});
+			setDeleteConfirmOpen(false);
+			clearSupportSession();
+			navigate("/support", { replace: true });
+		} catch (error) {
+			setProblem(error instanceof Error ? error.message : "Unable to delete this case.");
+		} finally {
+			setDeleting(false);
+		}
+	}
+
 	async function startCase() {
 		if (!(jwt || supportToken)) {
 			setProblem("Please sign in again to start an investigation.");
@@ -769,6 +1013,40 @@ export default function SupportWorkspace() {
 			return { key: `${base}#${count}`, entry };
 		});
 	}, [supportCase.findings]);
+	const latestAssistantSeverity = useMemo(() => {
+		const assistant = [...messages].reverse().find((m) => m?.role === "assistant");
+		const match =
+			typeof assistant?.content === "string"
+				? assistant.content.match(/Severity:\s*(🔴|🟠|🟡|🟢|🔵)\s*([^\n]{1,40})/iu)
+				: null;
+		return match ? { emoji: match[1], label: match[2].trim() } : null;
+	}, [messages]);
+
+	const ticketPreview = useMemo(() => {
+		if (!supportCase.report?.report) {
+			return null;
+		}
+		const buyer = getSupportSession()?.buyer ?? getCurrentUser() ?? {};
+		const buyerName = buyer?.name || buyer?.email || "You";
+		const stepsTried = messages.filter((m) => String(m?.role ?? "") === "client").length;
+		const confirmedCount = findingRows.filter(
+			(row) => String(row?.finding?.confidence ?? "").toLowerCase() === "confirmed",
+		).length;
+		const probableCount = findingRows.filter(
+			(row) => String(row?.finding?.confidence ?? "").toLowerCase() === "probable",
+		).length;
+		return {
+			client: buyerName,
+			problem: supportCase.caseRow?.subject || supportCase.caseRow?.summary || "Untitled case",
+			stepsTried,
+			findingCount: findingRows.length,
+			confirmedCount,
+			probableCount,
+			severity: latestAssistantSeverity?.label ?? null,
+			severityEmoji: latestAssistantSeverity?.emoji ?? null,
+			note: "Confirming tells us the summary is accurate. The team gets it by email either way.",
+		};
+	}, [supportCase.report, supportCase.caseRow, messages, findingRows, latestAssistantSeverity]);
 
 	const viewerItems = attachments.map((attachment) => ({
 		url: signedUrls[attachment?.file_path] ?? "",
@@ -1045,6 +1323,13 @@ export default function SupportWorkspace() {
 							: "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
 					)}
 				>
+					<span
+						class="hidden items-center gap-1.5 rounded-full border border-emerald-400/25 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-300 sm:inline-flex"
+						title="The AI can view, never change. It cannot run commands or deploy."
+					>
+						<Lock class="h-3 w-3" aria-hidden="true" />
+						Read-only access
+					</span>
 					{isInvestigating ? (
 						<span
 							aria-hidden="true"
@@ -1054,6 +1339,16 @@ export default function SupportWorkspace() {
 					{statusLabel}
 				</span>
 
+				<button
+					type="button"
+					onClick={() => setDeleteConfirmOpen(true)}
+					disabled={!caseId || creating}
+					aria-label="Delete this case"
+					title="Delete this case"
+					class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-[#a99bbd] transition hover:border-rose-400/40 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-40"
+				>
+					<Trash2 class="h-4 w-4" aria-hidden="true" />
+				</button>
 				<div class="ml-auto flex items-center gap-2">
 					<div class="hidden md:block">
 						<InvestigationModelPicker
@@ -1149,6 +1444,10 @@ export default function SupportWorkspace() {
 										<MessageBubble
 											key={message?.id ?? `seq-${message?.sequence ?? 0}`}
 											message={message}
+											onFeedback={(verdict) =>
+												handleSend(verdict === "fixed" ? "Fixed it." : "Still broken.")
+											}
+											feedbackDisabled={sending}
 										/>
 									))
 								)}
@@ -1162,6 +1461,7 @@ export default function SupportWorkspace() {
 											confirming={confirming}
 											confirmed={confirmed}
 											onConfirm={handleConfirm}
+											preview={ticketPreview}
 										/>
 										<Link
 											to={`/support/case/${caseId}/report`}
@@ -1369,6 +1669,48 @@ export default function SupportWorkspace() {
 							<X class="h-5 w-5" aria-hidden="true" />
 						</button>
 						{rightRail}
+					</div>
+				</>
+			) : null}
+
+			{deleteConfirmOpen ? (
+				<>
+					<button
+						type="button"
+						aria-hidden="true"
+						tabIndex={-1}
+						class="fixed inset-0 z-40 bg-black/60"
+						onClick={() => (deleting ? null : setDeleteConfirmOpen(false))}
+					/>
+					<div
+						role="dialog"
+						aria-modal="true"
+						aria-label="Delete case"
+						class="fixed left-1/2 top-1/2 z-50 w-[min(26rem,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-rose-500/25 bg-[#151020] p-5"
+					>
+						<h2 class="text-base font-semibold text-[#f4eeff]">Delete this case?</h2>
+						<p class="mt-1.5 text-sm leading-6 text-[#a99bbd]">
+							This removes the conversation, evidence and any report. It cannot be undone.
+						</p>
+						<div class="mt-4 flex items-center justify-end gap-2">
+							<button
+								type="button"
+								disabled={deleting}
+								onClick={() => setDeleteConfirmOpen(false)}
+								class="inline-flex h-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 text-xs font-semibold text-[#f4eeff] transition hover:border-cyan-400/40 hover:text-cyan-200 disabled:opacity-50"
+							>
+								Cancel
+							</button>
+							<button
+								type="button"
+								disabled={deleting}
+								onClick={deleteCase}
+								class="inline-flex h-10 items-center gap-2 justify-center rounded-xl border border-rose-500/40 bg-rose-500/15 px-4 text-xs font-semibold text-rose-300 transition hover:border-rose-400/60 hover:bg-rose-500/20 disabled:opacity-50"
+							>
+								<Trash2 class="h-4 w-4" aria-hidden="true" />
+								{deleting ? "Deleting…" : "Delete case"}
+							</button>
+						</div>
 					</div>
 				</>
 			) : null}

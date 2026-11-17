@@ -104,11 +104,48 @@ describe.each([
 		expect(file).toMatch(/action: external_directory\n\s+resource: "\*"\n\s+effect: deny/u);
 	});
 
-	it("the agent has NO shell at all - command execution is fully denied", () => {
+	it("shell permissions, if any, are a strict read-only allowlist (no write/mutate commands)", () => {
+		const allowed = new Set([
+			"git log*",
+			"git show*",
+			"git diff*",
+			"git rev-parse*",
+			"git rev-list*",
+			"git ls-tree*",
+			"git cat-file*",
+			"rg*",
+			"grep*",
+			"head*",
+			"tail*",
+			"wc*",
+			"ls*",
+		]);
 		const shellAllows = [
-			...file.matchAll(/- action: shell\n\s+resource: "[^"]*"\n\s+effect: allow/gu),
+			...file.matchAll(/- action: shell\n\s+resource: "([^"]*)"\n\s+effect: allow/gu),
+		].map((m) => m[1]);
+		for (const pattern of shellAllows) {
+			expect(allowed.has(pattern)).toBe(true);
+		}
+		// no pattern may match a write-capable verb
+		const writeVerbs = [
+			"rm",
+			"mv",
+			"cp",
+			"sed -i",
+			"chmod",
+			"chown",
+			"git commit",
+			"git push",
+			"git merge",
+			"git rebase",
+			">",
+			">>",
 		];
-		expect(shellAllows).toHaveLength(0);
+		for (const w of writeVerbs) {
+			for (const pattern of shellAllows) {
+				expect(pattern.includes(w)).toBe(false);
+			}
+		}
 	});
 });
 
