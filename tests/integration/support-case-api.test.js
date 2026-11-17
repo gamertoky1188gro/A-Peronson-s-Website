@@ -452,6 +452,45 @@ describe("support case API (real router, real controller)", () => {
 		expect(reread.body.case.subject).toBe(first.body.subject);
 	});
 
+	// The gate is empty subject AND first message. A case opened with the
+	// default subject keeps it — the model is never asked to name it.
+	it("keeps the existing subject on the first client message", async () => {
+		const created = await createCase();
+
+		const first = await postMessage(
+			created.id,
+			"the verification renewal never applies the free months",
+		);
+		expectSuccess(first);
+		expect(first.body.subject).toBeUndefined();
+
+		const reread = await request(buildApp())
+			.get(`/api/support/cases/${created.id}`)
+			.set(AUTH.owner)
+			.expect(200);
+		expect(reread.body.case.subject).toBe("Checkout fails");
+	});
+
+	// The model's TITLE line is the preferred title; the deterministic
+	// first-words derivation is only the fallback.
+	it("takes the subject from the model's TITLE line on the first message", async () => {
+		const created = await createCase("");
+		setClarificationProvider(
+			async () => "TITLE: verification renewal months\nWhich plan are you on?",
+		);
+		try {
+			const first = await postMessage(
+				created.id,
+				"the verification renewal never applies the free months",
+			);
+			expectSuccess(first);
+			expect(first.body.subject).toBe("verification renewal months");
+			expect(first.body.reply.content).not.toContain("TITLE:");
+		} finally {
+			resetClarificationProvider();
+		}
+	});
+
 	it("the case GET returns the case's attachments, oldest first", async () => {
 		const created = await createCase();
 

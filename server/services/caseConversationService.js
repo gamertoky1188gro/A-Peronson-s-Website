@@ -86,7 +86,10 @@ function firstLineTitle(raw) {
 function extractTitleFromAnswer(raw, { enabled = true } = {}) {
 	const text0 = String(raw ?? "").trim();
 	if (!(enabled && text0)) {
-		return { title: null, cleaned: text0 };
+		// The marker must never cross the wire, even on turns where it is not
+		// armed: a leading TITLE: line is dropped and reported as no title.
+		const stripped = text0.replace(/^TITLE:[^\n]*(?:\n|$)/u, "");
+		return { title: null, cleaned: stripped.trim() };
 	}
 	const extracted = firstLineTitle(text0);
 	if (!extracted) {
@@ -122,7 +125,7 @@ function deriveCaseSubject({ modelTitle = "", firstMessage = "" } = {}) {
 	return sanitizeTitle(out) || null;
 }
 
-const CLARIFICATION_SYSTEM_PROMPT = [
+const CLARIFICATION_BASE_RULES = [
 	"You are the intake assistant for GarTexHub support investigations.",
 	"You read the client's description of a problem and ask ONE short clarifying question.",
 	"Rules:",
@@ -133,13 +136,23 @@ const CLARIFICATION_SYSTEM_PROMPT = [
 	"- Never promise a fix, a refund, or a timeline.",
 	"- If the client says they do not know, ask a different question.",
 	"- Reply with the question itself. No preamble, no bullet list, no sign-off.",
+];
+
+const CLARIFICATION_TITLE_RULES = [
 	"You create a short label for this case, invisibly to the client.",
 	"Only for the VERY FIRST message of the case: begin your reply with a line",
 	"of exactly this form and nothing else on it:",
 	"TITLE: <3 to 8 word title for the problem, no punctuation>",
 	"Then a newline, then the one clarifying question as before.",
 	"Never mention, quote or explain this line, in any later message.",
-].join("\n");
+];
+
+// The pre-Task-1 prompt: no TITLE lines, byte-identical to the base rules
+// joined by a newline. Armed turns (first client message, empty subject) get
+// the title rules appended exactly as before.
+const CLARIFICATION_BASE_PROMPT = CLARIFICATION_BASE_RULES.join("\n");
+const CLARIFICATION_SYSTEM_PROMPT =
+	CLARIFICATION_BASE_RULES.concat(CLARIFICATION_TITLE_RULES).join("\n");
 
 function text(value) {
 	return String(value ?? "").trim();
@@ -502,13 +515,17 @@ async function answerClarification(options = {}) {
 	}
 
 	const configured = providerOverride || callConfiguredProvider;
+	// The TITLE guidance is armed only for the first client message of a
+	// case with no subject. Every other turn gets the base prompt, which is
+	// byte-identical to the pre-Task-1 prompt.
+	const systemPrompt = wantsTitle ? CLARIFICATION_SYSTEM_PROMPT : CLARIFICATION_BASE_PROMPT;
 	try {
 		const prompt = buildClarificationPrompt(turn);
 		let answer = null;
 		if (options.provider) {
 			try {
 				answer = await withTimeout(
-					Promise.resolve().then(() => options.provider(prompt, CLARIFICATION_SYSTEM_PROMPT)),
+					Promise.resolve().then(() => options.provider(prompt, systemPrompt)),
 					timeoutMs(),
 				);
 			} catch (error) {
@@ -520,7 +537,7 @@ async function answerClarification(options = {}) {
 			if (!sanitizeString(text(answer)) && configured) {
 				try {
 					answer = await withTimeout(
-						Promise.resolve().then(() => configured(prompt, CLARIFICATION_SYSTEM_PROMPT)),
+						Promise.resolve().then(() => configured(prompt, systemPrompt)),
 						timeoutMs(),
 					);
 				} catch (error) {
@@ -533,7 +550,7 @@ async function answerClarification(options = {}) {
 		} else if (configured) {
 			try {
 				answer = await withTimeout(
-					Promise.resolve().then(() => configured(prompt, CLARIFICATION_SYSTEM_PROMPT)),
+					Promise.resolve().then(() => configured(prompt, systemPrompt)),
 					timeoutMs(),
 				);
 			} catch (error) {

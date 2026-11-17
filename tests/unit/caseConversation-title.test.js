@@ -22,7 +22,50 @@ it("extractTitleFromAnswer takes and strips the first-line marker", () => {
 
 it("extractTitleFromAnswer refuses when disabled (not the first message)", () => {
 	const reply = extractTitleFromAnswer("TITLE: Coupon\nQuestion?", { enabled: false });
-	expect(reply).toEqual({ title: null, cleaned: "TITLE: Coupon\nQuestion?" });
+	// The marker must never cross the wire, even on a non-armed turn: the
+	// leading TITLE line is dropped and no title is reported.
+	expect(reply).toEqual({ title: null, cleaned: "Question?" });
+});
+
+it("answerClarification strips a leading TITLE line and emits no title on a non-armed turn", async () => {
+	// Not the first client message (history already holds a client turn), so
+	// the marker is not armed — but the model emitted one anyway. It must
+	// not reach the client and must not become the subject.
+	setClarificationProvider(async () => "TITLE: something\nthe real question");
+	const answer = await answerClarification({
+		subject: "Checkout fails",
+		history: [{ role: "client", content: FIRST_MESSAGE }],
+		clientMessage: "a second message",
+	});
+	expect(answer.reply).toBe("the real question");
+	expect(answer.reply).not.toContain("TITLE:");
+	expect(answer).not.toHaveProperty("title");
+});
+
+it("answerClarification passes the base prompt (no TITLE lines) to the provider on a non-armed turn", async () => {
+	let seenPrompt = null;
+	setClarificationProvider(async (_prompt, systemPrompt) => {
+		seenPrompt = systemPrompt;
+		return "Which plan are you on?";
+	});
+	await answerClarification({
+		subject: "Checkout fails",
+		history: [{ role: "client", content: FIRST_MESSAGE }],
+		clientMessage: "a second message",
+	});
+	expect(seenPrompt).not.toContain("TITLE:");
+
+	let seenArmedPrompt = null;
+	setClarificationProvider(async (_prompt, systemPrompt) => {
+		seenArmedPrompt = systemPrompt;
+		return "Which plan are you on?";
+	});
+	await answerClarification({
+		subject: "",
+		history: [{ role: "client", content: FIRST_MESSAGE }],
+		clientMessage: FIRST_MESSAGE,
+	});
+	expect(seenArmedPrompt).toContain("TITLE:");
 });
 
 it("extractTitleFromAnswer handles a marker-only reply (empty cleaned)", () => {
