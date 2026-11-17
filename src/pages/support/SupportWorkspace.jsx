@@ -89,6 +89,91 @@ function investigationStepState(index, activeStep) {
 	return "idle";
 }
 
+// Status pill tones for the recent-case list.
+const RECENT_STATUS_TONE = {
+	completed: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+	failed: "border-rose-400/30 bg-rose-400/10 text-rose-300",
+	investigating: "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
+	verifying: "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
+	reporting: "border-cyan-400/30 bg-cyan-400/10 text-cyan-300",
+};
+
+/**
+ * The caller's recent cases, each one a link to open it. The current case is
+ * highlighted and marked `aria-current="page"`. Hidden entirely while loading
+ * or on error; renders "No other cases yet" when the list is empty.
+ */
+function RecentCasesSection({ state, currentCaseId }) {
+	if (state === null || state === "error") {
+		return null;
+	}
+	const rows = state;
+	return (
+		<div>
+			<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+				Recent cases ({rows.length})
+			</p>
+			{rows.length === 0 ? (
+				<p class="text-[11px] text-[#a99bbd]">No other cases yet.</p>
+			) : (
+				<ul class="space-y-1.5">
+					{rows.map((entry) => {
+						const id = String(entry?.id ?? "");
+						const status = String(entry?.status ?? "collecting").toLowerCase();
+						const tone =
+							RECENT_STATUS_TONE[status] ?? "border-slate-400/30 bg-slate-400/10 text-slate-400";
+						const label = status.charAt(0).toUpperCase() + status.slice(1);
+						const title = entry?.subject || entry?.summary || "Untitled case";
+						const when = entry?.updated_at || entry?.created_at;
+						const isCurrent = id !== "" && id === currentCaseId;
+						return (
+							<li key={id}>
+								<Link
+									to={`/support/case/${id}`}
+									aria-current={isCurrent ? "page" : undefined}
+									class={cn(
+										"flex w-full items-center gap-2 rounded-lg border p-2 text-left transition",
+										isCurrent
+											? "border-purple-500/40 bg-purple-500/10"
+											: "border-white/10 bg-white/5 hover:border-cyan-400/30 hover:bg-white/10",
+									)}
+								>
+									<span class="min-w-0 flex-1">
+										<span class="block truncate font-mono text-[10px] text-[#a99bbd]">
+											{id.slice(0, 8)}
+										</span>
+										<span class="mt-0.5 block truncate text-[11px] leading-4 text-[#f4eeff]">
+											{title}
+										</span>
+									</span>
+									<span class="flex shrink-0 flex-col items-end gap-1">
+										<span
+											class={cn(
+												"inline-flex rounded-full border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider",
+												tone,
+											)}
+										>
+											{label}
+										</span>
+										{when ? (
+											<span class="text-[9px] tabular-nums text-[#a99bbd]">
+												{new Date(when).toLocaleDateString("en-GB", {
+													day: "2-digit",
+													month: "short",
+												})}
+											</span>
+										) : null}
+									</span>
+								</Link>
+							</li>
+						);
+					})}
+				</ul>
+			)}
+		</div>
+	);
+}
+
 // The three confidence levels a finding can carry (contracts.md §5).
 const CONFIDENCE_LABELS = {
 	confirmed: "Confirmed",
@@ -391,6 +476,8 @@ export default function SupportWorkspace() {
 	// null while the capabilities request is in flight; "error" when it fails;
 	// otherwise the envelope from GET /api/support/capabilities.
 	const [capabilities, setCapabilities] = useState(null);
+	// The caller's cases: null while loading, "error" on failure, rows otherwise.
+	const [recentCases, setRecentCases] = useState(null);
 
 	const transcriptRef = useRef(null);
 	const leftDrawerRef = useRef(null);
@@ -443,6 +530,33 @@ export default function SupportWorkspace() {
 			cancelled = true;
 		};
 	}, [jwt, supportToken]);
+
+	// Recent cases for the left rail: fetched on mount and whenever the
+	// current case changes. Failure hides the section entirely — a decorative
+	// list must never block or break the workspace.
+	useEffect(() => {
+		let cancelled = false;
+		apiRequest("/support/cases", {
+			token: jwt ?? undefined,
+			headers: supportToken ? { "x-support-token": supportToken } : undefined,
+			skipSessionClear: Boolean(supportToken),
+		})
+			.then((data) => {
+				if (cancelled) {
+					return;
+				}
+				const rows = Array.isArray(data?.cases) ? data.cases : [];
+				setRecentCases(rows.slice(0, 5));
+			})
+			.catch(() => {
+				if (!cancelled) {
+					setRecentCases("error");
+				}
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [caseId, jwt, supportToken]);
 
 	// Escape closes either mobile drawer.
 	const anyDrawerOpen = leftDrawerOpen || rightDrawerOpen;
@@ -698,6 +812,8 @@ export default function SupportWorkspace() {
 				</p>
 				<StageRail status={caseStatus} />
 			</div>
+
+			<RecentCasesSection state={recentCases} currentCaseId={caseId ?? null} />
 
 			<div class="min-h-0">
 				<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
