@@ -18,9 +18,18 @@ import { ModelBadge } from "./ModelBadge.jsx";
  * @param {string} props.token - The session JWT, if any.
  * @param {string} props.supportToken - The raw support token, if any.
  * @param {boolean} props.darkMode - Whether the dark theme is on.
+ * @param {(info: {id: string, contextLimit: number|null, inputModalities: string[]}) => void} [props.onEffectiveModel]
+ *   Called whenever the effective model is known — the parent uses it to
+ *   gate media upload for text-only models and for the context meter.
  * @returns {JSX.Element|null} The picker, or null when there is no case.
  */
-export default function InvestigationModelPicker({ caseId, token, supportToken, darkMode }) {
+export default function InvestigationModelPicker({
+	caseId,
+	token,
+	supportToken,
+	darkMode,
+	onEffectiveModel,
+}) {
 	const [config, setConfig] = useState(null);
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState("");
@@ -35,12 +44,25 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 				headers: supportToken ? { "x-support-token": supportToken } : undefined,
 				skipSessionClear: Boolean(supportToken),
 			});
+			const effective =
+				data?.effectiveModel && typeof data.effectiveModel === "object"
+					? data.effectiveModel
+					: null;
 			setConfig({
 				modelId: data?.modelId ?? null,
 				effectiveModelId: data?.effectiveModelId ?? data?.default ?? "",
 				default: data?.default ?? "",
 				buyerSelectEnabled: data?.buyerSelectEnabled !== false,
 				allowed: Array.isArray(data?.allowed) ? data.allowed : [],
+				effectiveModel: effective
+					? {
+							id: String(effective.id ?? ""),
+							contextLimit: Number.isFinite(effective.contextLimit) ? effective.contextLimit : null,
+							inputModalities: Array.isArray(effective.inputModalities)
+								? effective.inputModalities.map(String)
+								: [],
+						}
+					: null,
 			});
 			setError("");
 		} catch (err) {
@@ -55,6 +77,14 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 		// eslint-disable-next-line react-hooks/set-state-in-effect
 		load();
 	}, [load]);
+
+	// The workspace needs the effective model's capabilities for the media
+	// gate and the context meter — push it up on every load.
+	useEffect(() => {
+		if (config?.effectiveModel && typeof onEffectiveModel === "function") {
+			onEffectiveModel(config.effectiveModel);
+		}
+	}, [config, onEffectiveModel]);
 
 	if (!(caseId && config)) {
 		return null;
@@ -74,9 +104,7 @@ export default function InvestigationModelPicker({ caseId, token, supportToken, 
 				skipSessionClear: Boolean(supportToken),
 				body: { modelId: nextId },
 			});
-			setConfig((previous) =>
-				previous ? { ...previous, modelId: nextId, effectiveModelId: nextId } : previous,
-			);
+			await load();
 		} catch (err) {
 			const status = err?.status;
 			setError(

@@ -42,6 +42,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import remarkGfm from "remark-gfm";
 import { ActivityTree } from "../../components/support/ActivityTree.jsx";
 import { Composer } from "../../components/support/Composer.jsx";
+import { ContextMeter } from "../../components/support/ContextMeter.jsx";
 import { EvidenceViewerModal } from "../../components/support/EvidenceViewerModal.jsx";
 import InvestigationModelPicker from "../../components/support/InvestigationModelPicker.jsx";
 import { MermaidBlock } from "../../components/support/MermaidBlock.jsx";
@@ -57,6 +58,10 @@ import { useSupportCase } from "../../hooks/useSupportCase.js";
 import { apiRequest, getCurrentUser, getToken } from "../../lib/auth.js";
 import { cn } from "../../lib/cn.js";
 import { formatBytes } from "../../lib/formatBytes.js";
+import { SUPPORTED_ATTACHMENT_MIME_TYPES } from "../../lib/supportedAttachments.js";
+
+const SUPPORTED_MEDIA_ACCEPT = SUPPORTED_ATTACHMENT_MIME_TYPES.join(",");
+
 import { signOne } from "../../lib/signedFile.js";
 import { clearSupportSession, getSupportSession } from "../../lib/supportToken.js";
 
@@ -404,7 +409,7 @@ function parseStructuredBlocks(body) {
 
 const DETAILS_SUMMARY = "View technical details";
 
-function BubbleRichBody({ body, onAttachFile, sending, onSend }) {
+function BubbleRichBody({ body, onAttachFile, sending, onSend, attachAccept, attachDisabled }) {
 	const blocks = parseStructuredBlocks(body);
 	const markdownComponents = {
 		code: ({ className: _cn, children, ...props }) => {
@@ -473,6 +478,8 @@ function BubbleRichBody({ body, onAttachFile, sending, onSend }) {
 							<StructuredUpload
 								key={index}
 								label={block.label}
+								accept={attachAccept ?? SUPPORTED_MEDIA_ACCEPT}
+								attachDisabled={Boolean(attachDisabled)}
 								onAttach={(files) => onAttachFile?.(files)}
 							/>
 						);
@@ -542,6 +549,8 @@ function MessageBubble({
 	onAttachFile,
 	sending,
 	onSend,
+	attachAccept,
+	attachDisabled,
 }) {
 	const role = String(message?.role || "system");
 	const kind = String(message?.kind || "answer");
@@ -589,6 +598,8 @@ function MessageBubble({
 					onAttachFile={onAttachFile}
 					sending={feedbackDisabled}
 					onSend={onSend}
+					attachAccept={attachAccept}
+					attachDisabled={attachDisabled}
 				/>
 				{showFeedback ? (
 					<div class="mt-2.5 flex flex-wrap items-center gap-2">
@@ -806,11 +817,37 @@ export default function SupportWorkspace() {
 	const navigate = useNavigate();
 	const jwt = useMemo(() => getToken(), []);
 	const supportToken = useMemo(() => getSupportSession()?.token ?? "", []);
+	const [effectiveModel, setEffectiveModel] = useState(null);
+	// The media gate is the SELECTED model's capability, not the platform's.
+	// The catalog names exact MIME types ("image/png") or the generic "image".
+	// opencode itself restricts attachments to PNG/JPEG/GIF/WebP + PDF, so a
+	// text-only model gets no media at all; a visible image model gets the
+	// images it can read plus PDF (opencode supports PDF for models with
+	// document capability — the catalog under-reports it, so PDF is not
+	// gated on it). An unknown model is refused media rather than trusted.
+	const attachGate = useMemo(() => {
+		const modalities = Array.isArray(effectiveModel?.inputModalities)
+			? effectiveModel.inputModalities.map((entry) => String(entry).toLowerCase())
+			: null;
+		if (modalities === null) {
+			return { enabled: false, accept: "" };
+		}
+		const hasGenericImage = modalities.includes("image");
+		const imageMimes = ["image/png", "image/jpeg", "image/gif", "image/webp"].filter(
+			(mime) => hasGenericImage || modalities.includes(mime),
+		);
+		if (imageMimes.length === 0) {
+			// Text-only model.
+			return { enabled: false, accept: "" };
+		}
+		return { enabled: true, accept: [...imageMimes, "application/pdf"].join(",") };
+	}, [effectiveModel]);
 	const isNew = !rawCaseId || rawCaseId === "new";
 	const [createdCaseId, setCreatedCaseId] = useState(null);
 	const caseId = isNew ? createdCaseId : rawCaseId;
 
 	const supportCase = useSupportCase(caseId ?? null, supportToken);
+	const usage = supportCase.usage ?? null;
 
 	const [creating, setCreating] = useState(false);
 	const [sending, setSending] = useState(false);
@@ -1284,6 +1321,8 @@ export default function SupportWorkspace() {
 
 	const rightRail = (
 		<>
+			<ContextMeter used={usage?.used ?? null} limit={effectiveModel?.contextLimit ?? null} />
+
 			<div>
 				<p class="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-purple-400">
 					<Activity class="h-3.5 w-3.5" aria-hidden="true" />
@@ -1488,6 +1527,7 @@ export default function SupportWorkspace() {
 							token={jwt ?? undefined}
 							supportToken={supportToken}
 							darkMode={true}
+							onEffectiveModel={setEffectiveModel}
 						/>
 					</div>
 					<button
@@ -1582,6 +1622,8 @@ export default function SupportWorkspace() {
 											feedbackDisabled={sending}
 											onAttachFile={handleFiles}
 											onSend={handleSend}
+											attachAccept={attachGate.accept || SUPPORTED_MEDIA_ACCEPT}
+											attachDisabled={!attachGate.enabled}
 										/>
 									))
 								)}
@@ -1721,6 +1763,8 @@ export default function SupportWorkspace() {
 							onFiles={handleFiles}
 							disabled={sending || creating || !caseId || uploadsBusy}
 							attachVisible={Boolean(jwt)}
+							attachEnabled={attachGate.enabled}
+							attachAccept={attachGate.accept}
 						/>
 						{caseId && caseStatus === "collecting" ? (
 							<div class="mt-2 flex justify-end">

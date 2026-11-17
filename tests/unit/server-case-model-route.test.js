@@ -47,6 +47,9 @@ const CATALOG = [
 		providerID: "opencode",
 		created: 1_730_000_000_000,
 		ownedBy: "minimax",
+		inputModalities: ["text"],
+		outputModalities: ["text"],
+		contextLimit: 1_000_000,
 	},
 	{
 		id: "deepseek-v4.1-flash-free",
@@ -54,6 +57,9 @@ const CATALOG = [
 		providerID: "opencode",
 		created: 1_730_000_000_001,
 		ownedBy: "deepseek",
+		inputModalities: ["text", "image/png", "image/jpeg", "image/gif", "image/webp"],
+		outputModalities: ["text"],
+		contextLimit: 200_000,
 	},
 ];
 const configState = {
@@ -238,6 +244,11 @@ describe("GET /api/support/cases/:caseId/model", () => {
 			default: "minimax-m3.1-flash-free",
 			buyerSelectEnabled: true,
 			allowed: ["minimax-m3.1-flash-free", "deepseek-v4.1-flash-free"],
+			effectiveModel: {
+				id: "deepseek-v4.1-flash-free",
+				contextLimit: 200_000,
+				inputModalities: ["text", "image/png", "image/jpeg", "image/gif", "image/webp"],
+			},
 		});
 	});
 

@@ -2,6 +2,10 @@ import { FileText, Paperclip, SendHorizontal, Square, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "../../lib/cn.js";
 import { formatBytes } from "../../lib/formatBytes.js";
+import {
+	partitionAttachments,
+	SUPPORTED_ATTACHMENT_ACCEPT,
+} from "../../lib/supportedAttachments.js";
 
 const MAX_AUTOGROW_PX = 160;
 
@@ -9,7 +13,8 @@ const MAX_AUTOGROW_PX = 160;
  * Case composer: autogrowing textarea, drag/drop + paste file intake, a
  * pending-attachment strip with per-file remove. Enter sends (trimmed text
  * plus the pending files) and clears the composer; Shift+Enter inserts a
- * newline. `attachVisible={false}` hides the attach button for signed-out
+ * newline. `attachEnabled={false}` disables the attach button for a model that
+ * cannot read media, and `attachVisible={false}` hides it for signed-out
  * buyers. `onFiles` is notified with the full pending list on every change.
  *
  * @param {Object} props
@@ -19,6 +24,8 @@ const MAX_AUTOGROW_PX = 160;
  * @param {boolean} [props.sending] - Swaps the send button for a stop button.
  * @param {() => void} [props.onStop]
  * @param {boolean} [props.attachVisible] - Default true.
+ * @param {boolean} [props.attachEnabled] - Default true.
+ * @param {string} [props.attachAccept] - MIME allowlist.
  * @param {string} [props.className]
  */
 export function Composer({
@@ -28,11 +35,14 @@ export function Composer({
 	sending = false,
 	onStop,
 	attachVisible = true,
+	attachEnabled = true,
+	attachAccept = SUPPORTED_ATTACHMENT_ACCEPT,
 	className,
 }) {
 	const [draft, setDraft] = useState("");
 	const [attachments, setAttachments] = useState([]);
 	const [dragActive, setDragActive] = useState(false);
+	const [refusedCount, setRefusedCount] = useState(0);
 	const textareaRef = useRef(null);
 	const fileInputRef = useRef(null);
 
@@ -50,12 +60,36 @@ export function Composer({
 		onFiles?.(attachments);
 	}, [attachments, onFiles]);
 
-	const addFiles = useCallback((fileList) => {
-		const files = Array.from(fileList ?? []).filter((file) => file instanceof File);
-		if (files.length > 0) {
-			setAttachments((prev) => [...prev, ...files]);
+	const addFiles = useCallback(
+		(fileList) => {
+			const files = Array.from(fileList ?? []).filter((file) => file instanceof File);
+			if (files.length === 0) {
+				return;
+			}
+			if (!attachEnabled) {
+				// Media is off for this model: every file is refused, said once.
+				setRefusedCount((count) => count + files.length);
+				return;
+			}
+			const { accepted, refused } = partitionAttachments(files, attachAccept);
+			if (refused.length > 0) {
+				setRefusedCount((count) => count + refused.length);
+			}
+			if (accepted.length > 0) {
+				setAttachments((prev) => [...prev, ...accepted]);
+			}
+		},
+		[attachAccept, attachEnabled],
+	);
+	// The refusal note is transient: it exists so a silently dropped file is
+	// never a mystery, not as permanent chrome.
+	useEffect(() => {
+		if (refusedCount === 0) {
+			return;
 		}
-	}, []);
+		const timer = setTimeout(() => setRefusedCount(0), 5000);
+		return () => clearTimeout(timer);
+	}, [refusedCount]);
 
 	const send = useCallback(() => {
 		const text = draft.trim();
@@ -89,6 +123,15 @@ export function Composer({
 				addFiles(event.dataTransfer?.files);
 			}}
 		>
+			{refusedCount > 0 ? (
+				<p
+					role="status"
+					class="border-b border-amber-400/10 px-3 py-1.5 text-[10px] text-amber-300"
+				>
+					Only PNG/JPEG/GIF/WebP images and PDF are supported — {refusedCount}{" "}
+					{refusedCount === 1 ? "file was" : "files were"} ignored.
+				</p>
+			) : null}
 			{attachments.length > 0 ? (
 				<ul class="flex flex-wrap gap-1.5 border-b border-white/5 px-3 pt-3">
 					{attachments.map((file, index) => (
@@ -122,8 +165,13 @@ export function Composer({
 						<button
 							type="button"
 							onClick={() => fileInputRef.current?.click()}
-							disabled={disabled}
-							aria-label="Attach files"
+							disabled={disabled || !attachEnabled}
+							aria-label={attachEnabled ? "Attach files" : "Attachments unavailable for this model"}
+							title={
+								attachEnabled
+									? "PNG/JPEG/GIF/WebP images and PDF only"
+									: "The selected model only reads text — attachments are off"
+							}
 							class={cn(
 								iconButton,
 								"border-white/10 bg-white/5 text-[#a99bbd] hover:bg-white/10 hover:text-[#f4eeff]",
@@ -135,6 +183,7 @@ export function Composer({
 							ref={fileInputRef}
 							type="file"
 							multiple={true}
+							accept={attachAccept}
 							class="hidden"
 							onChange={(event) => {
 								addFiles(event.target.files);

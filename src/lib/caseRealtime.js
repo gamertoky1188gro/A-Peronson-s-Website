@@ -17,7 +17,7 @@ const RECONNECT_BASE_MS = 3000;
 const RECONNECT_MAX_MS = 30_000;
 const RECONNECT_BACKOFF_FACTOR = 1.5;
 
-// The six case event types, verbatim from contracts.md §4.
+// The seven case event types.
 //
 // This list is a FILTER, not a second definition of the contract: the server
 // owns these names. An event that arrives with a type that is not on this list
@@ -31,6 +31,7 @@ const CASE_EVENT_TYPES = Object.freeze([
 	"support.case.finding",
 	"support.case.report",
 	"support.case.activity",
+	"support.case.usage",
 ]);
 
 const CASE_EVENT_TYPE_SET = new Set(CASE_EVENT_TYPES);
@@ -72,7 +73,7 @@ function caseStreamPath(caseId) {
  * @param {string} rawType - The SSE `event:` field, or "" when absent.
  * @param {unknown} parsed - The parsed JSON of the frame's data.
  * @returns {{ type: string, payload: unknown } | null} The event, or null when
- *   the type is not one of the six contract types.
+ *   the type is not one of the seven contract types.
  */
 function normalizeCaseEvent(rawType, parsed) {
 	let type = typeof rawType === "string" ? rawType.trim() : "";
@@ -229,7 +230,7 @@ function subscribeToCase(caseId, handler, supportToken = "") {
 	if (typeof caseId !== "string" || caseId === "" || typeof handler !== "function") {
 		return null;
 	}
-	if (!supportToken && !getToken()) {
+	if (!(supportToken || getToken())) {
 		return null;
 	}
 
@@ -254,7 +255,7 @@ function subscribeToCase(caseId, handler, supportToken = "") {
 			return;
 		}
 		const current = getToken();
-		if (!supportToken && !current) {
+		if (!(supportToken || current)) {
 			return;
 		}
 		const headers = supportToken

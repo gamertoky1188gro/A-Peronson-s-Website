@@ -646,6 +646,11 @@ async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionI
 		});
 		sessionIDs.push(sessionID);
 
+		// The meter is per role: a fresh session starts at zero, so a role
+		// that begins after another ran does not inherit a full bar. The
+		// last usage wins on the client's side — emit only when the prompt
+		// size actually moved.
+		let lastUsed = -1;
 		const result = await runAgentPrompt({
 			client: runtime.client,
 			sessionID,
@@ -654,6 +659,17 @@ async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionI
 			onToolSettled: (part, status) => {
 				try {
 					emitActivity(caseId, role, part, status);
+				} catch {
+					// telemetry must never break the poll loop
+				}
+			},
+			onUsage: (usage) => {
+				try {
+					const used = Number(usage?.used) || 0;
+					if (used !== lastUsed) {
+						lastUsed = used;
+						emitUsage(caseId, role, usage);
+					}
 				} catch {
 					// telemetry must never break the poll loop
 				}
@@ -1553,6 +1569,25 @@ function emitActivity(caseId, role, part, status) {
 
 function emitProgress(caseId, role, status, detail) {
 	return emitCaseEvent("support.case.progress", { caseId, role, status, detail });
+}
+
+/**
+ * One SSE usage ping for the context meter: the token counts the newest
+ * assistant message reported this poll. `used` is the prompt size the model
+ * was fed, which is what the context window is holding — it is the number
+ * the meter divides by the model's context limit.
+ */
+function emitUsage(caseId, role, usage) {
+	const used = Number(usage?.used) || 0;
+	return emitCaseEvent("support.case.usage", {
+		caseId,
+		role,
+		used,
+		output: Number(usage?.output) || 0,
+		reasoning: Number(usage?.reasoning) || 0,
+		cacheRead: Number(usage?.cacheRead) || 0,
+		cacheWrite: Number(usage?.cacheWrite) || 0,
+	});
 }
 
 function emitFinding(caseId, role, finding) {

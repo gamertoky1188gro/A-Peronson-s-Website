@@ -1,6 +1,7 @@
 import { Check, ClipboardCopy, LogIn, XCircle } from "lucide-react";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { cn } from "../../lib/cn.js";
+import { SUPPORTED_ATTACHMENT_ACCEPT } from "../../lib/supportedAttachments.js";
 
 /* The pieces the intake assistant can render inside a bubble when its own
  * message carries structured hints. Every card is client-only UI: it collects
@@ -8,16 +9,33 @@ import { cn } from "../../lib/cn.js";
  * upload/send flows. No network reads happen because the model asked. */
 
 /** "Upload: <what>" — a compact card the client taps to attach evidence. It reuses
- *  the existing /documents upload path so the file is anchored to the case. */
-export function StructuredUpload({ label = "evidence", onAttach }) {
+ *  the existing /documents upload path so the file is anchored to the case.
+ *  When the chosen model cannot read media (`attachDisabled`), the card is an
+ *  inert control that says so instead of a picker that silently strands the
+ *  upload. PNG/JPEG/GIF/WebP images and PDF are the only file types opencode
+ *  accepts. */
+export function StructuredUpload({
+	label = "evidence",
+	onAttach,
+	accept = SUPPORTED_ATTACHMENT_ACCEPT,
+	attachDisabled = false,
+}) {
 	const inputId = useId();
 	const [busy, setBusy] = useState(false);
 	return (
 		<label
 			for={inputId}
+			aria-disabled={attachDisabled}
+			title={
+				attachDisabled
+					? "The selected model only reads text — attachments are off"
+					: "PNG/JPEG/GIF/WebP images and PDF only"
+			}
 			class={cn(
-				"flex cursor-pointer items-center gap-3 rounded-2xl border border-cyan-400/25 bg-cyan-500/5 p-3 transition",
-				"hover:border-cyan-400/40 hover:bg-cyan-500/10 focus-within:ring-2 focus-within:ring-cyan-400/60",
+				"flex items-center gap-3 rounded-2xl border border-cyan-400/25 bg-cyan-500/5 p-3 transition",
+				attachDisabled
+					? "cursor-not-allowed opacity-60"
+					: "cursor-pointer hover:border-cyan-400/40 hover:bg-cyan-500/10 focus-within:ring-2 focus-within:ring-cyan-400/60",
 				busy && "pointer-events-none opacity-60",
 			)}
 		>
@@ -29,22 +47,26 @@ export function StructuredUpload({ label = "evidence", onAttach }) {
 					📎 Drop a log, screenshot or code snippet
 				</span>
 				<span class="mt-0.5 block text-xs font-medium leading-5 text-[#f4eeff]">
-					Attach {label} — the investigation reads it the moment you send it.
+					{attachDisabled
+						? "The selected model only reads text — attachments are off."
+						: `Attach ${label} — PNG/JPEG/GIF/WebP images and PDF only.`}
 				</span>
 			</span>
 			<input
 				id={inputId}
 				type="file"
 				multiple={true}
-				accept="image/*,text/*,application/pdf,application/json,application/zip,application/octet-stream"
+				accept={accept}
+				disabled={attachDisabled}
 				class="hidden"
 				onChange={(event) => {
 					const files = Array.from(event.target.files ?? []);
 					event.target.value = "";
-					if (files.length > 0 && typeof onAttach === "function") {
-						setBusy(true);
-						Promise.resolve(onAttach(files)).finally(() => setBusy(false));
+					if (attachDisabled || files.length === 0 || typeof onAttach !== "function") {
+						return;
 					}
+					setBusy(true);
+					Promise.resolve(onAttach(files)).finally(() => setBusy(false));
 				}}
 			/>
 		</label>

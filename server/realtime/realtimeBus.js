@@ -15,8 +15,8 @@ realtimeBus.setMaxListeners(100);
 
 // --- Support investigation cases -----------------------------------------
 //
-// The six event types are fixed by contracts.md §4 and are the wire format
-// the client (Task 7) subscribes to over SSE. They are published here as
+// The seven event types are the wire format. The client subscribes to them
+// over SSE. They are published here as
 // their own names - on a channel per case - so a listener can subscribe to
 // exactly the events it cares about instead of filtering one channel by
 // type.
@@ -29,6 +29,7 @@ realtimeBus.setMaxListeners(100);
 //   support.case.finding  -> { caseId, role, finding }
 //   support.case.report   -> { caseId, report, reportStatus }
 //   support.case.activity -> { caseId, role, id, kind, label, status, at }
+//   support.case.usage    -> { caseId, role, used, output, reasoning }
 //
 // `emitCaseEvent` always carries the case id in the envelope, so the
 // `support.case.message` event - whose own payload is just the message row -
@@ -42,7 +43,7 @@ realtimeBus.setMaxListeners(100);
 // every case's report body. The channel name is `<type>:<caseId>`, so a
 // listener has to ask for one case's events on purpose.
 //
-// The channel name is INTERNAL. The six type strings are the wire format
+// The channel name is INTERNAL. The seven type strings are the wire format
 // (contracts.md §4) and they do not change: the SSE handler still writes
 // `event: support.case.report`.
 export const CASE_EVENTS = {
@@ -52,6 +53,7 @@ export const CASE_EVENTS = {
 	finding: "support.case.finding",
 	report: "support.case.report",
 	activity: "support.case.activity",
+	usage: "support.case.usage",
 };
 
 /**

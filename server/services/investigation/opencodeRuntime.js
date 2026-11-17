@@ -392,6 +392,7 @@ export async function runAgentPrompt({
 	text,
 	timeoutMs = 180_000,
 	onToolSettled = null,
+	onUsage = null,
 }) {
 	let turn;
 	try {
@@ -403,6 +404,7 @@ export async function runAgentPrompt({
 			pollIntervalMs: POLL_INTERVAL_MS,
 			stablePollsToSettle: STABLE_POLLS_TO_SETTLE,
 			onToolSettled,
+			onUsage,
 		});
 	} catch (error) {
 		return { text: "", toolCalls: [], error: error?.message || String(error) };

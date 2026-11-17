@@ -22,6 +22,7 @@ const INITIAL_CASE_STATE = {
 	findings: [],
 	activity: [],
 	attachments: [],
+	usage: null,
 	loading: false,
 	feedback: null,
 };
@@ -242,6 +243,34 @@ function applyCaseEvent(state, action) {
 		}
 		case "support.case.report":
 			return applyReportEvent(state, payload);
+		case "support.case.usage": {
+			// A context ping from a role run. The payload is the model's own
+			// report: `used` is the prompt size the newest assistant message
+			// was fed, i.e. what the context window is holding right now. The
+			// last event wins — a fresh role starts from zero.
+			const used = Number(payload?.used);
+			if (!Number.isFinite(used) || used < 0) {
+				return state;
+			}
+			return {
+				...state,
+				usage: {
+					used: Math.floor(used),
+					output: Number.isFinite(Number(payload?.output))
+						? Math.max(0, Math.floor(Number(payload.output)))
+						: 0,
+					reasoning: Number.isFinite(Number(payload?.reasoning))
+						? Math.max(0, Math.floor(Number(payload.reasoning)))
+						: 0,
+					cacheRead: Number.isFinite(Number(payload?.cacheRead))
+						? Math.max(0, Math.floor(Number(payload.cacheRead)))
+						: 0,
+					cacheWrite: Number.isFinite(Number(payload?.cacheWrite))
+						? Math.max(0, Math.floor(Number(payload.cacheWrite)))
+						: 0,
+				},
+			};
+		}
 		case "support.case.activity": {
 			const activityPayload = payload;
 			if (!activityPayload?.id) {

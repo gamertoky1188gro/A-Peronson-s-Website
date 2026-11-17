@@ -80,6 +80,7 @@ const CASE_STREAM_EVENT_TYPES = Object.freeze(
 		realtime.CASE_EVENTS?.finding,
 		realtime.CASE_EVENTS?.report,
 		realtime.CASE_EVENTS?.activity,
+		realtime.CASE_EVENTS?.usage,
 	].filter((type) => typeof type === "string"),
 );
 
@@ -908,7 +909,7 @@ export async function confirmCaseController(req, res) {
  *   event: support.case.message
  *   data: {"caseId":"<case id>","message":{...}}
  *
- * So every frame names one of the five fixed event types and carries a JSON
+ * So every frame names one of the seven fixed event types and carries a JSON
  * envelope that ALWAYS carries the case id. The envelope is flat: the
  * payload's own keys sit next to `caseId` rather than inside a nested
  * `payload` object, exactly as contracts.md §4 writes it.

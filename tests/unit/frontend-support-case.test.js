@@ -457,7 +457,7 @@ describe("the case SSE parser (src/lib/caseRealtime.js)", () => {
 		global.fetch = originalFetch;
 	});
 
-	it("the event types are exactly the six contracts.md 4 names", () => {
+	it("the event types are exactly the seven case event names", () => {
 		expect(realCaseRealtime.CASE_EVENT_TYPES).toEqual([
 			"support.case.message",
 			"support.case.status",
@@ -465,10 +465,11 @@ describe("the case SSE parser (src/lib/caseRealtime.js)", () => {
 			"support.case.finding",
 			"support.case.report",
 			"support.case.activity",
+			"support.case.usage",
 		]);
 	});
 
-	it("each of the six types is dispatched on, with its payload", () => {
+	it("each of the seven types is dispatched on, with its payload", () => {
 		for (const type of realCaseRealtime.CASE_EVENT_TYPES) {
 			const event = realCaseRealtime.normalizeCaseEvent(type, { caseId: CASE_ID, detail: "x" });
 			expect(event).not.toBeNull();

@@ -35,12 +35,26 @@ export async function getCaseModelController(req, res) {
 			return res.status(403).json({ error: "Forbidden" });
 		}
 		const config = await getBuyerSelectableConfig();
+		// What the client needs for the context meter and the media gate:
+		// the effective model's context window and what it can read. Null
+		// fields mean "unknown" — the catalog could not say, never "large".
+		const effective = effectiveModelId(found.model_id, config);
+		const entry = (Array.isArray(config.catalog) ? config.catalog : []).find(
+			(model) => model.id === effective,
+		);
 		return res.json({
 			modelId: found.model_id ?? null,
-			effectiveModelId: effectiveModelId(found.model_id, config),
+			effectiveModelId: effective,
 			default: config.default,
 			buyerSelectEnabled: config.buyerSelectEnabled,
 			allowed: config.allowed,
+			effectiveModel: entry
+				? {
+						id: entry.id,
+						contextLimit: entry.contextLimit ?? null,
+						inputModalities: Array.isArray(entry.inputModalities) ? entry.inputModalities : [],
+					}
+				: null,
 		});
 	} catch (error) {
 		return handleControllerError(res, error);

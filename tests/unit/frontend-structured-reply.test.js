@@ -67,6 +67,31 @@ describe("structured reply cards", () => {
 		expect(screen.getByRole("button", { name: /Attach to case/iu })).toBeDisabled();
 	});
 
+	it("StructuredUpload only accepts the opencode-supported media types by default", () => {
+		const { container } = render(<StructuredUpload label="x" onAttach={() => {}} />);
+		const input = container.querySelector('input[type="file"]');
+		expect(input.getAttribute("accept")).toBe(
+			"image/png,image/jpeg,image/gif,image/webp,application/pdf",
+		);
+	});
+
+	it("StructuredUpload with attachDisabled refuses to call onAttach", () => {
+		const attached = [];
+		const { container } = render(
+			<StructuredUpload
+				label="x"
+				attachDisabled={true}
+				onAttach={(files) => attached.push(files)}
+			/>,
+		);
+		const input = container.querySelector('input[type="file"]');
+		expect(input).toBeTruthy();
+		expect(input).toBeDisabled();
+		const file = new File(["x"], "shot.png", { type: "image/png" });
+		fireEvent.change(input, { target: { files: [file] } });
+		expect(attached).toHaveLength(0);
+	});
+
 	it("StructuredUpload exposes a file input and fires onAttach with the chosen files", async () => {
 		const attached = [];
 		const { container } = render(

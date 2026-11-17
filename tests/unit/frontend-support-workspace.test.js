@@ -49,6 +49,7 @@ const inertCase = {
 	caseRow: fixtureCase,
 	messages: fixtureMessages,
 	status: "investigating",
+	usage: { used: 152_000, output: 900, reasoning: 60 },
 	error: null,
 	errorStatus: null,
 	report: null,
@@ -88,6 +89,19 @@ jest.unstable_mockModule("../../src/lib/signedFile.js", () => ({
 	signOneWithTtl: jest.fn(async () => ({ url: "https://signed.example/shot.png", ttlMs: 300000 })),
 }));
 
+const MODEL_CONFIG = {
+	modelId: null,
+	effectiveModelId: "inkling-2-small-free",
+	default: "inkling-2-small-free",
+	buyerSelectEnabled: true,
+	allowed: ["inkling-2-small-free"],
+	effectiveModel: {
+		id: "inkling-2-small-free",
+		contextLimit: 1_048_576,
+		inputModalities: ["text", "image"],
+	},
+};
+
 const { default: SupportWorkspace } = await import("../../src/pages/support/SupportWorkspace.jsx");
 
 async function renderWorkspace() {
@@ -105,7 +119,12 @@ async function renderWorkspace() {
 
 beforeEach(() => {
 	apiRequest.mockReset();
-	apiRequest.mockRejectedValue(new Error("no network in tests"));
+	apiRequest.mockImplementation((path) => {
+		if (typeof path === "string" && path.includes("/model")) {
+			return Promise.resolve(MODEL_CONFIG);
+		}
+		return Promise.reject(new Error("no network in tests"));
+	});
 	window.localStorage?.clear?.();
 });
 
@@ -184,5 +203,13 @@ describe("the premium support workspace (src/pages/support/SupportWorkspace.jsx)
 		await renderWorkspace();
 		expect(screen.getByLabelText("Message")).toBeInTheDocument();
 		expect(screen.getByLabelText("Attach files")).toBeInTheDocument();
+	});
+
+	it("shows the context meter with % and the raw token counts", async () => {
+		await renderWorkspace();
+		expect(screen.getByRole("progressbar", { name: "Context window usage" })).toBeInTheDocument();
+		expect(screen.getByText(/tokens/)).toBeInTheDocument();
+		// 152,000 / 1,048,576 ≈ 14.5%
+		expect(screen.getByText("14.5%")).toBeInTheDocument();
 	});
 });

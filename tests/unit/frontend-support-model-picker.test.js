@@ -27,7 +27,30 @@ const CONFIG = {
 	default: "minimax-m3.1-flash-free",
 	buyerSelectEnabled: true,
 	allowed: ["minimax-m3.1-flash-free", "glm-5.3-flash-free", "nemotron-3-ultra-free"],
+	effectiveModel: {
+		id: "minimax-m3.1-flash-free",
+		contextLimit: 1_000_000,
+		inputModalities: ["text", "image/png"],
+	},
 };
+
+function makeModelApi() {
+	// A stateful server: the effective model follows the stored pick. That is
+	// what the real case-model route does, and the picker now refetches after
+	// a successful PUT instead of trusting its local state.
+	const state = { modelId: null };
+	return (path, options = {}) => {
+		if ((options.method || "GET") === "GET") {
+			return Promise.resolve({
+				...CONFIG,
+				modelId: state.modelId,
+				effectiveModelId: state.modelId ?? CONFIG.effectiveModelId,
+			});
+		}
+		state.modelId = options.body?.modelId ?? null;
+		return Promise.resolve({ modelId: state.modelId });
+	};
+}
 
 beforeEach(() => {
 	apiRequest.mockReset();
@@ -62,12 +85,7 @@ describe("InvestigationModelPicker", () => {
 	});
 
 	it("calls PUT with the picked model when the selection changes", async () => {
-		apiRequest.mockImplementation((path, options = {}) => {
-			if ((options.method || "GET") === "GET") {
-				return Promise.resolve(CONFIG);
-			}
-			return Promise.resolve({ modelId: options.body?.modelId ?? null });
-		});
+		apiRequest.mockImplementation(makeModelApi());
 		render(
 			<InvestigationModelPicker caseId="case-1" token="jwt" supportToken="" darkMode={true} />,
 		);

@@ -120,7 +120,33 @@ export function selectNewestAssistant(assistants) {
  *  - `content`   this turn's raw assistant content parts, oldest first
  *  - `parts`     the newest assistant message's parts, mapped
  *  - `text`      this turn's text, oldest first
+ *
+ * `onUsage`, when given, is called once per poll with the token counts of
+ * the newest assistant message (`{ used, output, reasoning }`). It MUST NOT
+ * throw — it is guarded like `onToolSettled`.
  */
+function latestUsage(assistants) {
+	const newest = selectNewestAssistant(assistants);
+	const t = newest?.tokens;
+	if (!(t && Number.isFinite(t.input))) {
+		return null;
+	}
+	// `tokens.input` is only part of the story: free-tier caches hold the
+	// prompt's bulk server-side. Providers bill Anthropic-style with
+	// `input` = the NON-cached remainder and the cached part under
+	// `cache.read`, or OpenAI-style with `input` = the full prompt and
+	// cache a subset of it. Taking the max is correct for both.
+	const input = Number(t.input) || 0;
+	const cacheRead = Number(t?.cache?.read) || 0;
+	const cacheWrite = Number(t?.cache?.write) || 0;
+	return {
+		used: Math.max(input, cacheRead + cacheWrite),
+		output: Number(t.output) || 0,
+		reasoning: Number(t.reasoning) || 0,
+		cacheRead,
+		cacheWrite,
+	};
+}
 export async function waitForAssistantTurn({
 	client,
 	sessionID,
@@ -130,6 +156,7 @@ export async function waitForAssistantTurn({
 	stablePollsToSettle = DEFAULT_STABLE_POLLS,
 	onText = null,
 	onToolSettled = null,
+	onUsage = null,
 }) {
 	const announced = new Set();
 	let seen = new Set();
@@ -242,6 +269,17 @@ export async function waitForAssistantTurn({
 		// So a message with NO finish is not a finished message, and treating
 		// it as one is what made the reader abandon a turn mid-generation
 		// and report it as an agent that "did not answer".
+		if (typeof onUsage === "function") {
+			try {
+				const usage = latestUsage(assistants);
+				if (usage) {
+					onUsage(usage);
+				}
+			} catch {
+				// telemetry must never break the poll loop
+			}
+		}
+
 		const newestFinish = newest?.finish;
 		const finished = Boolean(newestFinish) && newestFinish !== "tool-calls";
 		const stillProducing = !newestFinish;
