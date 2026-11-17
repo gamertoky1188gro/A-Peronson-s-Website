@@ -129,7 +129,9 @@ export async function waitForAssistantTurn({
 	pollIntervalMs = DEFAULT_POLL_INTERVAL_MS,
 	stablePollsToSettle = DEFAULT_STABLE_POLLS,
 	onText = null,
+	onToolSettled = null,
 }) {
+	const announced = new Set();
 	let seen = new Set();
 	try {
 		seen = new Set(
@@ -171,6 +173,33 @@ export async function waitForAssistantTurn({
 		content = assistants.flatMap((message) => message.content || []);
 		parts = (newest?.content || []).map(mapAssistantPart);
 		texts = content.filter((part) => part.type === "text").map((part) => part.text || "");
+
+		if (typeof onToolSettled === "function") {
+			for (const part of content) {
+				if (!part || part.type !== "tool") {
+					continue;
+				}
+				const status = String(part.state?.status ?? "");
+				if (status !== "completed" && status !== "failed" && status !== "error") {
+					continue;
+				}
+				let key;
+				try {
+					key = `${part.name || part.tool || "tool"}|${status}|${JSON.stringify(part.state?.input ?? null)}`;
+				} catch {
+					key = `${part.name || part.tool || "tool"}|${status}|unserializable`;
+				}
+				if (announced.has(key)) {
+					continue;
+				}
+				announced.add(key);
+				try {
+					onToolSettled(part, status);
+				} catch {
+					// telemetry must never break the poll loop
+				}
+			}
+		}
 
 		if (onText) {
 			const total = texts.join("\n");

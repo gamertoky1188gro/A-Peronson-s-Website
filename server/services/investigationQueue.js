@@ -49,6 +49,7 @@ import { logError, logInfo, logWarn } from "../utils/logger.js";
 import prisma from "../utils/prisma.js";
 import { resolveWithinUploads } from "../utils/signedFileUrl.js";
 import { getCaseWithMessages } from "./caseService.js";
+import { activityLabelFor } from "./investigation/activityLabel.js";
 import {
 	AGENT_ROLES,
 	applyVerification,
@@ -650,6 +651,13 @@ async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionI
 			sessionID,
 			text: prompt,
 			timeoutMs: agentTimeoutMs(),
+			onToolSettled: (part, status) => {
+				try {
+					emitActivity(caseId, role, part, status);
+				} catch {
+					// telemetry must never break the poll loop
+				}
+			},
 		});
 		toolCalls = normalizeToolCalls(result?.toolCalls);
 		const rawText = typeof result?.text === "string" ? result.text : "";
@@ -1038,7 +1046,9 @@ function buildEvidence(findings, toolCalls) {
 }
 
 /**
- * The tool log of a row: exactly `{ tool, status, error? }` per call.
+ * The tool log of a row: exactly `{ tool, status, error?, kind?, label? }` per call.
+ * `kind`/`label` come from `activityLabelFor` (basename-only, sanitized there);
+ * they are optional so rows written before labels existed still normalize.
  */
 function normalizeToolCalls(toolCalls) {
 	if (!Array.isArray(toolCalls)) {
@@ -1051,6 +1061,12 @@ function normalizeToolCalls(toolCalls) {
 		};
 		if (typeof call?.error === "string" && call.error) {
 			entry.error = call.error;
+		}
+		if (typeof call?.kind === "string" && call.kind) {
+			entry.kind = call.kind.slice(0, 32);
+		}
+		if (typeof call?.label === "string" && call.label) {
+			entry.label = call.label.slice(0, 80);
 		}
 		return entry;
 	});
@@ -1520,6 +1536,19 @@ async function emitCaseEvent(type, payload) {
 			error: error?.message || String(error),
 		});
 	}
+}
+
+function emitActivity(caseId, role, part, status) {
+	const { kind, label } = activityLabelFor(part);
+	return emitCaseEvent("support.case.activity", {
+		caseId,
+		role,
+		id: crypto.randomUUID(),
+		kind,
+		label,
+		status: status === "completed" ? "done" : "failed",
+		at: new Date().toISOString(),
+	});
 }
 
 function emitProgress(caseId, role, status, detail) {

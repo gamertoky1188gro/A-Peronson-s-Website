@@ -15,7 +15,7 @@ realtimeBus.setMaxListeners(100);
 
 // --- Support investigation cases -----------------------------------------
 //
-// The five event types are fixed by contracts.md §4 and are the wire format
+// The six event types are fixed by contracts.md §4 and are the wire format
 // the client (Task 7) subscribes to over SSE. They are published here as
 // their own names - on a channel per case - so a listener can subscribe to
 // exactly the events it cares about instead of filtering one channel by
@@ -28,6 +28,7 @@ realtimeBus.setMaxListeners(100);
 //   support.case.progress -> { caseId, role, status, detail? }
 //   support.case.finding  -> { caseId, role, finding }
 //   support.case.report   -> { caseId, report, reportStatus }
+//   support.case.activity -> { caseId, role, id, kind, label, status, at }
 //
 // `emitCaseEvent` always carries the case id in the envelope, so the
 // `support.case.message` event - whose own payload is just the message row -
@@ -41,7 +42,7 @@ realtimeBus.setMaxListeners(100);
 // every case's report body. The channel name is `<type>:<caseId>`, so a
 // listener has to ask for one case's events on purpose.
 //
-// The channel name is INTERNAL. The five type strings are the wire format
+// The channel name is INTERNAL. The six type strings are the wire format
 // (contracts.md §4) and they do not change: the SSE handler still writes
 // `event: support.case.report`.
 export const CASE_EVENTS = {
@@ -50,12 +51,13 @@ export const CASE_EVENTS = {
 	progress: "support.case.progress",
 	finding: "support.case.finding",
 	report: "support.case.report",
+	activity: "support.case.activity",
 };
 
 /**
  * The bus channel one case's events are published on.
  *
- * @param {string} type One of the five `CASE_EVENTS` type strings.
+ * @param {string} type One of the six `CASE_EVENTS` type strings.
  * @param {string} caseId The case the events belong to.
  * @returns {string} The channel name.
  */
@@ -70,7 +72,7 @@ export function caseEventChannel(type, caseId) {
  * and `emitCaseEvent(id, CASE_EVENTS.status, {...})` are the same call.
  *
  * @param {string} caseId The case the event belongs to.
- * @param {string} type One of the five `CASE_EVENTS` type strings.
+ * @param {string} type One of the six `CASE_EVENTS` type strings.
  * @param {Object} [payload] The type's payload.
  * @returns {void}
  */

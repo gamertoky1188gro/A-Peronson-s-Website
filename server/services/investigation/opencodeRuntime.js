@@ -5,6 +5,7 @@ import path from "node:path";
 import { OpenCode } from "@opencode/client";
 import { logInfo, logWarn } from "../../utils/logger.js";
 import { formatToolError, waitForAssistantTurn } from "../opencodeTurns.js";
+import { activityLabelFor } from "./activityLabel.js";
 import { parseModelChain } from "./modelChain.js";
 
 export const PORT_RANGE_START = 4200;
@@ -385,7 +386,13 @@ export async function createInvestigationSession({ client, title, model, directo
  * module knows the two traps of the v2 list: it is ordered NEWEST FIRST, and
  * a tool call's state changes without the content array changing size.
  */
-export async function runAgentPrompt({ client, sessionID, text, timeoutMs = 180_000 }) {
+export async function runAgentPrompt({
+	client,
+	sessionID,
+	text,
+	timeoutMs = 180_000,
+	onToolSettled = null,
+}) {
 	let turn;
 	try {
 		turn = await waitForAssistantTurn({
@@ -395,6 +402,7 @@ export async function runAgentPrompt({ client, sessionID, text, timeoutMs = 180_
 			timeoutMs,
 			pollIntervalMs: POLL_INTERVAL_MS,
 			stablePollsToSettle: STABLE_POLLS_TO_SETTLE,
+			onToolSettled,
 		});
 	} catch (error) {
 		return { text: "", toolCalls: [], error: error?.message || String(error) };
@@ -405,6 +413,7 @@ export async function runAgentPrompt({ client, sessionID, text, timeoutMs = 180_
 		.map((part) => ({
 			tool: part.tool || part.name || "unknown",
 			status: part.state?.status || "unknown",
+			...activityLabelFor(part),
 			error: part.state?.error ? formatToolError(part.state.error) : undefined,
 		}));
 
