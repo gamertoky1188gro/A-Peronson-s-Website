@@ -13,7 +13,7 @@ import { getRunningOpencodeClient } from "./assistantService.js";
 import { REPOSITORY_ROOT } from "./investigation/opencodeRuntime.js";
 import { waitForAssistantTurn } from "./opencodeTurns.js";
 
-const TIMEOUT_MS = 8_000;
+const TIMEOUT_MS = 60_000;
 
 export function makeClarificationProvider({ modelId, caseId, timeoutMs = TIMEOUT_MS } = {}) {
 	if (!modelId) return null;
@@ -39,7 +39,10 @@ export function makeClarificationProvider({ modelId, caseId, timeoutMs = TIMEOUT
 			});
 			const text = sanitizeString(String(turn?.text || ""), 2000).trim();
 			if (turn.modelError || turn.timedOut || !text) {
-				logWarn("clarification_opencode_failed", { model: modelId, reason: turn.modelError?.message || (turn.timedOut ? "timeout" : "empty") });
+				logWarn("clarification_opencode_failed", {
+					model: modelId,
+					reason: turn.modelError?.message || (turn.timedOut ? "timeout" : "empty"),
+				});
 				return null;
 			}
 			logInfo("clarification_model_used", { case_id: caseId, model: modelId });

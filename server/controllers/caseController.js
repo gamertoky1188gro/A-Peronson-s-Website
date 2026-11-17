@@ -13,7 +13,6 @@ import * as realtime from "../realtime/realtimeBus.js";
 import * as caseService from "../services/caseService.js";
 import { isSupportEvidenceEntityType } from "../services/documentService.js";
 import { authorizeFilePath } from "../services/fileAccessService.js";
-import { effectiveCaseModelId } from "../services/investigation/caseModelChain.js";
 import { logError, logInfo, logWarn } from "../utils/logger.js";
 import { handleControllerError } from "../utils/permissions.js";
 import prisma from "../utils/prisma.js";
@@ -232,22 +231,36 @@ async function askClarifyingQuestion({ subject, messages, clientMessage, ready, 
 		}
 		let provider = null;
 		const caseModelId = caseRow?.model_id || caseRow?.modelId || null;
-		if (caseModelId) {
-			try {
-				const { getInvestigationModelConfig } = await import(
-					"../services/investigation/investigationModelConfigService.js"
+		// The same model the picker shows: the buyer's pick while it is allowed,
+		// the platform default otherwise. This matches `effectiveModelId` in
+		// caseModelController — the label says the pick applies to the clarifying
+		// chat, so it must, even without an explicit buyer pick on the row.
+		try {
+			const { getInvestigationModelConfig } = await import(
+				"../services/investigation/investigationModelConfigService.js"
+			);
+			const { allowed, default: configDefault } = await getInvestigationModelConfig();
+			const effective =
+				caseModelId && Array.isArray(allowed) && allowed.includes(caseModelId)
+					? caseModelId
+					: configDefault;
+			if (effective) {
+				const { makeClarificationProvider } = await import(
+					"../services/clarificationOpencodeProvider.js"
 				);
-				const { allowed, buyerSelectEnabled } = await getInvestigationModelConfig();
-				const effectiveModelId = effectiveCaseModelId({ caseModelId, buyerSelectEnabled, allowed });
-				if (effectiveModelId) {
-					const { makeClarificationProvider } = await import(
-						"../services/clarificationOpencodeProvider.js"
-					);
-					provider = makeClarificationProvider({ modelId: effectiveModelId, caseId: caseRow?.id });
+				provider = makeClarificationProvider({ modelId: effective, caseId: caseRow?.id });
+				// Still booting? Kick off a background warm so the NEXT turn
+				// reaches the model. Fire-and-forget: spawning inside the
+				// intake request would hold it open for ~20s.
+				const { getRunningOpencodeClient, warmOpencodeServer } = await import(
+					"../services/assistantService.js"
+				);
+				if (!getRunningOpencodeClient?.()) {
+					warmOpencodeServer?.().catch(() => {});
 				}
-			} catch {
-				provider = null; // fall back to env providers exactly as before
 			}
+		} catch {
+			provider = null; // fall back to env providers exactly as before
 		}
 		const answer = await entry({
 			subject,
@@ -598,6 +611,14 @@ export async function createCaseController(req, res) {
 		const subject = sanitizeString(String(req.body?.subject || ""), MAX_SUBJECT_LENGTH);
 		const created = await caseService.createCase({ userId: req.user.id, subject });
 		logInfo("support case opened", { caseId: created?.id, userId: req.user.id });
+		// Warm the shared assistant runtime in the background: the intake
+		// clarification turn only reaches a model when it is running, so the
+		// buyer's typed report would otherwise always get the canned question.
+		// Never awaited — booting the runtime takes ~15-20s and must not
+		// hold the case request open.
+		import("../services/assistantService.js")
+			.then((mod) => mod.warmOpencodeServer?.())
+			.catch((error) => logWarn("opencode warm at case open failed", { reason: error?.message }));
 		return res.status(201).json({ case: created });
 	} catch (error) {
 		return handleControllerError(res, error);

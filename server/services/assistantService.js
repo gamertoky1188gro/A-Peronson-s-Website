@@ -385,7 +385,8 @@ const aiConfig = {
 		// The default has to be a model the embedded server actually offers, or
 		// the session is created against a model that does not exist and the
 		// prompt never resolves. `deepseek-v4-flash-free` is not one of them.
-		modelID: process.env.OPENCODE_MODEL_ID?.replace(/^opencode\//, "") || "minimax-m3.1-flash-free",
+		modelID:
+			process.env.OPENCODE_MODEL_ID?.replace(/^opencode\//u, "") || "minimax-m3.1-flash-free",
 		timeoutMs: Number(process.env.OPENCODE_TIMEOUT_MS || 120_000),
 	},
 };
@@ -474,7 +475,7 @@ function normalize(text = "") {
 
 function tokenize(text = "") {
 	return normalize(text)
-		.split(/[^a-z0-9]+/)
+		.split(/[^a-z0-9]+/u)
 		.filter((word) => word.length > 2);
 }
 
@@ -540,7 +541,7 @@ function searchSourceTree(questionText, limit = 20) {
 			}
 			if (!SEARCHABLE_EXTENSIONS.has(path.extname(entry.name))) continue;
 			try {
-				const lines = fs.readFileSync(full, "utf8").split(/\r?\n/);
+				const lines = fs.readFileSync(full, "utf8").split(/\r?\n/u);
 				for (let index = 0; index < lines.length; index += 1) {
 					const haystack = lines[index].toLowerCase();
 					if (!needles.some((needle) => haystack.includes(needle))) continue;
@@ -599,13 +600,13 @@ async function shouldSearchCodeContext(questionText) {
 
 function findBestRule(questionText, rules = []) {
 	const normalizedQuestion = normalize(questionText);
-	const rawQuestionTokens = normalizedQuestion.split(/[^a-z0-9]+/).filter(Boolean);
+	const rawQuestionTokens = normalizedQuestion.split(/[^a-z0-9]+/u).filter(Boolean);
 	const compactQuestionTokens = new Set(
 		rawQuestionTokens
 			.map((token) =>
 				String(token || "")
 					.toLowerCase()
-					.replace(/[^a-z0-9]+/g, ""),
+					.replace(/[^a-z0-9]+/gu, ""),
 			)
 			.filter(Boolean),
 	);
@@ -621,7 +622,7 @@ function findBestRule(questionText, rules = []) {
 			.map((keyword) =>
 				String(keyword || "")
 					.toLowerCase()
-					.replace(/[^a-z0-9]+/g, ""),
+					.replace(/[^a-z0-9]+/gu, ""),
 			)
 			.filter(Boolean);
 		let score = 0;
@@ -694,7 +695,7 @@ function formatConversationHistory(messages = []) {
 }
 
 function generateSessionTitle(text) {
-	const cleaned = (text || "").trim().replace(/\s+/g, " ");
+	const cleaned = (text || "").trim().replace(/\s+/gu, " ");
 	if (!cleaned) {
 		return null;
 	}
@@ -996,6 +997,22 @@ export function getRunningOpencodeClient() {
 		return null;
 	}
 	return opencodeV2Client(`http://localhost:${opencodePort}`);
+}
+
+/**
+ * Starts (or reuses) the assistant's shared opencode runtime — the same one
+ * the chat assistant spawns, guarded by the memory check and the start
+ * back-off. Fire-and-forget callers must not await it inside a request: the
+ * runtime takes ~15-20s to become ready. Returns the port or null when it
+ * cannot start, and never throws.
+ */
+export async function warmOpencodeServer() {
+	try {
+		return await ensureOpencodeServer();
+	} catch (error) {
+		logWarn("opencode_warm_failed", { reason: error?.message });
+		return null;
+	}
 }
 
 async function checkOpencodeRunning(port) {
@@ -1794,7 +1811,7 @@ async function callOpencode(
 					title: meta.title,
 				});
 			} else {
-				const questionMatch = (prompt || "").match(/USER QUESTION:\s*(.+?)\s*\nANSWER:/s);
+				const questionMatch = (prompt || "").match(/USER QUESTION:\s*(.+?)\s*\nANSWER:/su);
 				const questionText = questionMatch ? questionMatch[1].trim() : "";
 				const title = generateSessionTitle(questionText);
 				if (title) {
@@ -2411,7 +2428,7 @@ export async function streamOpencodeReply(question, userId, onChunk, onComplete)
 		if (fullText && userId) {
 			const meta = await loadSessionMeta(userId);
 			if (!meta?.title) {
-				const questionMatch = (prompt || "").match(/USER QUESTION:\s*(.+?)\s*\nANSWER:/s);
+				const questionMatch = (prompt || "").match(/USER QUESTION:\s*(.+?)\s*\nANSWER:/su);
 				const questionText = questionMatch ? questionMatch[1].trim() : "";
 				const title = generateSessionTitle(questionText);
 				if (title) {

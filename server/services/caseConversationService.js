@@ -33,8 +33,12 @@ import { MAX_CLARIFICATION_ROUNDS } from "./caseService.js";
 
 const MAX_REPLY_CHARS = 2000;
 const MAX_HISTORY_MESSAGES = 12;
-const DEFAULT_TIMEOUT_MS = 8000;
-const TRAILING_SLASHES = /\/+$/;
+// A clarifying question takes as long as a model turn, and a free model
+// turn is commonly 10-60s. The old 8s budget answered the buyer with the
+// canned question even when a warm runtime and a healthy model were both
+// one second away from answering.
+const DEFAULT_TIMEOUT_MS = 60_000;
+const TRAILING_SLASHES = /\/+$/u;
 
 /**
  * The question asked when the assistant cannot produce one.
