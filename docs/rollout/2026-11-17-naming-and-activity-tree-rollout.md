@@ -160,13 +160,17 @@ pre-existing case.
    still running, `verify` queued.
 
 **Not yet observed in this run:** the post-completion collapsed state
-("How this was investigated · N steps"). The investigation had not finished
-when the screenshots were taken; the collapsed rendering and its seeded reload
-path are unit/integration-tested (see
+("How this was investigated · N steps"). At capture time **research has been
+in `running` for ≈45 min with no further progress events** in the server log
+— the same wedge pattern recorded in the earlier canary (the free model stops
+making progress and the turn never settles). The live investigation will not
+complete within this session's wall clock. The collapsed rendering and its
+seeded reload path are unit/integration-tested (see
 `tests/unit/frontend-support-activity-tree.test.js` and the
 `useSupportCase` `"load:ok"` seeding test in
 `tests/unit/frontend-support-case.test.js`), but nobody watched this specific
-case collapse on screen. See honest note below.
+case collapse on screen — the limit is the free-model wall clock, not the
+code path.
 
 ## Known limits (honest, not aspirational)
 
