@@ -1,4 +1,3 @@
-import { jest } from "@jest/globals";
 import {
 	answerClarification,
 	deriveCaseSubject,
@@ -44,12 +43,11 @@ it("deriveCaseSubject model title wins; falls back to the message's first words"
 	expect(deriveCaseSubject({ modelTitle: "Coupon broken", firstMessage: "x y" })).toBe(
 		"Coupon broken",
 	);
-	expect(
-		deriveCaseSubject({
-			firstMessage:
-				"the verification renewal never applies the free months we owe buyers for coupon",
-		}),
-	).toBe("the verification renewal never applies the free months");
+	const fallback = deriveCaseSubject({
+		firstMessage: "the verification renewal never applies the free months we owe buyers for coupon",
+	});
+	expect(fallback).toBe("the verification renewal never applies the free");
+	expect(fallback.length).toBeLessThanOrEqual(48);
 	expect(deriveCaseSubject({})).toBeNull();
 });
 
@@ -67,14 +65,42 @@ it("answerClarification emits and strips TITLE via an injected provider", async 
 	expect(answer.reply).not.toContain("TITLE:");
 });
 
-it("answerClarification with no provider still returns a deterministic fallback title", async () => {
-	process.env.CASE_AI_PROVIDER = "none";
-	process.env.AI_ENABLED = "false";
+it("answerClarification strips a bare TITLE: line and falls back to a derived title", async () => {
+	setClarificationProvider(async () => "TITLE:\nWhen exactly does the card check fail?");
 	const answer = await answerClarification({
 		subject: "",
 		history: [{ role: "client", content: FIRST_MESSAGE }],
 		clientMessage: FIRST_MESSAGE,
 	});
+	expect(answer.reply).toBe("When exactly does the card check fail?");
+	expect(answer.reply).not.toContain("TITLE:");
 	expect(answer.title).toBeTruthy();
 	expect(FIRST_MESSAGE).toContain(String(answer.title).split(" ")[0]);
+});
+
+it("answerClarification with no provider still returns a deterministic fallback title", async () => {
+	const previousProvider = process.env.CASE_AI_PROVIDER;
+	const previousAiEnabled = process.env.AI_ENABLED;
+	process.env.CASE_AI_PROVIDER = "none";
+	process.env.AI_ENABLED = "false";
+	try {
+		const answer = await answerClarification({
+			subject: "",
+			history: [{ role: "client", content: FIRST_MESSAGE }],
+			clientMessage: FIRST_MESSAGE,
+		});
+		expect(answer.title).toBeTruthy();
+		expect(FIRST_MESSAGE).toContain(String(answer.title).split(" ")[0]);
+	} finally {
+		if (previousProvider === undefined) {
+			delete process.env.CASE_AI_PROVIDER;
+		} else {
+			process.env.CASE_AI_PROVIDER = previousProvider;
+		}
+		if (previousAiEnabled === undefined) {
+			delete process.env.AI_ENABLED;
+		} else {
+			process.env.AI_ENABLED = previousAiEnabled;
+		}
+	}
 });

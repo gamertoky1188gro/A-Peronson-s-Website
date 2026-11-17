@@ -57,12 +57,16 @@ const READY_REPLY =
 
 // biome-ignore lint/suspicious/noControlCharactersInRegex: stripping control characters is the point - titles must not carry them
 const CONTROL_CHARS = /[\u0000-\u001f\u007f]/gu;
-const TITLE_UNSAFE = /[<>&"']/gu;
+// One shared punctuation/symbol class for every title path. All \p{P}
+// categories EXCEPT Pc (connector punctuation), so the underscore - a word
+// character in titles like requires_card - always survives. Em-dashes,
+// ellipses and typographic quotes are all Pd/Po/Pi/Pf and are stripped.
+const TITLE_PUNCT = /[\p{Pd}\p{Pe}\p{Pi}\p{Pf}\p{Po}\p{Ps}\p{S}]/gu;
 
 function sanitizeTitle(value) {
 	return String(value || "")
 		.replace(CONTROL_CHARS, " ")
-		.replace(TITLE_UNSAFE, " ")
+		.replace(TITLE_PUNCT, " ")
 		.replace(/\s+/gu, " ")
 		.trim()
 		.slice(0, 80);
@@ -70,9 +74,11 @@ function sanitizeTitle(value) {
 
 function firstLineTitle(raw) {
 	const lines = String(raw ?? "").split("\n");
-	const match = String(lines[0] || "")
-		.trim()
-		.match(/^TITLE:\s*(.{1,80})\s*$/iu);
+	const firstLine = String(lines[0] || "").trim();
+	if (/^TITLE:\s*$/u.test(firstLine)) {
+		return { title: "", cleaned: lines.slice(1).join("\n").trim() };
+	}
+	const match = firstLine.match(/^TITLE:\s*(.{1,80})\s*$/iu);
 	if (!match) return null;
 	return { title: sanitizeTitle(match[1]), cleaned: lines.slice(1).join("\n").trim() };
 }
@@ -95,14 +101,25 @@ function deriveCaseSubject({ modelTitle = "", firstMessage = "" } = {}) {
 		return model;
 	}
 	const words = String(firstMessage || "")
-		.replace(/[<>&"'`]/gu, " ")
-		.replace(/[.,;:!?()[\]{}"']/gu, " ")
+		.replace(TITLE_PUNCT, " ")
 		.split(/\s+/u)
 		.filter(Boolean);
 	if (words.length === 0) {
 		return null;
 	}
-	return sanitizeTitle(words.slice(0, 8).join(" ")) || null;
+	// 48 chars, at a word boundary: a word that would cross the cap is dropped.
+	let out = "";
+	for (const word of words.slice(0, 8)) {
+		const candidate = out ? `${out} ${word}` : word;
+		if (candidate.length > 48) {
+			break;
+		}
+		out = candidate;
+	}
+	if (!out) {
+		out = String(words[0]).slice(0, 48);
+	}
+	return sanitizeTitle(out) || null;
 }
 
 const CLARIFICATION_SYSTEM_PROMPT = [
@@ -469,7 +486,7 @@ function resetClarificationProvider() {
  * @param {boolean} [options.ready] Whether the case is already ready.
  * @param {number} [options.maxRounds] The clarification round cap.
  * @param {Function} [options.provider] `async (prompt, systemPrompt) => string|null`.
- * @returns {Promise<{ reply: string, ready: boolean, title?: string|null }>} Never rejects. `title` is present only on the first client message of a case without a subject.
+ * @returns {Promise<{ reply: string, ready: boolean, title?: string|null }>} Never rejects. `title` is present only on the first client message of a case without a subject; the `isReady` path returns no `title` ever.
  */
 async function answerClarification(options = {}) {
 	const turn = normalizeOptions(options);
