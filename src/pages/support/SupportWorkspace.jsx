@@ -44,7 +44,14 @@ import { ActivityTree } from "../../components/support/ActivityTree.jsx";
 import { Composer } from "../../components/support/Composer.jsx";
 import { EvidenceViewerModal } from "../../components/support/EvidenceViewerModal.jsx";
 import InvestigationModelPicker from "../../components/support/InvestigationModelPicker.jsx";
+import { MermaidBlock } from "../../components/support/MermaidBlock.jsx";
 import { StageRail } from "../../components/support/StageRail.jsx";
+import {
+	CheckTable,
+	GuidedChips,
+	PasteBox,
+	StructuredUpload,
+} from "../../components/support/StructuredReply.jsx";
 import { useModalFocus } from "../../hooks/useModalFocus.js";
 import { useSupportCase } from "../../hooks/useSupportCase.js";
 import { apiRequest, getCurrentUser, getToken } from "../../lib/auth.js";
@@ -264,10 +271,10 @@ function attachmentIcon(attachment) {
 	return File;
 }
 
-// Inline tags the intake assistant may emit that this bubble renders as
-// structure: severity pills, symptom / root-cause callouts and <details>
-// collapsible tech sections. Everything else stays plain whitespace-pre-wrap
-// text — never markup.
+// The tags the intake assistant may emit that this bubble renders as
+// structure: severity pills, symptom / root-cause callouts, Upload/Paste
+// cards, Guided Chips, Check tables, and <details> collapsible sections.
+// Everything else stays plain markdown. Never markup-injected by the assistant.
 const SEVERITY_EMOJI_TONE = {
 	"🔴": "border-rose-500/40 bg-rose-500/15 text-rose-200",
 	"🟠": "border-amber-400/40 bg-amber-500/15 text-amber-200",
@@ -278,6 +285,10 @@ const SEVERITY_EMOJI_TONE = {
 const SEVERITY_PATTERN = /^Severity:\s*(🔴|🟠|🟡|🟢|🔵)\s*(.+)$/u;
 const SYMPTOM_PATTERN = /^Symptom:\s*(.+)$/iu;
 const ROOT_CAUSE_PATTERN = /^Root cause:\s*(.+)$/iu;
+const UPLOAD_PATTERN = /^Upload:\s*(.+)$/iu;
+const PASTE_PATTERN = /^Paste:\s*(.+)$/iu;
+const CHIPS_PATTERN = /^Chips:\s*(.+\|.+)$/iu;
+const CHECKTABLEROWS = /^Check:\s*(.+)\|\s*(ok|fail|missing|pass)$/iu;
 const DETAILS_OPEN_PATTERN = /^<details>$/u;
 const DETAILS_CLOSE_PATTERN = /^<\/details>$/u;
 
@@ -287,6 +298,7 @@ function parseStructuredBlocks(body) {
 	const blocks = [];
 	let text = [];
 	let details = null;
+	let checks = [];
 	const pushText = () => {
 		if (text.length > 0) {
 			const joined = text
@@ -294,9 +306,15 @@ function parseStructuredBlocks(body) {
 				.replace(/\n{3,}/gu, "\n\n")
 				.trim();
 			if (joined) {
-				blocks.push({ kind: "text", text: joined });
+				blocks.push({ kind: "markdown", text: joined });
 			}
 			text = [];
+		}
+	};
+	const flushChecks = () => {
+		if (checks.length > 0) {
+			blocks.push({ kind: "checktable", rows: checks });
+			checks = [];
 		}
 	};
 	for (const line of lines) {
@@ -313,21 +331,62 @@ function parseStructuredBlocks(body) {
 		const severity = trimmed.match(SEVERITY_PATTERN);
 		if (severity) {
 			pushText();
+			flushChecks();
 			blocks.push({ kind: "severity", emoji: severity[1], label: severity[2].trim() });
 			continue;
 		}
 		const symptom = trimmed.match(SYMPTOM_PATTERN);
 		if (symptom) {
 			pushText();
+			flushChecks();
 			blocks.push({ kind: "symptom", text: symptom[1].trim() });
 			continue;
 		}
 		const rootCause = trimmed.match(ROOT_CAUSE_PATTERN);
 		if (rootCause) {
 			pushText();
+			flushChecks();
 			blocks.push({ kind: "rootcause", text: rootCause[1].trim() });
 			continue;
 		}
+		const upload = trimmed.match(UPLOAD_PATTERN);
+		if (upload) {
+			pushText();
+			flushChecks();
+			blocks.push({ kind: "dropzone", label: upload[1].trim().slice(0, 80) });
+			continue;
+		}
+		const paste = trimmed.match(PASTE_PATTERN);
+		if (paste) {
+			pushText();
+			flushChecks();
+			blocks.push({ kind: "pastebox", hint: paste[1].trim().slice(0, 60) });
+			continue;
+		}
+		const chips = trimmed.match(CHIPS_PATTERN);
+		if (chips) {
+			pushText();
+			flushChecks();
+			const list = chips[1]
+				.split("|")
+				.map((s) => s.trim())
+				.filter(Boolean)
+				.slice(0, 5);
+			if (list.length > 0) {
+				blocks.push({ kind: "chips", chips: list });
+			}
+			continue;
+		}
+		const check = trimmed.match(CHECKTABLEROWS);
+		if (check) {
+			pushText();
+			checks.push({
+				label: check[1].trim().slice(0, 120),
+				ok: check[2].toLowerCase() !== "fail" && check[2].toLowerCase() !== "missing",
+			});
+			continue;
+		}
+		flushChecks();
 		if (DETAILS_OPEN_PATTERN.test(trimmed)) {
 			pushText();
 			details = [];
@@ -336,6 +395,7 @@ function parseStructuredBlocks(body) {
 		text.push(line);
 	}
 	pushText();
+	flushChecks();
 	if (details) {
 		blocks.push({ kind: "details", content: details.join("\n").trim() });
 	}
@@ -344,8 +404,30 @@ function parseStructuredBlocks(body) {
 
 const DETAILS_SUMMARY = "View technical details";
 
-function BubbleRichBody({ body }) {
+function BubbleRichBody({ body, onAttachFile, sending, onSend }) {
 	const blocks = parseStructuredBlocks(body);
+	const markdownComponents = {
+		code: ({ className: _cn, children, ...props }) => {
+			const text = String(children ?? "");
+			const langMatch = /language-(\w+)/u.exec(_cn ?? "");
+			const lang = langMatch?.[1] ?? "";
+			if (lang === "mermaid") {
+				return <MermaidBlock chart={text} />;
+			}
+			return (
+				<pre class="mt-2 overflow-x-auto rounded-xl border border-white/10 bg-[#0b0714] p-3 font-mono text-[11px] leading-5 text-[#cfc3e6]">
+					<code {...props}>{text}</code>
+				</pre>
+			);
+		},
+		table: ({ children, ...props }) => (
+			<div class="my-2 overflow-x-auto rounded-xl border border-white/10">
+				<table {...props} class="w-full text-left text-[11px] text-[#f4eeff]">
+					{children}
+				</table>
+			</div>
+		),
+	};
 	return (
 		<div class="mt-1 space-y-2">
 			{blocks.map((block, index) => {
@@ -386,6 +468,34 @@ function BubbleRichBody({ body }) {
 								<p class="mt-0.5 text-[12px] leading-5 text-violet-100">{block.text}</p>
 							</div>
 						);
+					case "dropzone":
+						return (
+							<StructuredUpload
+								key={index}
+								label={block.label}
+								onAttach={(files) => onAttachFile?.(files)}
+							/>
+						);
+					case "pastebox":
+						return (
+							<PasteBox
+								key={index}
+								hint={block.hint}
+								placeholder="Paste the snippet, log line, or stack trace…"
+								onSend={(text) => onSend?.(text)}
+							/>
+						);
+					case "chips":
+						return (
+							<GuidedChips
+								key={index}
+								chips={block.chips}
+								disabled={Boolean(sending)}
+								onPick={(chip) => onSend?.(chip)}
+							/>
+						);
+					case "checktable":
+						return <CheckTable key={index} rows={block.rows} />;
 					case "details":
 						return (
 							<details
@@ -397,6 +507,16 @@ function BubbleRichBody({ body }) {
 									{block.content}
 								</pre>
 							</details>
+						);
+					case "markdown":
+						return (
+							<ReactMarkdown
+								key={index}
+								remarkPlugins={[remarkGfm]}
+								components={markdownComponents}
+							>
+								{block.text}
+							</ReactMarkdown>
 						);
 					default:
 						return (
@@ -415,7 +535,14 @@ function BubbleRichBody({ body }) {
  * intake assistant may emit (severity pill, symptom/root-cause cards,
  * <details> technical sections) and, when the parent wires `onFeedback`, two
  * buttons asking whether the last reply helped. */
-function MessageBubble({ message, onFeedback, feedbackDisabled = false }) {
+function MessageBubble({
+	message,
+	onFeedback,
+	feedbackDisabled = false,
+	onAttachFile,
+	sending,
+	onSend,
+}) {
 	const role = String(message?.role || "system");
 	const kind = String(message?.kind || "answer");
 	const body = decodeStoredText(message?.content);
@@ -457,7 +584,12 @@ function MessageBubble({ message, onFeedback, feedbackDisabled = false }) {
 					{label}
 					{message?.agent ? ` · ${message.agent}` : ""}
 				</p>
-				<BubbleRichBody body={body} />
+				<BubbleRichBody
+					body={body}
+					onAttachFile={onAttachFile}
+					sending={feedbackDisabled}
+					onSend={onSend}
+				/>
 				{showFeedback ? (
 					<div class="mt-2.5 flex flex-wrap items-center gap-2">
 						<button
@@ -1288,7 +1420,7 @@ export default function SupportWorkspace() {
 	);
 
 	return (
-		<div class="flex h-dvh min-h-0 flex-col overflow-hidden bg-[#0b0714] text-[#f4eeff]">
+		<div class="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[#0b0714] text-[#f4eeff]">
 			{/* Header row */}
 			<header class="relative z-10 flex flex-wrap items-center gap-2 border-b border-white/10 px-3 py-2.5 sm:gap-3 sm:px-4">
 				<button
@@ -1448,6 +1580,8 @@ export default function SupportWorkspace() {
 												handleSend(verdict === "fixed" ? "Fixed it." : "Still broken.")
 											}
 											feedbackDisabled={sending}
+											onAttachFile={handleFiles}
+											onSend={handleSend}
 										/>
 									))
 								)}
