@@ -271,6 +271,28 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		expect(result.current.status).toBe("collecting");
 	});
 
+	test("applies the returned subject to the case row", async () => {
+		installApi();
+		const { result } = renderHook(() => useSupportCase(CASE_ID, "tok"));
+		await waitFor(() => expect(result.current.caseRow).not.toBeNull());
+		apiRequest.mockImplementationOnce(async () => ({
+			message: { id: "m2", role: "client", content: "hi", sequence: 2 },
+			reply: {
+				id: "m3",
+				role: "assistant",
+				kind: "question",
+				content: "Where exactly?",
+				sequence: 3,
+			},
+			ready: false,
+			subject: "verification renewal free months never applied",
+		}));
+		await act(async () => {
+			await result.current.send("hi", []);
+		});
+		expect(result.current.caseRow?.subject).toBe("verification renewal free months never applied");
+	});
+
 	test("confirm posts to the case confirm endpoint", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));

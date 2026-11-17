@@ -185,12 +185,21 @@ function applyCaseEvent(state, action) {
 }
 
 // Applies the answer to a posted message: the two new messages, the
-// attachments that travelled with them, and the "ready" flag.
+// attachments that travelled with them, the "ready" flag, and the
+// server-minted subject when this was the first client message.
 function applySent(state, action) {
 	const { data, attachments } = action;
 	const ready = data?.ready === true;
+	const subject =
+		typeof data?.subject === "string" && data.subject.trim() ? data.subject.trim() : null;
 	const caseRow =
-		ready && state.caseRow ? { ...state.caseRow, status: "investigating" } : state.caseRow;
+		state.caseRow && (ready || subject)
+			? {
+					...state.caseRow,
+					...(ready ? { status: "investigating" } : {}),
+					...(subject ? { subject } : {}),
+				}
+			: state.caseRow;
 	return {
 		...state,
 		messages: mergeMessages(state.messages, [data?.message, data?.reply]),

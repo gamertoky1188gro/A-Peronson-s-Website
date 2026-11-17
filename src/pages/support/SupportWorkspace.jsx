@@ -799,10 +799,13 @@ export default function SupportWorkspace() {
 					Case reference
 				</p>
 				<p
-					class="mt-1 truncate font-mono text-[11px] text-[#f4eeff]"
-					title={caseId ?? "not opened yet"}
+					class="mt-1 truncate text-[12px] text-[#f4eeff]"
+					title={supportCase.caseRow?.subject ?? ""}
 				>
-					{caseId ?? "not opened yet"}
+					{supportCase.caseRow?.subject || "Untitled case"}
+				</p>
+				<p class="mt-0.5 truncate font-mono text-[10px] text-[#a99bbd]" title={caseId ?? ""}>
+					{caseId ? `case ${caseId}` : "not opened yet"}
 				</p>
 			</div>
 
@@ -1027,10 +1030,10 @@ export default function SupportWorkspace() {
 						AI Investigation
 					</h1>
 					<p
-						class="max-w-[10rem] truncate font-mono text-[10px] text-[#a99bbd] sm:max-w-[16rem]"
-						title={caseId ?? "new case"}
+						class="max-w-[14rem] truncate text-[10px] text-[#a99bbd] sm:max-w-[16rem]"
+						title={supportCase.caseRow?.subject ?? caseId ?? "new case"}
 					>
-						{caseId ? `case ${caseId}` : "new case"}
+						{supportCase.caseRow?.subject || (caseId ? `case ${caseId}` : "new case")}
 					</p>
 				</div>
 				<span
