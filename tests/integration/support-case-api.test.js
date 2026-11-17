@@ -375,7 +375,7 @@ afterAll(() => {
 
 // --- the contract in contracts.md §3 ---------------------------------------
 describe("support case API (real router, real controller)", () => {
-	test("a second user gets 403 on the case and on its messages", async () => {
+	it("a second user gets 403 on the case and on its messages", async () => {
 		const created = await createCase();
 
 		const read = await request(buildApp())
@@ -397,7 +397,7 @@ describe("support case API (real router, real controller)", () => {
 		expect(after.body.messages).toHaveLength(0);
 	});
 
-	test("the owner can read the case and post to it", async () => {
+	it("the owner can read the case and post to it", async () => {
 		const created = await createCase();
 
 		const read = await request(buildApp())
@@ -426,7 +426,33 @@ describe("support case API (real router, real controller)", () => {
 		expect(posted.body.ready).toBe(false);
 	});
 
-	test("the case GET returns the case's attachments, oldest first", async () => {
+	// The subject is written once, from the first client message, and never
+	// again. A case opened without a subject (`createCase("")`) is the case
+	// the intake model names; every turn after the first must leave it alone.
+	it("names the case from the first client message, and only then", async () => {
+		const created = await createCase("");
+
+		const first = await postMessage(
+			created.id,
+			"the verification renewal never applies the free months",
+		);
+		expectSuccess(first);
+		expect(typeof first.body.subject).toBe("string");
+		expect(first.body.subject.length).toBeGreaterThan(3);
+		expect(first.body.reply.content).not.toContain("TITLE:");
+
+		const second = await postMessage(created.id, "a second message");
+		expectSuccess(second);
+		expect(second.body.subject).toBeUndefined();
+
+		const reread = await request(buildApp())
+			.get(`/api/support/cases/${created.id}`)
+			.set(AUTH.owner)
+			.expect(200);
+		expect(reread.body.case.subject).toBe(first.body.subject);
+	});
+
+	it("the case GET returns the case's attachments, oldest first", async () => {
 		const created = await createCase();
 
 		state.attachments.push(
@@ -459,7 +485,7 @@ describe("support case API (real router, real controller)", () => {
 		expect(read.body.attachments.map((row) => row.id)).toEqual(["att-old", "att-new"]);
 	});
 
-	test("the owner sees only their own cases in the list", async () => {
+	it("the owner sees only their own cases in the list", async () => {
 		const mine = await createCase("Mine");
 
 		const list = await request(buildApp()).get("/api/support/cases").set(AUTH.owner).expect(200);
@@ -473,7 +499,7 @@ describe("support case API (real router, real controller)", () => {
 		expect(strangerList.body.cases).toHaveLength(0);
 	});
 
-	test("ready is true after 6 client messages", async () => {
+	it("ready is true after 6 client messages", async () => {
 		const created = await createCase();
 
 		for (let round = 1; round <= 5; round += 1) {
@@ -487,7 +513,7 @@ describe("support case API (real router, real controller)", () => {
 		expect(sixth.body.ready).toBe(true);
 	});
 
-	test("confirming the summary moves the case to investigating", async () => {
+	it("confirming the summary moves the case to investigating", async () => {
 		const created = await createCase();
 
 		const confirmed = await request(buildApp())
@@ -502,7 +528,7 @@ describe("support case API (real router, real controller)", () => {
 	// or `completed`, and it must not restart anything - a literal
 	// implementation would rewrite the status to `investigating` and
 	// overwrite the summary the investigation was run under.
-	test("confirming a case that is already being investigated changes nothing", async () => {
+	it("confirming a case that is already being investigated changes nothing", async () => {
 		const created = await createCase();
 
 		const first = await request(buildApp())
@@ -526,7 +552,7 @@ describe("support case API (real router, real controller)", () => {
 		expect(enqueueInvestigation.mock.calls.length).toBe(queued);
 	});
 
-	test("confirming a finished case is an acknowledgement, not a restart", async () => {
+	it("confirming a finished case is an acknowledgement, not a restart", async () => {
 		const created = await createCase();
 
 		await request(buildApp())
@@ -558,7 +584,7 @@ describe("support case API (real router, real controller)", () => {
 		expect(enqueueInvestigation.mock.calls.length).toBe(queued);
 	});
 
-	test("an owner/admin may read another client's case; a buyer may not", async () => {
+	it("an owner/admin may read another client's case; a buyer may not", async () => {
 		const created = await createCase();
 
 		await request(buildApp()).get(`/api/support/cases/${created.id}`).set(AUTH.admin).expect(200);
@@ -577,7 +603,7 @@ describe("support case API (real router, real controller)", () => {
 // one client could open cases without limit and fill the investigation
 // queue with work nobody asked for.
 describe("the cost of a case", () => {
-	test("the write routes are rate limited per user", async () => {
+	it("the write routes are rate limited per user", async () => {
 		const created = await createCase();
 
 		let refused = null;
@@ -597,7 +623,7 @@ describe("the cost of a case", () => {
 		expect(typeof refused.body.error).toBe("string");
 	});
 
-	test("the rate limit is counted per user, not per address", async () => {
+	it("the rate limit is counted per user, not per address", async () => {
 		const created = await createCase();
 
 		let refused = null;
@@ -616,7 +642,7 @@ describe("the cost of a case", () => {
 		expect(other.status).toBe(200);
 	});
 
-	test("a full investigation queue is refused with a clear 429", async () => {
+	it("a full investigation queue is refused with a clear 429", async () => {
 		const created = await createCase();
 		queueCapacityResult = { depth: 20, limit: 20, accepting: false };
 
@@ -625,11 +651,11 @@ describe("the cost of a case", () => {
 			.set(AUTH.owner);
 
 		expect(confirmed.status).toBe(429);
-		expect(String(confirmed.body.error)).toMatch(/queue is full/i);
-		expect(String(confirmed.body.error)).toMatch(/try again shortly/i);
+		expect(String(confirmed.body.error)).toMatch(/queue is full/iu);
+		expect(String(confirmed.body.error)).toMatch(/try again shortly/iu);
 	});
 
-	test("a refused case is left where it was", async () => {
+	it("a refused case is left where it was", async () => {
 		const created = await createCase();
 		queueCapacityResult = { depth: 20, limit: 20, accepting: false };
 
@@ -643,7 +669,7 @@ describe("the cost of a case", () => {
 		expect(enqueueInvestigation).not.toHaveBeenCalled();
 	});
 
-	test("one user cannot open more cases than the cap allows", async () => {
+	it("one user cannot open more cases than the cap allows", async () => {
 		for (let index = 0; index < 10; index += 1) {
 			// biome-ignore lint: the cases are deliberately sequential
 			const res = await request(buildApp())
@@ -659,10 +685,10 @@ describe("the cost of a case", () => {
 			.send({ subject: "One too many" });
 
 		expect(refused.status).toBe(429);
-		expect(String(refused.body.error)).toMatch(/open support cases/i);
+		expect(String(refused.body.error)).toMatch(/open support cases/iu);
 	});
 
-	test("a closed case does not count against the cap", async () => {
+	it("a closed case does not count against the cap", async () => {
 		for (let index = 0; index < 10; index += 1) {
 			// biome-ignore lint: the cases are deliberately sequential
 			await request(buildApp())
@@ -684,7 +710,7 @@ describe("the cost of a case", () => {
 
 // --- the contract in contracts.md §4 ---------------------------------------
 describe("case events on the realtime bus", () => {
-	test("a posted message produces a support.case.message event", async () => {
+	it("a posted message produces a support.case.message event", async () => {
 		const created = await createCase();
 		const events = [];
 		const listener = (payload) => events.push(payload);
@@ -709,7 +735,7 @@ describe("case events on the realtime bus", () => {
 		}
 	});
 
-	test("a case that starts being investigated fires a support.case.status event", async () => {
+	it("a case that starts being investigated fires a support.case.status event", async () => {
 		const created = await createCase();
 		const events = [];
 		const listener = (payload) => events.push(payload);
@@ -730,7 +756,7 @@ describe("case events on the realtime bus", () => {
 		}
 	});
 
-	test("emitCaseEvent publishes each of the five fixed event types", () => {
+	it("emitCaseEvent publishes each of the five fixed event types", () => {
 		const seen = [];
 		const listeners = Object.entries(CASE_EVENTS).map(([key, type]) => {
 			const listener = (payload) => seen.push({ key, type, payload });
@@ -772,7 +798,7 @@ describe("case events on the realtime bus", () => {
 	// process-global channel, every listener on that channel - today or in
 	// future - receives every case's report body. It is published on the
 	// case's own channel instead.
-	test("a report event does not reach a listener on the bare event type", () => {
+	it("a report event does not reach a listener on the bare event type", () => {
 		const seen = [];
 		const listener = (payload) => seen.push(payload);
 		realtimeBus.on(CASE_EVENTS.report, listener);
@@ -787,7 +813,7 @@ describe("case events on the realtime bus", () => {
 		}
 	});
 
-	test("a report event reaches a listener on that case's channel", () => {
+	it("a report event reaches a listener on that case's channel", () => {
 		const seen = [];
 		const listener = (payload) => seen.push(payload);
 		const channel = caseEventChannel(CASE_EVENTS.report, "case-1");
@@ -804,7 +830,7 @@ describe("case events on the realtime bus", () => {
 		}
 	});
 
-	test("emitCaseEvent ignores a missing case or type", () => {
+	it("emitCaseEvent ignores a missing case or type", () => {
 		const seen = [];
 		const listener = (payload) => seen.push(payload);
 		const channel = caseEventChannel(CASE_EVENTS.message, "case-1");
@@ -821,7 +847,7 @@ describe("case events on the realtime bus", () => {
 
 // --- the case event stream (contracts.md §4's wire format) -----------------
 describe("the case event stream", () => {
-	test("a stranger is refused with a 403", async () => {
+	it("a stranger is refused with a 403", async () => {
 		const created = await createCase();
 		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.stranger);
 		try {
@@ -831,7 +857,7 @@ describe("the case event stream", () => {
 		}
 	});
 
-	test("an unknown case is a 404", async () => {
+	it("an unknown case is a 404", async () => {
 		const stream = await openStream("/api/support/cases/no-such-case/stream", AUTH.owner);
 		try {
 			expect(stream.status).toBe(404);
@@ -840,7 +866,7 @@ describe("the case event stream", () => {
 		}
 	});
 
-	test("the owner gets an event stream with the retry hint on it", async () => {
+	it("the owner gets an event stream with the retry hint on it", async () => {
 		const created = await createCase();
 		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.owner);
 		try {
@@ -860,7 +886,7 @@ describe("the case event stream", () => {
 	//
 	// so the frame names one of the five fixed types and the envelope always
 	// carries the case id.
-	test("an event arrives as a frame whose envelope carries the case id", async () => {
+	it("an event arrives as a frame whose envelope carries the case id", async () => {
 		const created = await createCase();
 		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.owner);
 		try {
@@ -871,7 +897,7 @@ describe("the case event stream", () => {
 
 			const frame = frameOf(body, CASE_EVENTS.message);
 			expect(frame).toBeDefined();
-			expect(frame).toMatch(/^id: \d+\nevent: support\.case\.message\ndata: \{/);
+			expect(frame).toMatch(/^id: \d+\nevent: support\.case\.message\ndata: \{/u);
 
 			const data = JSON.parse(frame.split("data: ")[1]);
 			expect(data.caseId).toBe(created.id);
@@ -883,7 +909,7 @@ describe("the case event stream", () => {
 
 	// The bus is shared by every case, so the stream has to drop the events
 	// that belong to another one.
-	test("an event for another case is not forwarded", async () => {
+	it("an event for another case is not forwarded", async () => {
 		const created = await createCase();
 		const other = await createCase("Another case");
 		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.owner);
@@ -903,7 +929,7 @@ describe("the case event stream", () => {
 
 	// A closed stream must not leave a listener on the bus, or every case
 	// that ever streamed would keep the process alive.
-	test("the stream stops listening when the client hangs up", async () => {
+	it("the stream stops listening when the client hangs up", async () => {
 		const created = await createCase();
 		const channel = caseEventChannel(CASE_EVENTS.message, created.id);
 		const before = realtimeBus.listenerCount(channel);
@@ -928,7 +954,7 @@ describe("the clarification answerer (server/services/caseConversationService.js
 		resetClarificationProvider();
 	});
 
-	test("with no provider configured it asks the fixed question and is not ready", async () => {
+	it("with no provider configured it asks the fixed question and is not ready", async () => {
 		const answer = await answerClarification({
 			subject: "Checkout fails",
 			messages: [{ role: "client", content: "The total is wrong" }],
@@ -936,7 +962,7 @@ describe("the clarification answerer (server/services/caseConversationService.js
 		expect(answer).toEqual({ reply: FALLBACK_CLARIFYING_QUESTION, ready: false });
 	});
 
-	test("a provider that throws falls back instead of failing the request", async () => {
+	it("a provider that throws falls back instead of failing the request", async () => {
 		setClarificationProvider(() => Promise.reject(new Error("provider is down")));
 		const answer = await answerClarification({
 			subject: "Checkout fails",
@@ -945,7 +971,7 @@ describe("the clarification answerer (server/services/caseConversationService.js
 		expect(answer).toEqual({ reply: FALLBACK_CLARIFYING_QUESTION, ready: false });
 	});
 
-	test("a provider that never answers does not hang the request", async () => {
+	it("a provider that never answers does not hang the request", async () => {
 		const previous = process.env.CASE_AI_TIMEOUT_MS;
 		process.env.CASE_AI_TIMEOUT_MS = "150";
 		setClarificationProvider(() => new Promise(() => {}));
@@ -964,7 +990,7 @@ describe("the clarification answerer (server/services/caseConversationService.js
 		}
 	});
 
-	test("a provider's answer is used when it works", async () => {
+	it("a provider's answer is used when it works", async () => {
 		const provider = jest.fn(async () => "Which browser were you using?");
 		setClarificationProvider(provider);
 		const answer = await answerClarification({
@@ -982,7 +1008,7 @@ describe("the clarification answerer (server/services/caseConversationService.js
 		expect(systemPrompt.length).toBeGreaterThan(0);
 	});
 
-	test("a ready case gets the hand-over notice and no question", async () => {
+	it("a ready case gets the hand-over notice and no question", async () => {
 		const provider = jest.fn(async () => "Which browser were you using?");
 		setClarificationProvider(provider);
 		const answer = await answerClarification({
@@ -994,7 +1020,7 @@ describe("the clarification answerer (server/services/caseConversationService.js
 		expect(provider).not.toHaveBeenCalled();
 	});
 
-	test("the round cap is read from the transcript when the caller does not say", async () => {
+	it("the round cap is read from the transcript when the caller does not say", async () => {
 		const history = Array.from({ length: 6 }, (_unused, index) => ({
 			role: "client",
 			content: `Answer ${index + 1}`,

@@ -214,7 +214,7 @@ const CONVERSATION_ENTRYPOINTS = [
  * @param {boolean} params.ready Whether the case is already ready.
  * @param {number} params.round
  * @param {Object} [params.caseRow] The case row already loaded by the caller (carries `model_id`).
- * @returns {Promise<{ reply: string, ready: boolean, degraded: boolean }>}
+ * @returns {Promise<{ reply: string, ready: boolean, degraded: boolean, title: string|null }>}
  */
 async function askClarifyingQuestion({ subject, messages, clientMessage, ready, round, caseRow }) {
 	const history = (messages || [])
@@ -280,6 +280,7 @@ async function askClarifyingQuestion({ subject, messages, clientMessage, ready, 
 			reply,
 			ready: typeof answer?.ready === "boolean" ? answer.ready : ready,
 			degraded: false,
+			title: typeof answer?.title === "string" ? answer.title : null,
 		};
 	} catch (error) {
 		logWarn("case clarification degraded to the offline question", { reason: error.message });
@@ -287,7 +288,12 @@ async function askClarifyingQuestion({ subject, messages, clientMessage, ready, 
 			? conversation?.READY_REPLY ||
 				"Thanks - that is enough for the investigation to start. The case is moving to investigation now."
 			: conversation?.FALLBACK_CLARIFYING_QUESTION || fallbackClarification(round);
-		return { reply: sanitizeString(String(reply), MAX_MESSAGE_LENGTH), ready, degraded: true };
+		return {
+			reply: sanitizeString(String(reply), MAX_MESSAGE_LENGTH),
+			ready,
+			degraded: true,
+			title: null,
+		};
 	}
 }
 
@@ -745,6 +751,26 @@ export async function postCaseMessageController(req, res) {
 			round: rounds,
 			caseRow: found,
 		});
+		let subjectSet = null;
+		if (rounds === 1 && !found.subject && answer?.title) {
+			try {
+				const saved = await caseService.setCaseSubject(caseId, answer.title);
+				subjectSet = saved?.subject ?? String(answer.title).slice(0, 80);
+			} catch (error) {
+				logWarn("case subject write failed", { caseId, reason: error?.message });
+			}
+		} else if (rounds === 1 && !found.subject) {
+			const { deriveCaseSubject } = await import("../services/caseConversationService.js");
+			const derived = deriveCaseSubject({ firstMessage: content });
+			if (derived) {
+				try {
+					const saved = await caseService.setCaseSubject(caseId, derived);
+					subjectSet = saved?.subject ?? derived;
+				} catch (error) {
+					logWarn("case subject write failed", { caseId, reason: error?.message });
+				}
+			}
+		}
 		const reply = await caseService.appendCaseMessage({
 			caseId,
 			role: "assistant",
@@ -759,7 +785,12 @@ export async function postCaseMessageController(req, res) {
 			await startInvestigation(found, thread);
 		}
 
-		return res.status(201).json({ message, reply, ready });
+		return res.status(201).json({
+			message,
+			reply,
+			ready,
+			...(subjectSet ? { subject: subjectSet } : {}),
+		});
 	} catch (error) {
 		return handleControllerError(res, error);
 	}

@@ -83,6 +83,22 @@ export async function setCaseModel(caseId, modelId) {
 }
 
 /**
+ * Stores the case's display title. Only the message route calls this, and
+ * only when the case has no subject yet — the intake model may have named it
+ * from the client's first words.
+ *
+ * @param {string} caseId The case to update.
+ * @param {string} subject The title.
+ * @returns {Promise<Object>} The updated case row.
+ */
+export async function setCaseSubject(caseId, subject) {
+	return prisma.supportCase.update({
+		where: { id: String(caseId) },
+		data: { subject: sanitizeString(String(subject || ""), 80) || null },
+	});
+}
+
+/**
  * Appends one message to a case.
  *
  * The sequence is allocated inside a transaction: two appends that race (the
