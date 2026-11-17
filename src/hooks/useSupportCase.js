@@ -119,14 +119,16 @@ function upsertActivityRow(list, entry) {
 // Reduces the persisted investigation projection (GET /support/cases/:caseId)
 // to activity rows, so a page reload re-seeds the tree from what the server
 // actually recorded. Labels come from the server's tool log verbatim (already
-// sanitized there); an entry without one degrades to "Using <tool>".
+// sanitized there); an entry without one degrades to "Using <tool>". Capped
+// at the last 200 rows, like the live upsert path — a long rerun across all
+// roles can exceed that, and the tree never renders more.
 function seedActivityFromInvestigations(investigations) {
 	const rows = [];
 	for (const investigation of Array.isArray(investigations) ? investigations : []) {
 		const role = investigation?.role ?? null;
-		const at = investigation?.completed_at
-			? new Date(investigation.completed_at).toISOString()
-			: "";
+		const completedAt = investigation?.completed_at;
+		const date = completedAt ? new Date(completedAt) : null;
+		const at = date && !Number.isNaN(date.getTime()) ? date.toISOString() : "";
 		const entries = Array.isArray(investigation?.tool_log) ? investigation.tool_log : [];
 		entries.forEach((entry, index) => {
 			const kind = typeof entry?.kind === "string" ? entry.kind : "other";
@@ -145,7 +147,7 @@ function seedActivityFromInvestigations(investigations) {
 			});
 		});
 	}
-	return rows;
+	return rows.slice(-200);
 }
 
 // Reduces an attachment to the three keys the message endpoint accepts.

@@ -604,3 +604,53 @@ describe("useSupportCase activity (Task 7)", () => {
 		expect(result.current.activity).toHaveLength(0);
 	});
 });
+
+describe("useSupportCase activity seeds (fix round 1)", () => {
+	it("caps a >200-entry seed at the last 200 rows", async () => {
+		const toolLog = Array.from({ length: 210 }, (_, index) => ({
+			kind: "read",
+			label: `Step ${index}`,
+			status: "done",
+		}));
+		installApi({
+			case: {
+				case: caseRow(),
+				messages: [],
+				attachments: [],
+				investigations: [
+					{
+						role: "lead",
+						status: "completed",
+						completed_at: "2026-11-17T06:00:06.000Z",
+						tool_log: toolLog,
+					},
+				],
+			},
+		});
+		const { result } = renderHook(() => useSupportCase(CASE_ID));
+		await waitFor(() => expect(result.current.activity).toHaveLength(200));
+		expect(result.current.activity[0].id).toBe("persist:lead:10");
+		expect(result.current.activity[199].id).toBe("persist:lead:209");
+	});
+
+	it("survives a non-date completed_at and produces an empty at", async () => {
+		installApi({
+			case: {
+				case: caseRow(),
+				messages: [],
+				attachments: [],
+				investigations: [
+					{
+						role: "code",
+						status: "completed",
+						completed_at: "not a date",
+						tool_log: [{ kind: "read", label: "Reading routes", status: "done" }],
+					},
+				],
+			},
+		});
+		const { result } = renderHook(() => useSupportCase(CASE_ID));
+		await waitFor(() => expect(result.current.activity).toHaveLength(1));
+		expect(result.current.activity[0].at).toBe("");
+	});
+});
