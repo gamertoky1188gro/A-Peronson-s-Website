@@ -341,8 +341,6 @@ function toPublicFileUrl(filePath = "") {
 const GARMENT_COMPLIANCE_CERTS = ["BSCI", "WRAP", "SA8000"];
 const GARMENT_SUSTAIN_CERTS = ["GOTS", "OEKO-TEX", "GRS"];
 
-const roles = ["buyer", "buying_house", "admin"];
-
 const badge =
 	"inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium tracking-wide";
 
@@ -1046,20 +1044,6 @@ export default function BuyerRequestManagement() {
 							</div>
 
 							<div class="flex flex-wrap items-center gap-2">
-								<div
-									class={`flex items-center gap-2 rounded-2xl border px-2 py-2 ${dark ? "border-white/10 bg-white/5" : "border-slate-200 bg-white"}`}
-								>
-									{roles.map((r) => (
-										<span
-											key={r}
-											class={`rounded-xl px-3 py-2 text-sm font-medium ${role === r ? "bg-sky-500 text-white shadow-lg shadow-sky-500/20" : dark ? "text-slate-500" : "text-slate-400"}`}
-										>
-											{r === "buying_house"
-												? "Buying House"
-												: r.charAt(0).toUpperCase() + r.slice(1)}
-										</span>
-									))}
-								</div>
 								{role === "buyer" ? null : (
 									<Link
 										to="/owner"
