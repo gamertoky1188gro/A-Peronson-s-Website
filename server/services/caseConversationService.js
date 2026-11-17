@@ -55,6 +55,56 @@ const FALLBACK_CLARIFYING_QUESTION =
 const READY_REPLY =
 	"Thanks - that is enough for the investigation team to start. The case is moving to investigation now; each step will appear here as it happens.";
 
+// biome-ignore lint/suspicious/noControlCharactersInRegex: stripping control characters is the point - titles must not carry them
+const CONTROL_CHARS = /[\u0000-\u001f\u007f]/gu;
+const TITLE_UNSAFE = /[<>&"']/gu;
+
+function sanitizeTitle(value) {
+	return String(value || "")
+		.replace(CONTROL_CHARS, " ")
+		.replace(TITLE_UNSAFE, " ")
+		.replace(/\s+/gu, " ")
+		.trim()
+		.slice(0, 80);
+}
+
+function firstLineTitle(raw) {
+	const lines = String(raw ?? "").split("\n");
+	const match = String(lines[0] || "")
+		.trim()
+		.match(/^TITLE:\s*(.{1,80})\s*$/iu);
+	if (!match) return null;
+	return { title: sanitizeTitle(match[1]), cleaned: lines.slice(1).join("\n").trim() };
+}
+
+function extractTitleFromAnswer(raw, { enabled = true } = {}) {
+	const text0 = String(raw ?? "").trim();
+	if (!(enabled && text0)) {
+		return { title: null, cleaned: text0 };
+	}
+	const extracted = firstLineTitle(text0);
+	if (!extracted) {
+		return { title: null, cleaned: text0 };
+	}
+	return { title: extracted.title || null, cleaned: extracted.cleaned };
+}
+
+function deriveCaseSubject({ modelTitle = "", firstMessage = "" } = {}) {
+	const model = sanitizeTitle(modelTitle);
+	if (model) {
+		return model;
+	}
+	const words = String(firstMessage || "")
+		.replace(/[<>&"'`]/gu, " ")
+		.replace(/[.,;:!?()[\]{}"']/gu, " ")
+		.split(/\s+/u)
+		.filter(Boolean);
+	if (words.length === 0) {
+		return null;
+	}
+	return sanitizeTitle(words.slice(0, 8).join(" ")) || null;
+}
+
 const CLARIFICATION_SYSTEM_PROMPT = [
 	"You are the intake assistant for GarTexHub support investigations.",
 	"You read the client's description of a problem and ask ONE short clarifying question.",
@@ -66,6 +116,12 @@ const CLARIFICATION_SYSTEM_PROMPT = [
 	"- Never promise a fix, a refund, or a timeline.",
 	"- If the client says they do not know, ask a different question.",
 	"- Reply with the question itself. No preamble, no bullet list, no sign-off.",
+	"You create a short label for this case, invisibly to the client.",
+	"Only for the VERY FIRST message of the case: begin your reply with a line",
+	"of exactly this form and nothing else on it:",
+	"TITLE: <3 to 8 word title for the problem, no punctuation>",
+	"Then a newline, then the one clarifying question as before.",
+	"Never mention, quote or explain this line, in any later message.",
 ].join("\n");
 
 function text(value) {
@@ -413,11 +469,13 @@ function resetClarificationProvider() {
  * @param {boolean} [options.ready] Whether the case is already ready.
  * @param {number} [options.maxRounds] The clarification round cap.
  * @param {Function} [options.provider] `async (prompt, systemPrompt) => string|null`.
- * @returns {Promise<{ reply: string, ready: boolean }>} Never rejects.
+ * @returns {Promise<{ reply: string, ready: boolean, title?: string|null }>} Never rejects. `title` is present only on the first client message of a case without a subject.
  */
 async function answerClarification(options = {}) {
 	const turn = normalizeOptions(options);
 	const turns = countClientTurns(turn.history, turn.clientMessage);
+	const isFirstClientMessage = turns === 1;
+	const wantsTitle = isFirstClientMessage && !text(turn.subject);
 	const isReady = typeof turn.ready === "boolean" ? turn.ready : turns >= turn.maxRounds;
 
 	if (isReady) {
@@ -468,18 +526,26 @@ async function answerClarification(options = {}) {
 				answer = null;
 			}
 		}
-		const reply = sanitizeString(text(answer), MAX_REPLY_CHARS);
-		if (!reply) {
-			return { reply: FALLBACK_CLARIFYING_QUESTION, ready: false };
+		const replyRaw = text(answer);
+		const extractedTitle = extractTitleFromAnswer(replyRaw, { enabled: wantsTitle });
+		const reply = sanitizeString(text(extractedTitle.cleaned), MAX_REPLY_CHARS);
+		const result = { reply: reply || FALLBACK_CLARIFYING_QUESTION, ready: false };
+		if (wantsTitle) {
+			result.title =
+				extractedTitle.title || deriveCaseSubject({ firstMessage: turn.clientMessage });
 		}
-		return { reply, ready: false };
+		return result;
 	} catch (error) {
 		// A failed provider is not an error for the client: the case still
 		// works, it just asks the fixed question instead.
 		logWarn("Clarification provider failed; falling back to the fixed question", {
 			message: String(error),
 		});
-		return { reply: FALLBACK_CLARIFYING_QUESTION, ready: false };
+		const result = { reply: FALLBACK_CLARIFYING_QUESTION, ready: false };
+		if (wantsTitle) {
+			result.title = deriveCaseSubject({ firstMessage: turn.clientMessage });
+		}
+		return result;
 	}
 }
 
@@ -488,6 +554,8 @@ export {
 	buildClarificationPrompt,
 	CLARIFICATION_SYSTEM_PROMPT,
 	countClientTurns,
+	deriveCaseSubject,
+	extractTitleFromAnswer,
 	FALLBACK_CLARIFYING_QUESTION,
 	READY_REPLY,
 	resetClarificationProvider,
