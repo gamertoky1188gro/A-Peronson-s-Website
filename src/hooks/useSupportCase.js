@@ -20,6 +20,7 @@ const INITIAL_CASE_STATE = {
 	report: null,
 	progress: [],
 	findings: [],
+	activity: [],
 	attachments: [],
 	loading: false,
 	feedback: null,
@@ -102,6 +103,51 @@ function upsertProgress(list, entry) {
 	return rows;
 }
 
+// Puts one activity row in the list, replacing the row with the same id.
+// Capped at the last 200 rows; the tree never renders more than that.
+function upsertActivityRow(list, entry) {
+	const rows = Array.isArray(list) ? [...list] : [];
+	const index = rows.findIndex((row) => row?.id === entry.id);
+	if (index >= 0) {
+		rows[index] = { ...rows[index], ...entry };
+	} else {
+		rows.push(entry);
+	}
+	return rows.slice(-200);
+}
+
+// Reduces the persisted investigation projection (GET /support/cases/:caseId)
+// to activity rows, so a page reload re-seeds the tree from what the server
+// actually recorded. Labels come from the server's tool log verbatim (already
+// sanitized there); an entry without one degrades to "Using <tool>".
+function seedActivityFromInvestigations(investigations) {
+	const rows = [];
+	for (const investigation of Array.isArray(investigations) ? investigations : []) {
+		const role = investigation?.role ?? null;
+		const at = investigation?.completed_at
+			? new Date(investigation.completed_at).toISOString()
+			: "";
+		const entries = Array.isArray(investigation?.tool_log) ? investigation.tool_log : [];
+		entries.forEach((entry, index) => {
+			const kind = typeof entry?.kind === "string" ? entry.kind : "other";
+			const label =
+				typeof entry?.label === "string" && entry.label.trim()
+					? entry.label.trim()
+					: `Using ${String(entry?.tool ?? "tool").slice(0, 32)}`;
+			const failed = entry?.status === "failed" || entry?.status === "error";
+			rows.push({
+				id: `persist:${role}:${index}`,
+				role,
+				kind,
+				label: String(label).slice(0, 80),
+				status: failed ? "failed" : "done",
+				at,
+			});
+		});
+	}
+	return rows;
+}
+
 // Reduces an attachment to the three keys the message endpoint accepts.
 function toAttachmentPayload(attachment) {
 	const filePath = attachment?.file_path ?? null;
@@ -179,6 +225,24 @@ function applyCaseEvent(state, action) {
 		}
 		case "support.case.report":
 			return applyReportEvent(state, payload);
+		case "support.case.activity": {
+			const activityPayload = payload;
+			if (!activityPayload?.id) {
+				return state;
+			}
+			const entry = {
+				id: String(activityPayload.id),
+				role: typeof activityPayload.role === "string" ? activityPayload.role : undefined,
+				kind: typeof activityPayload.kind === "string" ? activityPayload.kind : "other",
+				label:
+					typeof activityPayload.label === "string"
+						? activityPayload.label.slice(0, 80)
+						: "Working",
+				status: activityPayload.status === "failed" ? "failed" : "done",
+				at: typeof activityPayload.at === "string" ? activityPayload.at : undefined,
+			};
+			return { ...state, activity: upsertActivityRow(state.activity, entry) };
+		}
 		default:
 			return state;
 	}
@@ -227,7 +291,18 @@ function caseReducer(state, action) {
 				status: action.status ?? null,
 				attachments: mergeAttachments(state.attachments, action.attachments),
 				feedback: action.feedback ?? null,
+				activity: (() => {
+					const seeds = seedActivityFromInvestigations(action.investigations);
+					return seeds.length > 0 ? seeds : (state.activity ?? []);
+				})(),
 			};
+		case "activity": {
+			const entry = action.entry;
+			if (!entry?.id) {
+				return state;
+			}
+			return { ...state, activity: upsertActivityRow(state.activity, entry) };
+		}
 		case "feedback:set":
 			return {
 				...state,
@@ -287,6 +362,7 @@ async function loadCaseAction(caseId, dispatch, supportToken = "") {
 			status: data?.case?.status ?? null,
 			attachments: data?.attachments,
 			feedback: data?.feedback ?? null,
+			investigations: data?.investigations,
 		});
 		return data?.case ?? null;
 	} catch (err) {
@@ -505,6 +581,7 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 		report: state.report,
 		progress: state.progress,
 		findings: state.findings,
+		activity: state.activity,
 		attachments: state.attachments,
 		loading: state.loading,
 		feedback: state.feedback,
@@ -522,6 +599,7 @@ export {
 	caseReducer,
 	mergeAttachments,
 	mergeMessages,
+	seedActivityFromInvestigations,
 	toAttachmentPayload,
 	upsertProgress,
 	useSupportCase,

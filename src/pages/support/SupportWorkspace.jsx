@@ -39,6 +39,7 @@ import { ThreeDot } from "react-loading-indicators";
 import ReactMarkdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import remarkGfm from "remark-gfm";
+import { ActivityTree } from "../../components/support/ActivityTree.jsx";
 import { Composer } from "../../components/support/Composer.jsx";
 import { EvidenceViewerModal } from "../../components/support/EvidenceViewerModal.jsx";
 import InvestigationModelPicker from "../../components/support/InvestigationModelPicker.jsx";
@@ -1122,6 +1123,9 @@ export default function SupportWorkspace() {
 						data-lenis-prevent={true}
 						class="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6"
 					>
+						{(supportCase.activity?.length ?? 0) > 0 || isInvestigating ? (
+							<ActivityTree activity={supportCase.activity} status={caseStatus} />
+						) : null}
 						{caseId ? (
 							<>
 								{supportCase.caseRow?.summary ? (

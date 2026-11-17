@@ -17,7 +17,7 @@ const RECONNECT_BASE_MS = 3000;
 const RECONNECT_MAX_MS = 30_000;
 const RECONNECT_BACKOFF_FACTOR = 1.5;
 
-// The five case event types, verbatim from contracts.md §4.
+// The six case event types, verbatim from contracts.md §4.
 //
 // This list is a FILTER, not a second definition of the contract: the server
 // owns these names. An event that arrives with a type that is not on this list
@@ -30,6 +30,7 @@ const CASE_EVENT_TYPES = Object.freeze([
 	"support.case.progress",
 	"support.case.finding",
 	"support.case.report",
+	"support.case.activity",
 ]);
 
 const CASE_EVENT_TYPE_SET = new Set(CASE_EVENT_TYPES);
@@ -71,7 +72,7 @@ function caseStreamPath(caseId) {
  * @param {string} rawType - The SSE `event:` field, or "" when absent.
  * @param {unknown} parsed - The parsed JSON of the frame's data.
  * @returns {{ type: string, payload: unknown } | null} The event, or null when
- *   the type is not one of the five contract types.
+ *   the type is not one of the six contract types.
  */
 function normalizeCaseEvent(rawType, parsed) {
 	let type = typeof rawType === "string" ? rawType.trim() : "";
@@ -211,7 +212,7 @@ async function readEventStream(response, onEvent) {
 /**
  * Subscribes to one case's event stream.
  *
- * The handler is called as `handler(type, payload)` for each of the five
+ * The handler is called as `handler(type, payload)` for each of the six
  * contract event types, with the payload passed through unchanged.
  *
  * @param {string} caseId - The support case id.

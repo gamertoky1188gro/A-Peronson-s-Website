@@ -9,13 +9,13 @@
  *   POST /api/support/cases/:caseId/messages -> { message, reply, ready }
  *   POST /api/support/cases/:caseId/confirm  -> { case }
  *
- * and the event contract is contracts.md 4 - exactly five `support.case.*`
+ * and the event contract is contracts.md 4 - exactly six `support.case.*`
  * type strings, each with its own payload shape.
  *
  * `src/lib/caseRealtime.js` is mocked out on purpose. The SSE endpoint and
  * its wire format belong to the server (contracts.md 4 says so explicitly),
  * so asserting on them here would pin this test to a guess. What is asserted
- * instead is the hook's side of the boundary: the five event names, and the
+ * instead is the hook's side of the boundary: the six event names, and the
  * payload keys each one carries.
  */
 import { jest } from "@jest/globals";
@@ -129,7 +129,7 @@ beforeEach(() => {
 });
 
 describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
-	test("loads the case with the bearer token when it mounts", async () => {
+	it("loads the case with the bearer token when it mounts", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 
@@ -141,7 +141,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		expect(result.current.status).toBe("collecting");
 	});
 
-	test("loads the attachments the server returns with the case", async () => {
+	it("loads the attachments the server returns with the case", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 
@@ -152,7 +152,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		});
 	});
 
-	test("a send followed by a reload keeps one attachment per file", async () => {
+	it("a send followed by a reload keeps one attachment per file", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(result.current.caseRow).not.toBeNull());
@@ -171,7 +171,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		expect(result.current.attachments[0]).toMatchObject({ id: "att-1" });
 	});
 
-	test("threads the support token into the x-support-token header when one is set", async () => {
+	it("threads the support token into the x-support-token header when one is set", async () => {
 		installApi();
 		renderHook(() => useSupportCase(CASE_ID, "gtk_sup_test-token"));
 		await waitFor(() => expect(apiRequest).toHaveBeenCalled());
@@ -184,7 +184,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		);
 	});
 
-	test("subscribes to the case event stream", async () => {
+	it("subscribes to the case event stream", async () => {
 		installApi();
 		renderHook(() => useSupportCase(CASE_ID));
 
@@ -193,7 +193,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		);
 	});
 
-	test("send posts to the case messages endpoint and appends the message and the reply", async () => {
+	it("send posts to the case messages endpoint and appends the message and the reply", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(result.current.caseRow).not.toBeNull());
@@ -220,7 +220,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		expect(result.current.messages[1].content).toBe("Which browser are you on?");
 	});
 
-	test("send carries attachments in the shape contracts.md 3 defines", async () => {
+	it("send carries attachments in the shape contracts.md 3 defines", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(result.current.caseRow).not.toBeNull());
@@ -245,7 +245,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		);
 	});
 
-	test("a ready response moves the case to investigating", async () => {
+	it("a ready response moves the case to investigating", async () => {
 		installApi({ message: { ...defaultResponses().message, ready: true } });
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(result.current.caseRow).not.toBeNull());
@@ -259,7 +259,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		expect(result.current.caseRow?.status).toBe("investigating");
 	});
 
-	test("a response that is not ready leaves the case collecting", async () => {
+	it("a response that is not ready leaves the case collecting", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(result.current.caseRow).not.toBeNull());
@@ -271,7 +271,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		expect(result.current.status).toBe("collecting");
 	});
 
-	test("applies the returned subject to the case row", async () => {
+	it("applies the returned subject to the case row", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID, "tok"));
 		await waitFor(() => expect(result.current.caseRow).not.toBeNull());
@@ -293,7 +293,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		expect(result.current.caseRow?.subject).toBe("verification renewal free months never applied");
 	});
 
-	test("confirm posts to the case confirm endpoint", async () => {
+	it("confirm posts to the case confirm endpoint", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(result.current.caseRow).not.toBeNull());
@@ -310,7 +310,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		expect(result.current.caseRow?.summary).toBe("The export button 404s.");
 	});
 
-	test("applies the five contract event types from contracts.md 4", async () => {
+	it("applies the six contract event types from contracts.md 4", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(typeof eventHandler).toBe("function"));
@@ -369,7 +369,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		});
 	});
 
-	test("ignores an event type that is not one of the five", async () => {
+	it("ignores an event type that is not one of the six", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(typeof eventHandler).toBe("function"));
@@ -382,7 +382,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		expect(result.current.messages).toHaveLength(0);
 	});
 
-	test("send posts nothing when no case is open", async () => {
+	it("send posts nothing when no case is open", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(null));
 
@@ -394,7 +394,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 		expect(result.current.error).toBeTruthy();
 	});
 
-	test("send posts nothing when the message is empty", async () => {
+	it("send posts nothing when the message is empty", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));
 		await waitFor(() => expect(apiRequest).toHaveBeenCalled());
@@ -412,7 +412,7 @@ describe("useSupportCase (src/hooks/useSupportCase.js)", () => {
 // ---------------------------------------------------------------------------
 // The SSE parser (src/lib/caseRealtime.js), directly.
 //
-// The contract is contracts.md §4: exactly five `support.case.*` event type
+// The contract is contracts.md §4: exactly six `support.case.*` event type
 // strings, and the frame's data is the payload. A frame with any other type
 // is ignored rather than guessed at.
 // ---------------------------------------------------------------------------
@@ -457,17 +457,18 @@ describe("the case SSE parser (src/lib/caseRealtime.js)", () => {
 		global.fetch = originalFetch;
 	});
 
-	test("the event types are exactly the five contracts.md 4 names", () => {
+	it("the event types are exactly the six contracts.md 4 names", () => {
 		expect(realCaseRealtime.CASE_EVENT_TYPES).toEqual([
 			"support.case.message",
 			"support.case.status",
 			"support.case.progress",
 			"support.case.finding",
 			"support.case.report",
+			"support.case.activity",
 		]);
 	});
 
-	test("each of the five types is dispatched on, with its payload", () => {
+	it("each of the six types is dispatched on, with its payload", () => {
 		for (const type of realCaseRealtime.CASE_EVENT_TYPES) {
 			const event = realCaseRealtime.normalizeCaseEvent(type, { caseId: CASE_ID, detail: "x" });
 			expect(event).not.toBeNull();
@@ -476,13 +477,13 @@ describe("the case SSE parser (src/lib/caseRealtime.js)", () => {
 		}
 	});
 
-	test("a type that is not one of the five is ignored", () => {
+	it("a type that is not one of the six is ignored", () => {
 		for (const type of ["support.case.something-else", "support.case", "message", "status", ""]) {
 			expect(realCaseRealtime.normalizeCaseEvent(type, { caseId: CASE_ID })).toBeNull();
 		}
 	});
 
-	test("a frame of the stream reaches the handler with its type and its payload", async () => {
+	it("a frame of the stream reaches the handler with its type and its payload", async () => {
 		const events = [];
 		global.fetch = stubStream(
 			sseFrame("support.case.status", { caseId: CASE_ID, status: "reporting" }),
@@ -498,7 +499,7 @@ describe("the case SSE parser (src/lib/caseRealtime.js)", () => {
 		expect(events[0].payload).toMatchObject({ caseId: CASE_ID, status: "reporting" });
 	});
 
-	test("a frame of an unknown type never reaches the handler", async () => {
+	it("a frame of an unknown type never reaches the handler", async () => {
 		const events = [];
 		global.fetch = stubStream(
 			sseFrame("support.case.something-else", { caseId: CASE_ID, status: "completed" }),
@@ -514,7 +515,92 @@ describe("the case SSE parser (src/lib/caseRealtime.js)", () => {
 		expect(events).toHaveLength(0);
 	});
 
-	test("the stream path is the case stream of contracts.md 4", () => {
+	it("the stream path is the case stream of contracts.md 4", () => {
 		expect(realCaseRealtime.caseStreamPath(CASE_ID)).toBe(`/api/support/cases/${CASE_ID}/stream`);
+	});
+});
+
+// ---------------------------------------------------------------------------
+// The activity tree state (Task 7). The reducer seeds `activity` from the
+// investigations projection the case read serves, and merges live
+// `support.case.activity` frames into the same list, deduped by id.
+// ---------------------------------------------------------------------------
+
+describe("useSupportCase activity (Task 7)", () => {
+	it("seeds the activity rows from the investigations the case read returns", async () => {
+		installApi({
+			case: {
+				case: caseRow(),
+				messages: [],
+				attachments: [],
+				investigations: [
+					{
+						role: "lead",
+						status: "completed",
+						completed_at: "2026-11-17T06:00:06.000Z",
+						tool_log: [
+							{ kind: "read", label: "Reading walletService.js", status: "done" },
+							{ kind: "search", label: "Searching code", status: "failed" },
+						],
+					},
+				],
+			},
+		});
+		const { result } = renderHook(() => useSupportCase(CASE_ID));
+		await waitFor(() => expect(result.current.activity).toHaveLength(2));
+		expect(result.current.activity[0]).toMatchObject({
+			id: "persist:lead:0",
+			role: "lead",
+			label: "Reading walletService.js",
+			status: "done",
+		});
+		expect(result.current.activity[1]).toMatchObject({
+			id: "persist:lead:1",
+			status: "failed",
+		});
+	});
+
+	it("a support.case.activity frame merges a row by id instead of duplicating it", async () => {
+		installApi();
+		const { result } = renderHook(() => useSupportCase(CASE_ID));
+		await waitFor(() => expect(typeof eventHandler).toBe("function"));
+
+		act(() => {
+			eventHandler("support.case.activity", {
+				caseId: CASE_ID,
+				id: "row-1",
+				role: "code",
+				kind: "read",
+				label: "Reading routes",
+				status: "done",
+				at: "2026-11-17T06:00:00.000Z",
+			});
+		});
+		act(() => {
+			eventHandler("support.case.activity", {
+				caseId: CASE_ID,
+				id: "row-1",
+				role: "code",
+				kind: "read",
+				label: "Reading routes (updated)",
+				status: "done",
+				at: "2026-11-17T06:00:01.000Z",
+			});
+		});
+
+		expect(result.current.activity).toHaveLength(1);
+		expect(result.current.activity[0].label).toBe("Reading routes (updated)");
+	});
+
+	it("an activity frame without an id is ignored", async () => {
+		installApi();
+		const { result } = renderHook(() => useSupportCase(CASE_ID));
+		await waitFor(() => expect(typeof eventHandler).toBe("function"));
+
+		act(() => {
+			eventHandler("support.case.activity", { caseId: CASE_ID, label: "no id" });
+		});
+
+		expect(result.current.activity).toHaveLength(0);
 	});
 });
