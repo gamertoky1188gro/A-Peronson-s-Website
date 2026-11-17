@@ -64,7 +64,8 @@ const CONFIRMED_STATUSES = new Set(["investigating", "reporting", "completed"]);
 // The event type is fixed by contracts.md §4.
 const CASE_STATUS_EVENT = "support.case.status";
 
-// The five event types of contracts.md §4, in the order they are subscribed.
+// The five event types of contracts.md §4 plus the activity event of Task 5,
+// in the order they are subscribed.
 // The list is READ FROM the realtime bus rather than re-declared here: the
 // bus is where the contract's strings live, and a second copy of them is a
 // second thing to keep in step. The filter drops anything that is not a
@@ -78,6 +79,7 @@ const CASE_STREAM_EVENT_TYPES = Object.freeze(
 		realtime.CASE_EVENTS?.progress,
 		realtime.CASE_EVENTS?.finding,
 		realtime.CASE_EVENTS?.report,
+		realtime.CASE_EVENTS?.activity,
 	].filter((type) => typeof type === "string"),
 );
 
@@ -676,11 +678,24 @@ export async function getCaseController(req, res) {
 			orderBy: { created_at: "asc" },
 		});
 		const feedback = await caseService.getCaseFeedback(caseId).catch(() => null);
+		// The activity tree is re-seeded from this projection after a reload.
+		// Deliberately narrow: role, status, when it finished and the tool
+		// log. Nothing about findings, prompts, evidence or errors crosses
+		// the wire, and a broken query degrades to no activity rather than
+		// taking the case read down with it.
+		const investigations = await prisma.supportInvestigation
+			.findMany({
+				where: { case_id: caseId },
+				select: { role: true, status: true, completed_at: true, tool_log: true },
+				orderBy: { started_at: "asc" },
+			})
+			.catch(() => []);
 		return res.json({
 			case: caseRow,
 			messages: messages || [],
 			attachments: Array.isArray(attachments) ? attachments : [],
 			feedback,
+			investigations: Array.isArray(investigations) ? investigations : [],
 		});
 	} catch (error) {
 		return handleControllerError(res, error);

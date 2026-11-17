@@ -175,11 +175,12 @@ function project(row, select) {
 
 function collection(rows) {
 	return {
-		findMany({ where, orderBy } = {}) {
+		// async like the real client: callers may chain .catch onto it.
+		async findMany({ where, orderBy, select } = {}) {
 			return sortRows(
 				rows.filter((row) => matchesWhere(row, where)),
 				orderBy,
-			).map((row) => ({ ...row }));
+			).map((row) => (select ? project(row, select) : { ...row }));
 		},
 		findFirst({ where, orderBy, select } = {}) {
 			const [found] = sortRows(
@@ -819,9 +820,11 @@ describe("a client cannot reach another client's report", () => {
 	});
 
 	// The report body lives on the case's investigation rows and is a STAFF
-	// artifact: the client-facing case payload is fixed by contracts.md §3 to
-	// `{ case, messages }`, so no client - not even the owner - can pull the
-	// report body through it. The staff surface is the admin console route.
+	// artifact: no client - not even the owner - can pull the report body
+	// through the client-facing case payload. The staff surface is the admin
+	// console route. The one concession is the narrow activity projection
+	// (role, status, completed_at, tool_log) added for the activity tree;
+	// it carries none of the report, prompt, evidence or error fields.
 	test("the client-facing case payload carries no report body at all", async () => {
 		const owner = await request(buildApp())
 			.get(`/api/support/cases/${CASE_B}`)
@@ -829,7 +832,15 @@ describe("a client cannot reach another client's report", () => {
 			.expect(200);
 
 		expect(owner.body.report).toBeUndefined();
-		expect(owner.body.investigations).toBeUndefined();
+		expect(Array.isArray(owner.body.investigations)).toBe(true);
+		for (const investigation of owner.body.investigations) {
+			expect(Object.keys(investigation).sort()).toEqual([
+				"completed_at",
+				"role",
+				"status",
+				"tool_log",
+			]);
+		}
 		expect(JSON.stringify(owner.body)).not.toContain(REPORT_SECRET);
 	});
 

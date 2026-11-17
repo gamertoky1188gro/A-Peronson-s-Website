@@ -89,13 +89,12 @@ function project(row, select) {
 
 function collection(rows) {
 	return {
-		findMany({ where, orderBy } = {}) {
+		// async like the real client: callers may chain .catch onto it.
+		async findMany({ where, orderBy, select } = {}) {
 			return sortRows(
 				rows.filter((row) => matches(row, where)),
 				orderBy,
-			).map((row) => ({
-				...row,
-			}));
+			).map((row) => (select ? project(row, select) : { ...row }));
 		},
 		findFirst({ where, orderBy, select } = {}) {
 			const [found] = sortRows(
@@ -395,6 +394,41 @@ describe("support case API (real router, real controller)", () => {
 			.set(AUTH.owner)
 			.expect(200);
 		expect(after.body.messages).toHaveLength(0);
+	});
+
+	it("GET case returns a narrow investigations projection", async () => {
+		const created = await createCase();
+		state.investigations.push({
+			id: "inv-1",
+			case_id: created.id,
+			role: "repo",
+			status: "complete",
+			started_at: new Date("2026-11-17T10:00:00Z"),
+			completed_at: new Date("2026-11-17T10:05:00Z"),
+			tool_log: [
+				{ tool: "read", status: "completed", kind: "read", label: "Reading walletService.js" },
+			],
+			// Deliberately present on the row, absent from the wire: the
+			// projection must not leak findings, prompts, evidence or errors.
+			findings: ["secret finding"],
+			error: "secret error",
+		});
+
+		const res = await request(buildApp())
+			.get(`/api/support/cases/${created.id}`)
+			.set(AUTH.owner)
+			.expect(200);
+		expect(res.body.investigations).toHaveLength(1);
+		expect(Object.keys(res.body.investigations[0]).sort()).toEqual([
+			"completed_at",
+			"role",
+			"status",
+			"tool_log",
+		]);
+		expect(res.body.investigations[0].tool_log[0]).toMatchObject({
+			kind: "read",
+			label: "Reading walletService.js",
+		});
 	});
 
 	it("the owner can read the case and post to it", async () => {
@@ -923,7 +957,7 @@ describe("the case event stream", () => {
 	//   event: support.case.message
 	//   data: {"caseId":"<case id>","message":{...}}
 	//
-	// so the frame names one of the five fixed types and the envelope always
+	// so the frame names one of the fixed types and the envelope always
 	// carries the case id.
 	it("an event arrives as a frame whose envelope carries the case id", async () => {
 		const created = await createCase();
@@ -941,6 +975,30 @@ describe("the case event stream", () => {
 			const data = JSON.parse(frame.split("data: ")[1]);
 			expect(data.caseId).toBe(created.id);
 			expect(data.message).toMatchObject({ id: "m-1", role: "client" });
+		} finally {
+			stream.close();
+		}
+	});
+
+	it("an activity event is forwarded as a frame for that case", async () => {
+		const created = await createCase();
+		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.owner);
+		try {
+			emitCaseEvent(created.id, CASE_EVENTS.activity, {
+				role: "repo",
+				id: "tool-1",
+				kind: "read",
+				label: "Reading walletService.js",
+				status: "completed",
+				at: new Date().toISOString(),
+			});
+			const body = await stream.waitFor((text) => frameOf(text, CASE_EVENTS.activity));
+
+			const frame = frameOf(body, CASE_EVENTS.activity);
+			expect(frame).toBeDefined();
+			const data = JSON.parse(frame.split("data: ")[1]);
+			expect(data.caseId).toBe(created.id);
+			expect(data).toMatchObject({ role: "repo", kind: "read", label: "Reading walletService.js" });
 		} finally {
 			stream.close();
 		}
