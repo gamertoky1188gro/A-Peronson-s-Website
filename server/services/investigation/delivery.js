@@ -15,6 +15,7 @@
 // escalation never reads the email result and the email never reads the
 // escalation. The orchestrator calls both, in whatever order it likes.
 
+import MarkdownIt from "markdown-it";
 import { logError, logInfo, logWarn } from "../../utils/logger.js";
 import prisma from "../../utils/prisma.js";
 import { escapeHtml, sanitizeString } from "../../utils/validators.js";
@@ -64,8 +65,8 @@ const STATUS_FAILED = "failed";
 
 const OWNER_ADMIN_ROLES = ["owner", "admin"];
 
-const LINE_BREAK_RE = /\r?\n/;
-const MARKDOWN_NOISE_RE = /[*_`>#]/g;
+const LINE_BREAK_RE = /\r?\n/u;
+const MARKDOWN_NOISE_RE = /[*_`>#]/gu;
 
 // ---------------------------------------------------------------------------
 // Recipients
@@ -215,21 +216,50 @@ function buildPlainText({ caseRow, summary }) {
  * @param {Object} params
  * @returns {string}
  */
+// One shared markdown renderer, configured for mail: html disabled (we
+// escape anything the model emitted as raw tag text), linkify on,
+// hard breaks off, typographer off so the report says exactly what
+// the agent wrote.
+const md = new MarkdownIt({ html: false, linkify: true, breaks: false, typographer: false });
+
 function buildHtml({ caseRow, summary, report }) {
 	const subjectLine = caseRow?.subject
 		? `<p><strong>Subject:</strong> ${escapeHtml(String(caseRow.subject))}</p>`
 		: "";
-	const body = String(report || "");
+	const body = String(report || "").trim();
+	const rendered = md.render(body);
 	return [
 		'<div style="font-family:Segoe UI,Arial,Helvetica,sans-serif;font-size:14px;color:#0f172a;max-width:920px">',
+		"<style>",
+		// Gmail strips most <style> rules but allows inline style on key elements, so rules are doubled with inline style where practical.
+		"body { background:#f1f5f9; margin:0; padding:24px; }",
+		".report h1 { font-size:24px; margin:0 0 12px; padding-bottom:8px; border-bottom:2px solid #1e293b; color:#0f172a; }",
+		".report h2 { font-size:18px; margin:24px 0 10px; padding-bottom:6px; border-bottom:1px solid #cbd5e1; color:#1e293b; }",
+		".report h3 { font-size:16px; margin:18px 0 8px; color:#1e293b; }",
+		".report p { margin:0 0 12px; line-height:1.6; }",
+		".report ul, .report ol { margin:0 0 12px 22px; line-height:1.6; }",
+		".report li { margin:2px 0; }",
+		".report code { background:#f1f5f9; padding:1px 5px; border-radius:4px; font-family:Consolas,Menlo,monospace; font-size:12px; }",
+		".report pre { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; overflow:auto; font-size:12px; line-height:1.5; }",
+		".report pre code { background:transparent; padding:0; }",
+		".report table { border-collapse:collapse; width:100%; margin:0 0 12px; font-size:13px; }",
+		".report th, .report td { border:1px solid #e2e8f0; padding:6px 10px; text-align:left; vertical-align:top; }",
+		".report th { background:#f8fafc; font-weight:700; }",
+		".report strong { color:#0f172a; }",
+		".report hr { border:none; border-top:1px solid #e2e8f0; margin:18px 0; }",
+		".report a { color:#2563eb; }",
+		".report blockquote { border-left:4px solid #cbd5e1; margin:0 0 12px 0; padding:4px 12px; color:#475569; background:#f8fafc; }",
+		"</style>",
 		'<h2 style="margin:0 0 12px">GarTexHub support investigation report</h2>',
 		`<p><strong>Case:</strong> ${escapeHtml(String(caseRow?.id || ""))}</p>`,
 		subjectLine,
 		`<p><strong>Status:</strong> ${escapeHtml(String(caseRow?.status || "unknown"))}</p>`,
-		summary ? `<p>${escapeHtml(String(summary))}</p>` : "",
-		'<pre style="white-space:pre-wrap;word-break:break-word;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;font-family:Consolas,Menlo,monospace;font-size:12px;line-height:1.5;overflow:auto">',
-		escapeHtml(body),
-		"</pre>",
+		summary
+			? `<p style="background:#eff6ff;border:1px solid #bfdbfe;padding:10px 14px;border-radius:8px">${escapeHtml(String(summary))}</p>`
+			: "",
+		'<div class="report" style="background:#ffffff;border-radius:10px;padding:20px;box-shadow:0 1px 3px rgba(15,23,42,0.08)">',
+		rendered,
+		"</div>",
 		"</div>",
 	].join("");
 }
@@ -358,9 +388,9 @@ async function emitReportReady(caseId, report, reportStatus) {
 // word list, so an ordinary confirmed finding ("the delete button does
 // nothing") never escalates.
 const SECURITY_CATEGORY_RE =
-	/\b(security|vulnerab\w*|exploit\w*|injection|breach|unauthori[sz]ed|unauthenticated|privilege\w*|traversal|csrf|xss|ssrf|rce|xxe|ssti|idor|leak\w*|exposure|hardcoded|plaintext|malware|ransomware|attacker)\b/;
+	/\b(security|vulnerab\w*|exploit\w*|injection|breach|unauthori[sz]ed|unauthenticated|privilege\w*|traversal|csrf|xss|ssrf|rce|xxe|ssti|idor|leak\w*|exposure|hardcoded|plaintext|malware|ransomware|attacker)\b/u;
 const DATA_LOSS_CATEGORY_RE =
-	/\b(data[\s_-]?(loss|leak|breach|exposure|deletion)|loss[\s_-]?of[\s_-]?data|destructive[\s_-]?(delete|operation)|integrity[\s_-]?loss)\b/;
+	/\b(data[\s_-]?(loss|leak|breach|exposure|deletion)|loss[\s_-]?of[\s_-]?data|destructive[\s_-]?(delete|operation)|integrity[\s_-]?loss)\b/u;
 
 /**
  * A finding that DENIES the harm is not evidence of the harm.
@@ -387,58 +417,58 @@ const DATA_LOSS_CATEGORY_RE =
  * harm in the very words a data-loss pattern looks for.
  */
 const HARM_DENIAL_RE =
-	/\b(?:is|are|was|were)\s+not\s+(?:called|used|wired|invoked|reached|executed|triggered|connected|linked)\b|\bnever\s+(?:called|used|wired|invoked|reached|executed|triggered|connected)\b|\bnot\s+(?:wired|connected|implemented|reachable|called\s+from|invoked\s+from|triggered\s+from)\b|\bno\s+(?:route|endpoint|button|path|server\s+endpoint|call)\b|\bcannot\s+(?:be\s+)?(?:delete|removed?|destroyed|wiped|erased|purged|leaked|exposed)\b|\bdoes\s+not\s+(?:delete|remove|destroy|wipe|erase|purge|leak|expose)\b|\bdoes\s+nothing\b|\bdoes\s+not\s+work\b|\b(?:has|have|had)\s+no\s+effect\b|\bno[\s-]?op\b/;
+	/\b(?:is|are|was|were)\s+not\s+(?:called|used|wired|invoked|reached|executed|triggered|connected|linked)\b|\bnever\s+(?:called|used|wired|invoked|reached|executed|triggered|connected)\b|\bnot\s+(?:wired|connected|implemented|reachable|called\s+from|invoked\s+from|triggered\s+from)\b|\bno\s+(?:route|endpoint|button|path|server\s+endpoint|call)\b|\bcannot\s+(?:be\s+)?(?:delete|removed?|destroyed|wiped|erased|purged|leaked|exposed)\b|\bdoes\s+not\s+(?:delete|remove|destroy|wipe|erase|purge|leak|expose)\b|\bdoes\s+nothing\b|\bdoes\s+not\s+work\b|\b(?:has|have|had)\s+no\s+effect\b|\bno[\s-]?op\b/u;
 
 const DATA_NOUN_RE =
-	/\b(record|records|row|rows|data|file|files|document|documents|user|users|order|orders|contract|contracts|message|messages|table|tables|entry|entries|history|payment|payments|invoice|invoices|backup|backups)\b/;
+	/\b(record|records|row|rows|data|file|files|document|documents|user|users|order|orders|contract|contracts|message|messages|table|tables|entry|entries|history|payment|payments|invoice|invoices|backup|backups)\b/u;
 // The present and future forms matter: a finding that says the endpoint
 // DELETES every contract is reporting a live harm, and only the past tense
 // was matched before.
 const DATA_LOSS_VERB_RE =
-	/\b(delet(?:e|es|ed|ing)|remov(?:e|es|ed|ing)|wip(?:e|es|ed)|er(?:a|as)se(?:d|s)?|destroy(?:s|ed|ing)?|lost|loss|missing|gone|vanish(?:ed|es)?|disappear(?:s|ed|ing)?|corrupt(?:s|ed|ing)?|truncat(?:e|es|ed)|overwritt?(?:e|en)|clobb(?:er|ered|ering)|leak(?:s|ed|ing)?|purg(?:e|es|ed|ing)|drop(?:s|ped|ping))\b/;
+	/\b(delet(?:e|es|ed|ing)|remov(?:e|es|ed|ing)|wip(?:e|es|ed)|er(?:a|as)se(?:d|s)?|destroy(?:s|ed|ing)?|lost|loss|missing|gone|vanish(?:ed|es)?|disappear(?:s|ed|ing)?|corrupt(?:s|ed|ing)?|truncat(?:e|es|ed)|overwritt?(?:e|en)|clobb(?:er|ered|ering)|leak(?:s|ed|ing)?|purg(?:e|es|ed|ing)|drop(?:s|ped|ping))\b/u;
 
 const SECURITY_PATTERNS = [
-	/\bsecurit(y|ies)\b/,
-	/\bvulnerab(le|ility|ilities)\b/,
-	/\bexploit(able|ed|s|ation)?\b/,
-	/\b(sqli?|nosql|ldap|command|code|html|template|xpath|prototype|second[\s-]?order|blind)[\s-]?injection\b/,
-	/\b(xss|csrf|ssrf|xxe|ssti|rce|idor|lfi|rfi)\b/,
-	/\bcross[\s-]?site\b/,
-	/\bremote code execution\b/,
-	/\bprivilege escalation\b/,
-	/\b(auth|authentication|authorization|authn|authz|access control|permission)s?\s+(check\s+)?(bypass|is bypassed|are bypassed)\b/,
-	/\bbypass(es|ed|ing)?\s+(the\s+)?(auth|authentication|authorization|access control|permission|login)\b/,
-	/\bmissing (authorization|authentication|access control)\b/,
+	/\bsecurit(y|ies)\b/u,
+	/\bvulnerab(le|ility|ilities)\b/u,
+	/\bexploit(able|ed|s|ation)?\b/u,
+	/\b(sqli?|nosql|ldap|command|code|html|template|xpath|prototype|second[\s-]?order|blind)[\s-]?injection\b/u,
+	/\b(xss|csrf|ssrf|xxe|ssti|rce|idor|lfi|rfi)\b/u,
+	/\bcross[\s-]?site\b/u,
+	/\bremote code execution\b/u,
+	/\bprivilege escalation\b/u,
+	/\b(auth|authentication|authorization|authn|authz|access control|permission)s?\s+(check\s+)?(bypass|is bypassed|are bypassed)\b/u,
+	/\bbypass(es|ed|ing)?\s+(the\s+)?(auth|authentication|authorization|access control|permission|login)\b/u,
+	/\bmissing (authorization|authentication|access control)\b/u,
 	// "has no authorization check" is the same defect as "missing
 	// authorization", and it is how the code under investigation words it.
-	/\b(no|without|missing|lacks?|lacking|omits?|omitting)\s+(an?\s+)?(authorization|authentication|authz|authn|access[\s-]?control|permission)\b/,
-	/\bunauthenticated\b/,
-	/\bunauthori[sz]ed\b/,
-	/\barbitrary (file|command|code|path|read|write|object)\b/,
-	/\b(path|directory) traversal\b/,
-	/\bworld[\s-]?readable\b/,
-	/\bexposed\b[^.]{0,60}\b(api|endpoint|route|secret|key|password|credential|credentials|database|file|files|admin)\b/,
-	/\b(secret|secrets|credential|credentials|password|passwords|api[\s-]?key|private key|tokens?)\b[^.]{0,60}\b(exposed|leaked|disclosed|committed|hardcoded|in the repo|in the source|plain ?text|plaintext)\b/,
-	/\bhardcoded\b/,
-	/\b(password|passwords|secret|secrets|credential|credentials|tokens?)\b[^.]{0,40}\bin plain ?text\b/,
-	/\bunencrypted\b/,
-	/\b(no|missing|without|lacks?|lacking)\s+encryption\b/,
-	/\bweak (password|hash|encryption|cipher|token|secret|randomness)\b/,
-	/\b(sensitive|personal|confidential|private)\s+(data|information|details|records?)\b[^.]{0,60}\b(exposed|leaked|public|world|unencrypted|unprotected|readable)\b/,
-	/\b(sensitive|personal|confidential|private)\s+(data|information|details|records?)\b[^.]{0,60}\b(is|are|was|were)\s+(returned|sent|logged|printed|visible)\b/,
-	/\battacker\b/,
-	/\bmalicious\b/,
-	/\bsession (fixation|hijack)\b/,
-	/\bmfa (bypass|circumvention)\b/,
-	/\b(missing|absent|broken)\s+csrf\b/,
+	/\b(no|without|missing|lacks?|lacking|omits?|omitting)\s+(an?\s+)?(authorization|authentication|authz|authn|access[\s-]?control|permission)\b/u,
+	/\bunauthenticated\b/u,
+	/\bunauthori[sz]ed\b/u,
+	/\barbitrary (file|command|code|path|read|write|object)\b/u,
+	/\b(path|directory) traversal\b/u,
+	/\bworld[\s-]?readable\b/u,
+	/\bexposed\b[^.]{0,60}\b(api|endpoint|route|secret|key|password|credential|credentials|database|file|files|admin)\b/u,
+	/\b(secret|secrets|credential|credentials|password|passwords|api[\s-]?key|private key|tokens?)\b[^.]{0,60}\b(exposed|leaked|disclosed|committed|hardcoded|in the repo|in the source|plain ?text|plaintext)\b/u,
+	/\bhardcoded\b/u,
+	/\b(password|passwords|secret|secrets|credential|credentials|tokens?)\b[^.]{0,40}\bin plain ?text\b/u,
+	/\bunencrypted\b/u,
+	/\b(no|missing|without|lacks?|lacking)\s+encryption\b/u,
+	/\bweak (password|hash|encryption|cipher|token|secret|randomness)\b/u,
+	/\b(sensitive|personal|confidential|private)\s+(data|information|details|records?)\b[^.]{0,60}\b(exposed|leaked|public|world|unencrypted|unprotected|readable)\b/u,
+	/\b(sensitive|personal|confidential|private)\s+(data|information|details|records?)\b[^.]{0,60}\b(is|are|was|were)\s+(returned|sent|logged|printed|visible)\b/u,
+	/\battacker\b/u,
+	/\bmalicious\b/u,
+	/\bsession (fixation|hijack)\b/u,
+	/\bmfa (bypass|circumvention)\b/u,
+	/\b(missing|absent|broken)\s+csrf\b/u,
 ];
 
 const DATA_LOSS_PATTERNS = [
-	/\bdata[\s-]?(loss|leak|breach|exposure|deletion)\b/,
-	/\bloss of data\b/,
+	/\bdata[\s-]?(loss|leak|breach|exposure|deletion)\b/u,
+	/\bloss of data\b/u,
 	// The separator is a hyphen as well as a space: the code under
 	// investigation writes "hard-deletes", not "hard delete".
-	/\b(permanently|hard|bulk|mass)[\s_-]?delet(?:e|es|ed|ing)\b/,
+	/\b(permanently|hard|bulk|mass)[\s_-]?delet(?:e|es|ed|ing)\b/u,
 	new RegExp(`${DATA_LOSS_VERB_RE.source}[^.]{0,60}${DATA_NOUN_RE.source}`),
 	new RegExp(`${DATA_NOUN_RE.source}[^.]{0,60}${DATA_LOSS_VERB_RE.source}`),
 ];

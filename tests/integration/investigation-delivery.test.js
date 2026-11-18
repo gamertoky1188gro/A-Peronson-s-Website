@@ -383,17 +383,22 @@ describe("deliverReport — a successful send", () => {
 		expect(text).toContain("case-42");
 	});
 
-	test("the html body inlines the full redacted report in a <pre> block", async () => {
+	test("the html body inlines the full redacted report as HTML, not as raw markdown", async () => {
 		await deliverReport({ caseRow: CASE_ROW, report: REPORT });
 
 		const html = String(sendEmail.mock.calls[0][0]?.html || "");
 		expect(html).toContain("case-42");
-		expect(html).toContain("<pre");
+		expect(html).toContain("<h");
 		expect(html).toContain("checkout route awaits the gateway promise");
 		expect(html).toContain("Add a timeout to the gateway call");
+		// HTML renders tables as <table>, not as pipe-joined pipes
+		expect(html).toContain("<li>server/routes/paymentRoutes.js");
+		// No raw markdown remnants in the rendered body
+		expect(html).not.toContain("## Findings");
+		expect(html).not.toContain("- server/routes/paymentRoutes.js");
 	});
 
-	test("the report is escaped, not rendered raw, in the pre block", async () => {
+	test("the report is escaped, not rendered raw, in the body", async () => {
 		const hostile = [
 			"# Support investigation report",
 			"",
