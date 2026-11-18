@@ -1047,6 +1047,16 @@ export async function streamCaseController(req, res) {
 		realtime.realtimeBus.on(channel, handler);
 	}
 
+	// Re-prime the context meter from the bus: the usage SSE only fires during
+	// active turns, so a reloaded page starts at 0.0% with nothing until the
+	// next turn. If a turn has already reported, hand the last frame over on
+	// subscribe — no database round-trip, just the in-memory stash.
+	const lastUsage =
+		typeof realtime.lastCaseUsage === "function" ? realtime.lastCaseUsage(caseId) : null;
+	if (lastUsage) {
+		send("support.case.usage", lastUsage);
+	}
+
 	const keepalive = setInterval(() => {
 		write(":keepalive\n\n");
 	}, CASE_STREAM_KEEPALIVE_MS);

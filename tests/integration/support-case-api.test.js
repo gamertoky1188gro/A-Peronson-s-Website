@@ -980,6 +980,29 @@ describe("the case event stream", () => {
 		}
 	});
 
+	it("re-primes the usage meter on subscribe with the last stashed frame", async () => {
+		const created = await createCase();
+		emitCaseEvent(created.id, CASE_EVENTS.usage, {
+			role: "intake",
+			used: 123_000,
+			output: 44,
+			reasoning: 7,
+			cacheRead: 0,
+			cacheWrite: 0,
+		});
+		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.owner);
+		try {
+			const body = await stream.waitFor((text) => frameOf(text, CASE_EVENTS.usage));
+			expect(body).toContain('"used":123000');
+			const frame = frameOf(body, CASE_EVENTS.usage);
+			const data = JSON.parse(frame.split("data: ")[1]);
+			expect(data.caseId).toBe(created.id);
+			expect(data).toMatchObject({ role: "intake", used: 123_000, output: 44 });
+		} finally {
+			stream.close();
+		}
+	});
+
 	it("an activity event is forwarded as a frame for that case", async () => {
 		const created = await createCase();
 		const stream = await openStream(`/api/support/cases/${created.id}/stream`, AUTH.owner);

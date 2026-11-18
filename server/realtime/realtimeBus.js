@@ -13,6 +13,32 @@ export const REALTIME_EVENTS = {
 export const realtimeBus = new EventEmitter();
 realtimeBus.setMaxListeners(100);
 
+// The last usage frame per case, in memory. The usage SSE is written live
+// by the intake and investigation turns; there is no database column to
+// carry it (the spec forbids one). Stashing it here lets a client that
+// reloads re-prime its context meter from the bus instead of starting
+// empty at 0.0%. A process restart empties the map — the meter then reads
+// 0 until the next turn reports, which is honest for a non-persisted metric.
+const lastUsageByCase = new Map();
+
+/** Remember the newest usage frame of one case. Also bounds the map. */
+export function stashCaseUsage(caseId, payload) {
+	if (!(caseId && payload)) {
+		return;
+	}
+	if (lastUsageByCase.size > 1000) {
+		// ponytail: eviction cap rather than a timer; 1000 entries ≈ hundreds of KB.
+		lastUsageByCase.clear();
+	}
+	lastUsageByCase.set(String(caseId), payload);
+}
+
+/** The last usage frame recorded for one case, or null. */
+export function lastCaseUsage(caseId) {
+	const entry = lastUsageByCase.get(String(caseId ?? ""));
+	return entry ? { ...entry } : null;
+}
+
 // --- Support investigation cases -----------------------------------------
 //
 // The seven event types are the wire format. The client subscribes to them
@@ -83,6 +109,9 @@ export function emitCaseEvent(caseId, type, payload) {
 		return;
 	}
 	const body = payload && typeof payload === "object" ? { ...payload } : {};
+	if (type === CASE_EVENTS.usage && caseId) {
+		stashCaseUsage(caseId, { ...body, caseId: String(caseId) });
+	}
 	// The case id in the envelope always wins over one inside the payload:
 	// a listener routes on it, and a payload that disagreed with the emitter
 	// would send the event to the wrong case.
