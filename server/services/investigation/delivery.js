@@ -22,15 +22,9 @@ import { sendEmail } from "../emailService.js";
 import { createNotification } from "../notificationService.js";
 import { redactReportSecrets } from "./redaction.js";
 
-// emailService truncates the plain-text body with sanitizeString(text, 2000),
-// so the body is a short summary plus a link - never the report itself. The
-// summary is measured against the SAME sanitizer the mail path uses, so the
-// link at the end can never be cut off by the cap.
-const TEXT_LIMIT = 2000;
-
-// The measuring cap: high enough that sanitizeString never truncates while
-// we are measuring, so the measurement is the real length.
-const MEASURE_LIMIT = 100_000;
+// The plain-text body is what matters for plain-text clients: the full
+// report lives in the HTML body as <pre>, so the text body carries only a
+// header and a short summary.
 
 // How long the summary may get before it is cut short.
 const SUMMARY_MAX_CHARS = 280;
@@ -40,12 +34,6 @@ const SUBJECT_MAX_CHARS = 200;
 
 // The longest finding detail kept in the notification meta.
 const DETAIL_MAX_CHARS = 500;
-
-// The fallback port when neither APP_BASE_URL nor PORT is set.
-const DEFAULT_PORT = 4000;
-
-// The loop guard for the body-fitting pass.
-const FIT_GUARD_MAX = 500;
 
 // Marks the mail in the email log / outbox.
 const EMAIL_SOURCE = "support_investigation_report";
@@ -63,11 +51,6 @@ const REPORT_EMAIL_PROVIDER = String(
 	process.env.INVESTIGATION_REPORT_EMAIL_PROVIDER || "gmail",
 ).toLowerCase();
 
-// The admin console. `/admin` is already behind the owner/admin
-// ProtectedRoute in src/App.jsx, so the link is authenticated by the session
-// the owner/admin already has - no token in the URL, nothing to leak.
-const REPORT_LINK_PATH = "/admin";
-
 // The notification type used for the in-app escalation ping.
 const NOTIFICATION_TYPE = "support_case_escalated";
 
@@ -78,12 +61,10 @@ const STATUS_FAILED = "failed";
 // A base url with no scheme is not a url a mail client can open: it is a
 // relative path. Render's `fromService: { property: host }` produces exactly
 // that - a bare hostname - so the scheme is added back.
-const SCHEME_RE = /^https?:\/\//i;
 
 const OWNER_ADMIN_ROLES = ["owner", "admin"];
 
 const LINE_BREAK_RE = /\r?\n/;
-const TRAILING_SLASH_RE = /\/+$/;
 const MARKDOWN_NOISE_RE = /[*_`>#]/g;
 
 // ---------------------------------------------------------------------------
@@ -201,68 +182,54 @@ function buildSummary({ caseRow, report }) {
 }
 
 /**
- * The length the mail path will actually produce: emailService runs the
- * body through sanitizeString(text, 2000), which escapes HTML entities,
- * collapses whitespace and THEN truncates. Measuring with the same function
- * is the only way to know whether the link survives.
- *
- * @param {string} text
- * @returns {number}
- */
-function measuredLength(text) {
-	return sanitizeString(String(text || ""), MEASURE_LIMIT).length;
-}
-
-/**
- * The plain-text body: a short summary plus the authenticated link, fitted
- * under the 2000-character cap with the link LAST so it is never truncated.
+ * The plain-text body: a compact header and the report summary. The full
+ * report itself lives in the HTML body as escaped <pre>, because emailService
+ * caps the text part; HTML clients get everything, plain-text clients get
+ * the same short digest.
  *
  * @param {Object} params
  * @returns {string}
  */
-function buildPlainText({ caseRow, summary, link }) {
+function buildPlainText({ caseRow, summary }) {
 	const head = [
 		"GarTexHub support investigation report",
 		`Case: ${caseRow?.id || ""}`,
 		caseRow?.subject ? `Subject: ${caseRow.subject}` : null,
 		`Status: ${caseRow?.status || "unknown"}`,
 		"",
+		String(summary || "").trim(),
+		"",
+		"The full report is in this email; open the HTML part to read it.",
 	]
 		.filter((line) => line !== null)
 		.join("\n");
-	const tail = `\n\nFull report (authenticated admin console): ${link}`;
-
-	let body = String(summary || "");
-	let text = `${head}\n${body}${tail}`;
-	let guard = 0;
-	while (measuredLength(text) > TEXT_LIMIT && body.length > 0 && guard < FIT_GUARD_MAX) {
-		const overflow = measuredLength(text) - TEXT_LIMIT;
-		const next = body.length - overflow - 1;
-		body = next > 0 ? body.slice(0, next).trimEnd() : "";
-		text = `${head}\n${body}${tail}`;
-		guard += 1;
-	}
-	return text;
+	return head;
 }
 
 /**
- * The HTML variant. It carries the SAME link as the plain-text body.
+ * The HTML variant. It carries the full REDACTED report, escaped and rendered
+ * inline in a <pre> block — that's the whole artefact the client already
+ * agreed the investigation could produce, sitting in the inbox like a
+ * document they can read, not a link to a UI they may not reach.
  *
  * @param {Object} params
  * @returns {string}
  */
-function buildHtml({ caseRow, summary, link }) {
-	const subject = caseRow?.subject
+function buildHtml({ caseRow, summary, report }) {
+	const subjectLine = caseRow?.subject
 		? `<p><strong>Subject:</strong> ${escapeHtml(String(caseRow.subject))}</p>`
 		: "";
+	const body = String(report || "");
 	return [
-		'<div style="font-family:Segoe UI,Arial,Helvetica,sans-serif;font-size:14px;color:#0f172a">',
+		'<div style="font-family:Segoe UI,Arial,Helvetica,sans-serif;font-size:14px;color:#0f172a;max-width:920px">',
 		'<h2 style="margin:0 0 12px">GarTexHub support investigation report</h2>',
 		`<p><strong>Case:</strong> ${escapeHtml(String(caseRow?.id || ""))}</p>`,
-		subject,
+		subjectLine,
 		`<p><strong>Status:</strong> ${escapeHtml(String(caseRow?.status || "unknown"))}</p>`,
-		`<p>${escapeHtml(String(summary || ""))}</p>`,
-		`<p><a href="${escapeHtml(link)}">Open the full report</a></p>`,
+		summary ? `<p>${escapeHtml(String(summary))}</p>` : "",
+		'<pre style="white-space:pre-wrap;word-break:break-word;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;font-family:Consolas,Menlo,monospace;font-size:12px;line-height:1.5;overflow:auto">',
+		escapeHtml(body),
+		"</pre>",
 		"</div>",
 	].join("");
 }
@@ -574,9 +541,9 @@ async function notifyStaffOfEscalation({ caseId, category, detail, triggerCount,
  * Sends the report to the owners/admins and records the SERVER's verdict on
  * the case.
  *
- * The plain-text body is capped at 2000 characters (emailService truncates),
- * so the body carries a short summary plus an authenticated link to the full
- * report; the HTML variant carries the same link.
+ * The HTML body carries the FULL REDACTED report inline in an escaped
+ * <pre> block, so the owner never has to authenticate to read it; the text
+ * body carries a compact digest because emailService caps it.
  *
  * The case records "sent" ONLY when sendEmail answered ok. A send that was
  * merely logged (`{ ok: false, status: "logged_no_gmail" }`) records
@@ -607,10 +574,9 @@ export async function deliverReport({ caseRow, report } = {}) {
 	// report that quotes one would carry it into the database, into the
 	// owner's inbox and into the client's browser.
 	const safeReport = redactReportSecrets(String(report || ""));
-	const link = buildCaseReportLink(caseId);
 	const summary = redactReportSecrets(buildSummary({ caseRow, report: safeReport }));
-	const text = buildPlainText({ caseRow, summary, link });
-	const html = buildHtml({ caseRow, summary, link });
+	const text = buildPlainText({ caseRow, summary });
+	const html = buildHtml({ caseRow, summary, report: safeReport });
 
 	const outcome = await sendReportMail({ caseRow, text, html });
 	const persisted = await persistDelivery(caseId, outcome.ok);
@@ -708,77 +674,6 @@ export async function escalateIfNeeded(caseId, findings) {
 
 	logInfo("support_case_escalated", { case_id: id, category, notified });
 	return true;
-}
-
-/**
- * The public base URL of this deployment.
- *
- * `APP_BASE_URL` is the repo-wide name for it - it is what every other link
- * the server builds uses (README, .env.example) - and `PUBLIC_APP_URL` is
- * accepted as a second name, because a link that points at `localhost` is
- * worse than no link at all: the owner reads the mail on their own machine
- * and the link opens nothing. The local port is the last resort, and it is
- * right in development and wrong everywhere else.
- *
- * `RENDER_EXTERNAL_URL` comes FIRST because it is the value Render itself
- * sets, with the scheme, and because the `APP_BASE_URL` that render.yaml
- * derives from `fromService: { property: host }` is a bare hostname. A
- * schemeless value is repaired below, but a value Render set is a better
- * value than one Render derived.
- *
- * @returns {string}
- */
-function baseUrl() {
-	for (const candidate of [
-		process.env.RENDER_EXTERNAL_URL,
-		process.env.APP_BASE_URL,
-		process.env.PUBLIC_APP_URL,
-	]) {
-		const value = normalizeBaseUrl(candidate);
-		if (value) {
-			return value;
-		}
-	}
-	return `http://localhost:${process.env.PORT || DEFAULT_PORT}`;
-}
-
-/**
- * One base url candidate, made usable.
- *
- * A value with no scheme is a hostname, and a hostname is only an address
- * once it says how to reach it: `gartexhub.onrender.com` opens nothing in a
- * mail client, `https://gartexhub.onrender.com` opens the console. The
- * scheme that is added is `https`, because a public deployment that is
- * reachable at all is reachable over TLS.
- *
- * @param {unknown} candidate
- * @returns {string} The normalised url, or "" when there is none.
- */
-function normalizeBaseUrl(candidate) {
-	const value = String(candidate || "")
-		.trim()
-		.replace(TRAILING_SLASH_RE, "");
-	if (!value) {
-		return "";
-	}
-	if (SCHEME_RE.test(value)) {
-		return value;
-	}
-	return `https://${value}`;
-}
-
-/**
- * The authenticated admin link to the full report.
- *
- * The link is `/admin?case=<caseId>`: the admin console reads the `case`
- * query parameter and opens that case, so the link and the console agree on
- * one spelling of the deep link.
- *
- * @param {string} caseId
- * @returns {string}
- */
-export function buildCaseReportLink(caseId) {
-	return `${baseUrl()}${REPORT_LINK_PATH}?case=${encodeURIComponent(String(caseId || ""))}`;
 }
 
 /**

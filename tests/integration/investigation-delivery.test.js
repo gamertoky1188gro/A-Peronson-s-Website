@@ -88,7 +88,7 @@ jest.unstable_mockModule("../../server/utils/prisma.js", () => ({
 	},
 }));
 
-const { buildCaseReportLink, deliverReport, escalateIfNeeded } = await import(
+const { deliverReport, escalateIfNeeded } = await import(
 	"../../server/services/investigation/delivery.js"
 );
 
@@ -375,7 +375,7 @@ describe("deliverReport — a successful send", () => {
 		expect(text.length).toBeLessThanOrEqual(2000);
 	});
 
-	test("the body is a summary with a link, not the whole report", async () => {
+	test("the plain-text digest is a summary, not the whole report", async () => {
 		await deliverReport({ caseRow: CASE_ROW, report: REPORT });
 
 		const text = String(sendEmail.mock.calls[0][0]?.text || "");
@@ -383,11 +383,30 @@ describe("deliverReport — a successful send", () => {
 		expect(text).toContain("case-42");
 	});
 
-	test("the html body carries the same link", async () => {
+	test("the html body inlines the full redacted report in a <pre> block", async () => {
 		await deliverReport({ caseRow: CASE_ROW, report: REPORT });
 
 		const html = String(sendEmail.mock.calls[0][0]?.html || "");
 		expect(html).toContain("case-42");
+		expect(html).toContain("<pre");
+		expect(html).toContain("checkout route awaits the gateway promise");
+		expect(html).toContain("Add a timeout to the gateway call");
+	});
+
+	test("the report is escaped, not rendered raw, in the pre block", async () => {
+		const hostile = [
+			"# Support investigation report",
+			"",
+			"Case: case-42",
+			"",
+			'<script>alert("xss")</script>',
+		].join("\n");
+
+		await deliverReport({ caseRow: CASE_ROW, report: hostile });
+
+		const html = String(sendEmail.mock.calls[0][0]?.html || "");
+		expect(html).toContain("&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;");
+		expect(html).not.toContain("<script>alert(");
 	});
 });
 
@@ -510,64 +529,6 @@ describe("escalateIfNeeded — what must not escalate", () => {
 
 		expect(escalated).toBe(false);
 		expect(escalatedWrites()).not.toContain(true);
-	});
-});
-
-// The emailed link is the only way the owner reaches the report from their
-// inbox. Render's `fromService: { property: host }` produces a bare
-// hostname, and a bare hostname is a relative path as far as a mail client is
-// concerned: the link opens nothing.
-describe("the report link (buildCaseReportLink)", () => {
-	afterEach(() => {
-		withBaseUrlEnv({ APP_BASE_URL: savedEnv.APP_BASE_URL });
-	});
-
-	test("the link carries the case id", () => {
-		withBaseUrlEnv({ APP_BASE_URL: "https://app.example.test" });
-
-		const link = buildCaseReportLink("case-42");
-
-		expect(link).toContain("/admin?case=case-42");
-	});
-
-	test("a bare hostname gets a scheme", () => {
-		withBaseUrlEnv({ APP_BASE_URL: "gartexhub.onrender.com" });
-
-		const link = buildCaseReportLink("case-42");
-
-		expect(link.startsWith("http://") || link.startsWith("https://")).toBe(true);
-		expect(link).toBe("https://gartexhub.onrender.com/admin?case=case-42");
-	});
-
-	test("Render's own external url wins over the schemeless one", () => {
-		withBaseUrlEnv({
-			RENDER_EXTERNAL_URL: "https://gartexhub.onrender.com",
-			APP_BASE_URL: "gartexhub.onrender.com",
-		});
-
-		const link = buildCaseReportLink("case-42");
-
-		expect(link).toBe("https://gartexhub.onrender.com/admin?case=case-42");
-	});
-
-	test("a base url with a scheme is left alone", () => {
-		withBaseUrlEnv({ APP_BASE_URL: "http://localhost:4000" });
-
-		const link = buildCaseReportLink("case-42");
-
-		expect(link).toBe("http://localhost:4000/admin?case=case-42");
-	});
-
-	test("the link is absolute even when only the bare hostname is configured", () => {
-		withBaseUrlEnv({
-			RENDER_EXTERNAL_URL: undefined,
-			APP_BASE_URL: "gartexhub.onrender.com",
-			PUBLIC_APP_URL: undefined,
-		});
-
-		const link = buildCaseReportLink("case-42");
-
-		expect(link.startsWith("http://") || link.startsWith("https://")).toBe(true);
 	});
 });
 

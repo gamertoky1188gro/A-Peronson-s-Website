@@ -88,7 +88,6 @@ const escalateIfNeeded = jest.fn(async () => false);
 jest.unstable_mockModule("../../server/services/investigation/delivery.js", () => ({
 	deliverReport,
 	escalateIfNeeded,
-	buildCaseReportLink: (caseId) => `http://localhost:4000/admin?case=${caseId}`,
 	classifyFinding: () => null,
 }));
 
