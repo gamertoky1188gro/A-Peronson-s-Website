@@ -626,7 +626,9 @@ function AppLayout() {
 	const hideChrome = isImmersiveRoute;
 	const isViewportLockedRoute =
 		["/owner", "/contracts", "/leads", "/verification"].includes(location.pathname) ||
-		location.pathname.startsWith("/support");
+		// Only the investigation workspace is viewport-locked; the landing and
+		// the report/submitted pages are long documents that must scroll.
+		/^\/support\/case\/[^/]+$/u.test(location.pathname);
 	const content = isImmersiveRoute ? (
 		<ErrorBoundary>
 			<Suspense
