@@ -1,5 +1,15 @@
 # AGENTS.md — Problems & Fixes
 
+## 34. The AI reply was escaped three times, and new lines were flattened (Owner)
+
+- **Problem:** two bugs in the clarifying-chat path, both invisible to the unit suite (all providers were mocked) and only surfaced by a live browser session. (a) The buyer saw literal `you&#39;re` in the assistant bubble (and in the case header): the model text was entity-escaped in **provider → clarification service → controller** before persistence, so the decode pass left `&#39;` stale. (b) The `Chips:`/`Check:` markdown the intake prompt teaches never rendered as buttons: `sanitizeString` collapsed every newline to a space, so the per-line marker parser never matched.
+- **Fix:** the whole intake path is raw now — the opencode provider returns the raw turn, `caseConversationService` stores with a boundPlain trim (newlines preserved, no entity encoding), the controller reply path binds the same way, and `setCaseSubject` stores a raw single-line title. React escapes at render, which is the correct single place.
+- **Gotchas:**
+  - **One escape, one decode.** `escapeHtml` produces exactly the set `decodeStoredText` reverses; any other person adding `sanitizeString` upstream of a React-rendered surface on the assistant path re-introduces stale entities.
+  - **`sanitizeString` collapses newlines.** Anything parsed line-by-line (Chips/Check tables) is silently destroyed by any of its three callers.
+  - **Biome bans control characters in regex literals, escapes included.** Literal `\u{0}-\u{1f}` ranges trip `noControlCharactersInRegex` — the fix was to not strip at all rather than fight the rule (React escapes at render).
+- **Also fixed this round:** the context meter froze at 0.0% because the intake clarification never emitted `support.case.usage`. `makeClarificationProvider` now emits `role:"intake"` usage SSE from `waitForAssistantTurn`'s `onUsage`; the meter showed `13.0% · 136,528 / 1,048,576 tokens` after two turns.
+
 ## 32. The crash logger deleted the file it was writing (Owner)
 
 - **Problem:** commits bounced on `tests/unit/server-auth-hardening.test.js` — "records are written synchronously, once per error, and rotated" failed intermittently under the full suite and passed standalone. It was documented as an unexplained flake. The cause was a real bug in `server/utils/crashReporter.js`: the rotation prefix `"crash-history."` **also matches the live file** `crash-history.jsonl`, so the file being appended to was a prune candidate. The prune kept the `maxFiles` newest by mtime — and when the live file's mtime tied with a rotated copy (same millisecond, and a crash burst writes several records per millisecond), the live file was the one deleted. The history was lost, and the test failed. The daily log had the same hole: the prefix was the literal `"crash-2"`, which only matches because the year starts with a 2. **Measured:** with the old reporter the test failed **6 of 8** runs; with the fix it passed **8 of 8**.
