@@ -1591,9 +1591,6 @@ export default function SupportWorkspace() {
 						data-lenis-prevent={true}
 						class="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6"
 					>
-						{(supportCase.activity?.length ?? 0) > 0 || isInvestigating ? (
-							<ActivityTree activity={supportCase.activity} status={caseStatus} />
-						) : null}
 						{caseId ? (
 							<>
 								{supportCase.caseRow?.summary ? (
@@ -1668,6 +1665,9 @@ export default function SupportWorkspace() {
 									</div>
 								) : null}
 
+								{(supportCase.activity?.length ?? 0) > 0 || isInvestigating ? (
+									<ActivityTree activity={supportCase.activity} status={caseStatus} />
+								) : null}
 								{findingRows.length > 0 ? <FindingsPanel findingRows={findingRows} /> : null}
 
 								{supportCase.report?.report ? (
