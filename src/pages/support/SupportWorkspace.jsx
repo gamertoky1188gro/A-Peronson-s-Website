@@ -877,6 +877,7 @@ export default function SupportWorkspace() {
 	const caseStatus = supportCase.status || supportCase.caseRow?.status || "collecting";
 	const attachments = useMemo(() => supportCase.attachments ?? [], [supportCase.attachments]);
 	const messages = supportCase.messages ?? [];
+	const streaming = supportCase.streaming ?? null;
 	const messageCount = messages.length;
 	const failure = problem || supportCase.error || "";
 	const isInvestigating = caseStatus === "investigating";
@@ -966,11 +967,11 @@ export default function SupportWorkspace() {
 	// Keep the newest message in view. The transcript scrolls inside its own box.
 	useEffect(() => {
 		const node = transcriptRef.current;
-		if (!node || messageCount === 0) {
+		if (!node) {
 			return;
 		}
 		node.scrollTop = node.scrollHeight;
-	}, [messageCount]);
+	}, [messageCount, streaming?.content?.length]);
 
 	// Mint signed urls for the attachments once each, for the previews and
 	// the viewer. The raw path never renders.
@@ -1627,6 +1628,45 @@ export default function SupportWorkspace() {
 										/>
 									))
 								)}
+
+								{sending || confirming ? (
+									<div
+										data-testid="ai-typing"
+										class="flex items-start gap-3"
+										role="status"
+										aria-live="polite"
+									>
+										<div class="max-w-[80%] rounded-2xl border border-purple-500/25 bg-purple-500/10 px-4 py-3 text-[13px] leading-6 text-[#e6ddf8]">
+											{streaming ? (
+												<>
+													<p class="text-[9px] font-semibold uppercase tracking-[0.2em] text-purple-300">
+														Assistant is typing
+													</p>
+													<p class="mt-0.5 whitespace-pre-wrap break-words text-[#cfc3e6]">
+														{streaming.content}
+														<span aria-hidden="true" class="animate-pulse">
+															{" "}
+															▍
+														</span>
+													</p>
+												</>
+											) : (
+												<span class="flex items-center gap-2">
+													<span aria-hidden="true" class="flex items-end gap-1 py-1">
+														{[0, 1, 2].map((i) => (
+															<span
+																key={i}
+																class="h-2 w-2 animate-pulse rounded-full bg-purple-400"
+																style={{ animationDelay: `${i * 150}ms` }}
+															/>
+														))}
+													</span>
+													<span class="text-xs text-[#a99bbd]">Assistant is working…</span>
+												</span>
+											)}
+										</div>
+									</div>
+								) : null}
 
 								{findingRows.length > 0 ? <FindingsPanel findingRows={findingRows} /> : null}
 

@@ -619,6 +619,40 @@ describe("useSupportCase activity (Task 7)", () => {
 		});
 	});
 
+	it("a streaming intake chunk updates the hook's streaming state; the real message settles it", async () => {
+		installApi();
+		const { result } = renderHook(() => useSupportCase(CASE_ID));
+		await waitFor(() => expect(typeof eventHandler).toBe("function"));
+
+		act(() => {
+			eventHandler("support.case.message", {
+				caseId: CASE_ID,
+				message: {
+					id: "stream-1",
+					role: "assistant",
+					kind: "question",
+					content: "Partial answer...",
+					streaming: true,
+				},
+			});
+		});
+		expect(result.current.streaming?.content).toBe("Partial answer...");
+
+		act(() => {
+			eventHandler("support.case.message", {
+				caseId: CASE_ID,
+				message: {
+					id: "m-99",
+					role: "assistant",
+					kind: "question",
+					content: "Partial answer, completed.",
+					sequence: 5,
+				},
+			});
+		});
+		expect(result.current.streaming).toBeNull();
+	});
+
 	it("an activity frame without an id is ignored", async () => {
 		installApi();
 		const { result } = renderHook(() => useSupportCase(CASE_ID));

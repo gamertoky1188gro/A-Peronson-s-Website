@@ -23,6 +23,7 @@ const INITIAL_CASE_STATE = {
 	activity: [],
 	attachments: [],
 	usage: null,
+	streaming: null,
 	loading: false,
 	feedback: null,
 };
@@ -222,8 +223,33 @@ function applyReportEvent(state, payload) {
 function applyCaseEvent(state, action) {
 	const { eventType, payload } = action;
 	switch (eventType) {
-		case "support.case.message":
-			return { ...state, messages: mergeMessages(state.messages, [payload?.message]) };
+		case "support.case.message": {
+			const message = payload?.message ?? null;
+			// A live-typing chunk for the intake reply: the same wire the
+			// activity tree uses carries the assistant text as it grows. Not a
+			// persisted message yet; the real row replaces this on the POST.
+			if (message?.streaming) {
+				const content = typeof message?.content === "string" ? message.content : "";
+				if (!content) {
+					return state;
+				}
+				return {
+					...state,
+					streaming: {
+						id: message.id ?? null,
+						role: "assistant",
+						kind: typeof message.kind === "string" ? message.kind : "answer",
+						content,
+					},
+				};
+			}
+			// Any real message settles the stream: the persisted row wins.
+			return {
+				...state,
+				streaming: null,
+				messages: mergeMessages(state.messages, [payload?.message]),
+			};
+		}
 		case "support.case.status":
 			return applyStatusEvent(state, payload);
 		case "support.case.progress": {
@@ -312,6 +338,7 @@ function applySent(state, action) {
 			: state.caseRow;
 	return {
 		...state,
+		streaming: null,
 		messages: mergeMessages(state.messages, [data?.message, data?.reply]),
 		attachments: mergeAttachments(state.attachments, attachments),
 		status: ready ? "investigating" : state.status,
@@ -352,6 +379,7 @@ function caseReducer(state, action) {
 		case "error:set":
 			return {
 				...state,
+				streaming: null,
 				loading: false,
 				error: action.error ?? null,
 				errorStatus: action.status ?? null,
@@ -623,6 +651,7 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 		activity: state.activity,
 		attachments: state.attachments,
 		usage: state.usage,
+		streaming: state.streaming,
 		loading: state.loading,
 		feedback: state.feedback,
 		send,

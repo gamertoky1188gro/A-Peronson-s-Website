@@ -251,7 +251,45 @@ async function askClarifyingQuestion({ subject, messages, clientMessage, ready, 
 				const { makeClarificationProvider } = await import(
 					"../services/clarificationOpencodeProvider.js"
 				);
-				provider = makeClarificationProvider({ modelId: effective, caseId: caseRow?.id });
+				const streamId = `stream-${caseRow?.id ?? "case"}-${Date.now()}`;
+				// Live broadcast for the buyer's typing indicator. The text IS what
+				// the buyer will see as the persisted message — this puts it on the
+				// same wire the activity tree uses, nothing secret rides along.
+				const onChunk = (full) => {
+					if (typeof realtime.emitCaseEvent !== "function" || !caseRow?.id) {
+						return;
+					}
+					// The TITLE: marker the server strips at persist time must never
+					// ride the live wire either — strip it the same way, greedily to
+					// end-of-line so a half-typed marker can't leak.
+					const clean = String(full ?? "").replace(/\s*\bTITLE\s*:[^\n]*/giu, "");
+					try {
+						realtime.emitCaseEvent(
+							caseRow.id,
+							realtime.CASE_EVENTS?.message ?? "support.case.message",
+							{
+								caseId: caseRow.id,
+								message: {
+									id: streamId,
+									role: "assistant",
+									kind: "question",
+									content: clean.slice(0, MAX_MESSAGE_LENGTH * 4),
+									streaming: true,
+								},
+							},
+						);
+					} catch (error) {
+						logWarn("clarification stream chunk could not be published", {
+							caseId: caseRow.id,
+							error: error?.message || String(error),
+						});
+					}
+				};
+				provider = makeClarificationProvider({
+					modelId: effective,
+					caseId: caseRow?.id,
+					onChunk,
+				});
 				// Still booting? Kick off a background warm so the NEXT turn
 				// reaches the model. Fire-and-forget: spawning inside the
 				// intake request would hold it open for ~20s.

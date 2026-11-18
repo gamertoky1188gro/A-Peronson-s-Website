@@ -15,7 +15,12 @@ import { waitForAssistantTurn } from "./opencodeTurns.js";
 
 const TIMEOUT_MS = 60_000;
 
-export function makeClarificationProvider({ modelId, caseId, timeoutMs = TIMEOUT_MS } = {}) {
+export function makeClarificationProvider({
+	modelId,
+	caseId,
+	timeoutMs = TIMEOUT_MS,
+	onChunk = null,
+} = {}) {
 	if (!modelId) return null;
 	return async function clarificationOpencode(prompt, systemPrompt) {
 		const client = getRunningOpencodeClient();
@@ -36,6 +41,10 @@ export function makeClarificationProvider({ modelId, caseId, timeoutMs = TIMEOUT
 				timeoutMs,
 				pollIntervalMs: 800,
 				stablePollsToSettle: 6,
+				// Live broadcast for the buyer's typing indicator. onText carries
+				// the ACCUMULATED text of the turn so far; it fires once per poll
+				// only when the text actually grew.
+				onText: typeof onChunk === "function" ? (_delta, full) => onChunk(full) : null,
 			});
 			const text = sanitizeString(String(turn?.text || ""), 2000).trim();
 			if (turn.modelError || turn.timedOut || !text) {
