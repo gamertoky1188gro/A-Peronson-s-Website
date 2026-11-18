@@ -481,6 +481,7 @@ function AppRoutes() {
 				}
 			/>
 			<Route path="/support" element={<SupportLanding />} />
+			<Route path="/support/case" element={<Navigate to="/support/case/new" replace={true} />} />
 			<Route path="/support/case/:caseId" element={<SupportWorkspace />} />
 			<Route path="/support/case/:caseId/report" element={<SupportReportPreview />} />
 			<Route path="/support/case/:caseId/submitted" element={<SupportSubmitted />} />
