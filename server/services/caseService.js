@@ -94,7 +94,15 @@ export async function setCaseModel(caseId, modelId) {
 export async function setCaseSubject(caseId, subject) {
 	return prisma.supportCase.update({
 		where: { id: String(caseId) },
-		data: { subject: sanitizeString(String(subject || ""), 80) || null },
+		data: {
+			// React escapes at render time; the subject must stay RAW so a title
+			// like "What's happening?" renders as-written, not as entities.
+			subject:
+				String(subject || "")
+					.replace(/\r\n?/gu, " ")
+					.trim()
+					.slice(0, 80) || null,
+		},
 	});
 }
 

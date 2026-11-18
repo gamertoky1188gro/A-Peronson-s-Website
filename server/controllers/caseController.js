@@ -50,6 +50,17 @@ const MAX_FILE_PATH_LENGTH = 400;
 const MAX_MIME_TYPE_LENGTH = 120;
 const MAX_CLIENT_MESSAGE_SUMMARY_LENGTH = 600;
 
+// AI replies are escaped at render time by React, so the stored content must
+// stay RAW: no entity encoding (nothing decodes on this path) and newlines
+// preserved (the bubble renders them; Chips / Check tables are parsed per
+// line). Only control chars are stripped; length is bounded.
+function boundAssistantReply(value, max) {
+	return String(value ?? "")
+		.replace(/\r\n?/gu, "\n")
+		.trim()
+		.slice(0, max);
+}
+
 // The evidence namespace. Support evidence is uploaded through
 // POST /api/documents with entity_type "support_case" and entity_id
 // <caseId>, and it lands in the gated /uploads/support prefix. Nothing else
@@ -313,7 +324,7 @@ async function askClarifyingQuestion({ subject, messages, clientMessage, ready, 
 			maxRounds: MAX_CLARIFICATION_ROUNDS,
 			...(provider ? { provider } : {}),
 		});
-		const reply = sanitizeString(String(answer?.reply || ""), MAX_MESSAGE_LENGTH);
+		const reply = boundAssistantReply(String(answer?.reply || ""), MAX_MESSAGE_LENGTH);
 		if (!reply) {
 			throw new Error("caseConversationService returned no reply");
 		}
@@ -330,7 +341,7 @@ async function askClarifyingQuestion({ subject, messages, clientMessage, ready, 
 				"Thanks - that is enough for the investigation to start. The case is moving to investigation now."
 			: conversation?.FALLBACK_CLARIFYING_QUESTION || fallbackClarification(round);
 		return {
-			reply: sanitizeString(String(reply), MAX_MESSAGE_LENGTH),
+			reply: boundAssistantReply(String(reply), MAX_MESSAGE_LENGTH),
 			ready,
 			degraded: true,
 			title: null,

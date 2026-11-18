@@ -7,8 +7,9 @@
  * the provider returns null and the clarification service falls back to its
  * env chain, exactly as before this branch existed.
  */
+
+import { CASE_EVENTS, emitCaseEvent } from "../realtime/realtimeBus.js";
 import { logInfo, logWarn } from "../utils/logger.js";
-import { sanitizeString } from "../utils/validators.js";
 import { getRunningOpencodeClient } from "./assistantService.js";
 import { REPOSITORY_ROOT } from "./investigation/opencodeRuntime.js";
 import { waitForAssistantTurn } from "./opencodeTurns.js";
@@ -20,8 +21,31 @@ export function makeClarificationProvider({
 	caseId,
 	timeoutMs = TIMEOUT_MS,
 	onChunk = null,
+	onUsage = null,
 } = {}) {
 	if (!modelId) return null;
+	// The buyer's meter should tick for the clarifying chat too, not only
+	// for the investigation roles. Emit the same SSE envelope the queue uses.
+	if (typeof onUsage !== "function" && typeof caseId === "string" && caseId) {
+		onUsage = (usage) => {
+			try {
+				emitCaseEvent(caseId, CASE_EVENTS?.usage ?? "support.case.usage", {
+					caseId,
+					role: "intake",
+					used: Number(usage?.used) || 0,
+					output: Number(usage?.output) || 0,
+					reasoning: Number(usage?.reasoning) || 0,
+					cacheRead: Number(usage?.cacheRead) || 0,
+					cacheWrite: Number(usage?.cacheWrite) || 0,
+				});
+			} catch (error) {
+				logInfo("clarification usage ping could not be published", {
+					case_id: caseId,
+					reason: error?.message || String(error),
+				});
+			}
+		};
+	}
 	return async function clarificationOpencode(prompt, systemPrompt) {
 		const client = getRunningOpencodeClient();
 		if (!client) return null; // runtime cold — env chain takes over
@@ -45,8 +69,9 @@ export function makeClarificationProvider({
 				// the ACCUMULATED text of the turn so far; it fires once per poll
 				// only when the text actually grew.
 				onText: typeof onChunk === "function" ? (_delta, full) => onChunk(full) : null,
+				onUsage: typeof onUsage === "function" ? onUsage : null,
 			});
-			const text = sanitizeString(String(turn?.text || ""), 2000).trim();
+			const text = String(turn?.text || "").trim();
 			if (turn.modelError || turn.timedOut || !text) {
 				logWarn("clarification_opencode_failed", {
 					model: modelId,

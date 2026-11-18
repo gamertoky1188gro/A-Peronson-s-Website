@@ -1,5 +1,4 @@
 import { logInfo, logWarn } from "../utils/logger.js";
-import { sanitizeString } from "../utils/validators.js";
 import { MAX_CLARIFICATION_ROUNDS } from "./caseService.js";
 
 // The clarification conversation.
@@ -215,6 +214,18 @@ const CLARIFICATION_SYSTEM_PROMPT =
 
 function text(value) {
 	return String(value ?? "").trim();
+}
+
+// The intake reply is rendered by React (which escapes text natively), so
+// the stored content must stay RAW: no entity escaping (nothing decodes it
+// on this path, and the model's raw ' & " come through untouched), newlines
+// preserved (the bubble renders them, and Chips/Check tables are parsed per
+// line). Only control chars are stripped and the length is bounded.
+function boundPlain(value, max) {
+	return String(value ?? "")
+		.replace(/\r\n?/gu, "\n")
+		.trim()
+		.slice(0, max);
 }
 
 /**
@@ -593,7 +604,7 @@ async function answerClarification(options = {}) {
 				});
 				answer = null;
 			}
-			if (!sanitizeString(text(answer)) && configured) {
+			if (!text(answer) && configured) {
 				try {
 					answer = await withTimeout(
 						Promise.resolve().then(() => configured(prompt, systemPrompt)),
@@ -621,7 +632,7 @@ async function answerClarification(options = {}) {
 		}
 		const replyRaw = text(answer);
 		const extractedTitle = extractTitleFromAnswer(replyRaw, { enabled: wantsTitle });
-		const reply = sanitizeString(text(extractedTitle.cleaned), MAX_REPLY_CHARS);
+		const reply = boundPlain(text(extractedTitle.cleaned), MAX_REPLY_CHARS);
 		const result = { reply: reply || FALLBACK_CLARIFYING_QUESTION, ready: false };
 		if (wantsTitle) {
 			result.title =
