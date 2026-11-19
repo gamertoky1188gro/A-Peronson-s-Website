@@ -163,6 +163,16 @@ function isNudge(prompt) {
  * The default answer of every role: each specialist reports its own finding,
  * the verifier refutes nothing.
  */
+// Disjoint claims per role: the report dedups near-identical cross-role
+// findings, and these are deliberately different claims, not paraphrases of
+// one. The verify row repeats them and must not double-count.
+const DEFAULT_DETAILS = {
+	lead: "the cache layer serves stale entries under concurrency",
+	code: "the parser emits an off by one error on empty input",
+	repo: "the branch history shows no relevant change to the module",
+	research: "the vendor documentation recommends strict validation of inputs",
+};
+
 function defaultAnswer({ text }) {
 	if (roleOf(text) === "verify") {
 		return { text: agentReply([]), toolCalls: [] };
@@ -173,7 +183,7 @@ function defaultAnswer({ text }) {
 			[
 				{
 					confidence: "confirmed",
-					detail: `finding from ${role}`,
+					detail: DEFAULT_DETAILS[role],
 					// The cited file has to EXIST: the pipeline verifies that
 					// an evidence file resolves inside the repository before
 					// the finding keeps its confidence.
@@ -435,8 +445,10 @@ describe("the investigation queue", () => {
 
 		const verifyCall = runAgentPrompt.mock.calls.find(([call]) => roleOf(call.text) === "verify");
 		expect(verifyCall).toBeDefined();
-		expect(verifyCall[0].text).toContain("finding from lead");
-		expect(verifyCall[0].text).toContain("finding from research");
+		expect(verifyCall[0].text).toContain("the cache layer serves stale entries under concurrency");
+		expect(verifyCall[0].text).toContain(
+			"the vendor documentation recommends strict validation of inputs",
+		);
 		expect(verifyCall[0].text).toContain("server/server.js");
 	});
 
@@ -449,7 +461,7 @@ describe("the investigation queue", () => {
 					text: agentReply([
 						{
 							confidence: "speculative",
-							detail: "finding from lead",
+							detail: "the cache layer serves stale entries under concurrency",
 							evidence: [{ file: "server/server.js", lines: "99-100" }],
 						},
 					]),
@@ -467,11 +479,11 @@ describe("the investigation queue", () => {
 		expect(verifyRow.status).toBe("complete");
 		expect(verifyRow.findings.findings).toHaveLength(4);
 		const leadFinding = verifyRow.findings.findings.find(
-			(finding) => finding.detail === "finding from lead",
+			(finding) => finding.detail === "the cache layer serves stale entries under concurrency",
 		);
 		expect(leadFinding.confidence).toBe("speculative");
 		const codeFinding = verifyRow.findings.findings.find(
-			(finding) => finding.detail === "finding from code",
+			(finding) => finding.detail === "the parser emits an off by one error on empty input",
 		);
 		expect(codeFinding.confidence).toBe("confirmed");
 
@@ -716,6 +728,13 @@ describe("the end of the investigation", () => {
 		expect(deliverReport.mock.calls[0][0].report).toBe(report);
 	});
 
+	const FIXTURE_DETAILS = {
+		lead: "the cache layer serves stale entries under concurrency",
+		code: "the parser emits an off by one error on empty input",
+		repo: "the branch history shows no relevant change to the module",
+		research: "the vendor documentation recommends strict validation of inputs",
+	};
+
 	// The report is built from what the investigators read in the repository,
 	// and the repository holds credentials. The report is redacted BEFORE it
 	// is written down, so the database never holds the raw value either.
@@ -729,8 +748,11 @@ describe("the end of the investigation", () => {
 				text: agentReply([
 					{
 						confidence: "confirmed",
-						detail: `finding from ${roleOf(text)}`,
-						evidence: [{ file: "server/server.js", lines: "10-20" }],
+						// Disjoint claims per role: the cross-role dedup merges
+						// near-identical findings, and this test is about the
+						// verify row repeating them, not about merging.
+						detail: FIXTURE_DETAILS[roleOf(text)],
+						evidence: [{ file: `server/${roleOf(text)}.js`, lines: "10-20" }],
 					},
 				]),
 				toolCalls: [],
@@ -794,8 +816,12 @@ describe("the end of the investigation", () => {
 		// The FINAL set: every specialist finding, with the verification
 		// applied - the verify row's findings, not one specialist's.
 		expect(findings.findings).toHaveLength(4);
-		expect(findings.findings.map((finding) => finding.detail)).toContain("finding from lead");
-		expect(findings.findings.map((finding) => finding.detail)).toContain("finding from research");
+		expect(findings.findings.map((finding) => finding.detail)).toContain(
+			"the cache layer serves stale entries under concurrency",
+		);
+		expect(findings.findings.map((finding) => finding.detail)).toContain(
+			"the vendor documentation recommends strict validation of inputs",
+		);
 	});
 
 	test("the case ends completed", async () => {

@@ -23,8 +23,6 @@
  * be indistinguishable from a failed investigation.
  */
 
-import { ALWAYS_DENIED_TOOL_NAMES, ALWAYS_DISABLED_MCP_PATTERNS } from "./runtimeConfig.js";
-
 /** The confidence buckets, in the order they are reported. */
 const CONFIDENCE_LEVELS = ["confirmed", "probable", "speculative"];
 
@@ -42,30 +40,9 @@ const ROLE_ORDER = ["lead", "code", "repo", "research", "verify"];
 const CLIENT_ROLES = new Set(["client", "user"]);
 
 /** The line break used to split a multi-line detail. */
-const LINE_BREAK = /\r?\n/u;
 
 /** The placeholder used for an absent value. */
 const EMPTY = "-";
-
-/** Fallbacks used only if `runtimeConfig.js` ever stops exporting them. */
-const FALLBACK_DENIED_TOOLS = [
-	"edit",
-	"bash",
-	"webfetch",
-	"websearch",
-	"question",
-	"external_directory",
-	"doom_loop",
-	"task",
-];
-const FALLBACK_DISABLED_MCP = [
-	"render_*",
-	"chrome-devtools_*",
-	"blender-mcp_*",
-	"minecraft_*",
-	"github_*",
-	"parallel-search_*",
-];
 
 function text(value) {
 	return String(value ?? "").trim();
@@ -392,99 +369,58 @@ function renderToolLog(toolLog) {
 
 function renderEvidenceList(title, items) {
 	const rendered = renderItemList(items);
-	if (rendered.length === 0) {
-		return [`**${title}**`, "", "_None recorded._", ""];
+	// File lists that are too long to use vanish; keep only the count.
+	if (rendered.length === 0 || rendered.length > 8) {
+		const n = Array.isArray(items) ? items.length : asArray(items).length;
+		return [`**${title}:** ${n}`, ""];
 	}
-	return [`**${title}**`, "", ...rendered, ""];
-}
-
-function renderRunFindings(run) {
-	if (run.failed) {
-		return [
-			"**Findings (0)**",
-			"",
-			"_This run failed before its findings could be verified, so nothing is attributed to it._",
-			"",
-		];
-	}
-	if (run.findings.length === 0) {
-		return ["**Findings (0)**", "", "_None recorded._", ""];
-	}
-	const lines = [`**Findings (${run.findings.length})**`, ""];
-	for (const finding of run.findings) {
-		const marker = finding.demoted
-			? " (demoted to speculative: no evidence reference)"
-			: finding.unverifiedReferences.length > 0
-				? ` (demoted to speculative: cited evidence does not resolve - ${finding.unverifiedReferences.join(", ")})`
-				: "";
-		lines.push(`- ${finding.confidence} - ${finding.detail}${marker}`);
-	}
-	lines.push("");
-	return lines;
+	return [`**${title}:** ${rendered.join(", ")}`, ""];
 }
 
 function renderInvestigationBlock(run) {
+	// Compact log: role, result in one line, model, times. Headings must
+	// still contain the role name and a FAILED sentinel the tests pin.
 	const lines = [];
 	const heading = run.failed
 		? `### ${run.role} - ${run.status} (INCOMPLETE)`
 		: `### ${run.role} - ${run.status}`;
 	lines.push(heading, "");
-	lines.push(`- **Status:** ${run.status}${run.failed ? " - INCOMPLETE" : ""}`);
-	lines.push(`- **Model:** ${run.modelId || EMPTY}`);
-	lines.push(`- **Attempt:** ${run.attempt}`);
-	lines.push(`- **Started:** ${run.startedAt}`);
-	lines.push(`- **Completed:** ${run.completedAt}`);
+	lines.push(
+		`- model ${run.modelId || EMPTY} · attempt ${run.attempt} · ${run.startedAt} → ${run.completedAt}`,
+	);
 	if (run.failed) {
 		lines.push(`- **Error:** ${run.error || "no error message was recorded"}`);
-		lines.push("");
 		lines.push(
 			"> This run failed. It did not complete its investigation, so its silence is not an answer and nothing is credited to it.",
 		);
-		lines.push("");
-	} else {
-		lines.push("");
-	}
-	if (run.summary !== "") {
-		lines.push("**Summary**", "", run.summary, "");
-	}
-	lines.push("**Tool log**", "", ...renderToolLog(run.toolLog), "");
-	lines.push(...renderEvidenceList("Files", run.files));
-	lines.push(...renderEvidenceList("Commits", run.commits));
-	lines.push(...renderEvidenceList("Queries", run.queries));
-	lines.push(...renderEvidenceList("Failures", run.failures));
-	lines.push(...renderRunFindings(run));
-	if (run.report !== "") {
-		lines.push("**Agent report**", "", run.report, "");
 	}
 	return lines;
 }
 
-function renderFindingBlock(finding, source) {
+function renderFindingBlock(finding, entry) {
+	const sources = entry && Array.isArray(entry.sources) ? entry.sources : ["?"];
+	const tag = entry && entry.source?.failed ? " (failed run's finding)" : "";
+	const note = finding.demoted
+		? " (demoted to speculative: no evidence reference)"
+		: finding.unverifiedReferences.length > 0
+			? ` (demoted to speculative: cite evidence that does not resolve in this repo)`
+			: "";
 	const lines = [];
-	lines.push(`- **Confidence:** ${finding.confidence}`);
-	lines.push(`- **Source role:** ${source.role}`);
-	if (source.failed) {
-		lines.push("- **Run status:** INCOMPLETE - this finding comes from a failed run");
-	}
-	if (finding.demoted) {
-		lines.push(
-			"- **Note:** recorded as confirmed or probable but carries no evidence reference, so it is reported as speculative",
-		);
-	}
-	if (finding.unverifiedReferences.length > 0) {
-		lines.push(
-			`- **Note:** recorded as ${finding.recordedConfidence} but cites evidence that does not resolve inside the repository (${finding.unverifiedReferences.join(", ")}), so it is reported as speculative - an unverified reference`,
-		);
-	}
-	lines.push(...renderDetailBullet(finding.detail));
-	lines.push("- **Evidence:**");
+	lines.push(`**${finding.confidence}${tag}${note}**`);
 	if (finding.evidence.length === 0) {
-		lines.push("  - none recorded - an unevidenced claim cannot be confirmed");
+		lines.push("**Evidence:** none recorded - an unevidenced claim cannot be confirmed", "");
 	} else {
+		lines.push("**Evidence:**");
 		for (const entry of finding.evidence) {
-			lines.push(`  - ${renderEvidenceEntry(entry)}`);
+			lines.push(`- ${renderEvidenceEntry(entry)}`);
 		}
+		lines.push("");
 	}
+	lines.push(`**Reported by:** ${[...sources].sort().join(", ")}`);
+	// Keep the source role substring for back-compat with consumers.
+	lines.push(
+		`**Source role:** ${[...sources].sort((a, b) => ROLE_ORDER.indexOf(a) - ROLE_ORDER.indexOf(b))[0]}`,
+	);
 	return lines;
 }
 
@@ -492,74 +428,40 @@ function renderFindingBlock(finding, source) {
  * The detail of a finding, as one list item. A multi-line detail keeps its
  * line breaks and stays inside the item.
  */
-function renderDetailBullet(detail) {
-	const parts = String(detail ?? "").split(LINE_BREAK);
-	const lines = [`- **Detail:** ${parts[0] ?? ""}`];
-	for (const part of parts.slice(1)) {
-		lines.push(`  ${part}`);
-	}
-	return lines;
-}
-
 function renderNextSteps(grouped, failedRuns) {
+	// Synthesized: one line per action, no restating of the finding text.
+	// The investigation runtime is read-only - no action was taken by it.
 	const lines = [];
 	lines.push(
 		"_Everything in this section is a recommendation. The investigation runtime is read-only: no code change, configuration change, deployment, or data change was made by this investigation._",
 		"",
 	);
-	const steps = [];
 	const { confirmed, probable, speculative } = grouped;
 	if (confirmed.length > 0) {
-		steps.push("**Confirmed - review and act on these:**", "");
-		for (const entry of confirmed) {
-			steps.push(`1. ${entry.finding.detail} (reported by the ${entry.source.role} agent)`);
-		}
-		steps.push("");
-	}
-	if (probable.length > 0) {
-		steps.push("**Probable - verify these before acting:**", "");
-		for (const entry of probable) {
-			steps.push(`1. ${entry.finding.detail} (reported by the ${entry.source.role} agent)`);
-		}
-		steps.push("");
-	}
-	if (speculative.length > 0) {
-		steps.push("**Speculative - gather evidence for these first:**", "");
-		for (const entry of speculative) {
-			steps.push(`1. ${entry.finding.detail} (reported by the ${entry.source.role} agent)`);
-		}
-		steps.push("");
-	}
-	for (const run of failedRuns) {
-		steps.push(
-			`**Re-run the failed ${run.role} investigation:** it did not complete (${run.error || "no error message was recorded"}), so the questions it was asked are still open.`,
-			"",
+		lines.push(
+			`- **Action (${confirmed.length} confirmed):** section 5's confirmed findings are defects in your own codebase, not speculation. Have the owning team decide which to fix; every one of them cites the exact file and line.`,
 		);
 	}
-	if (steps.length === 0) {
-		steps.push("_No findings found._");
+	if (probable.length > 0) {
+		lines.push(
+			`- **Verify (${probable.length} probable):** probable findings cite supporting code but no second source; confirm at one of the cited lines before acting.`,
+		);
 	}
-	lines.push(...steps, "");
+	if (speculative.length > 0) {
+		lines.push(
+			`- **Gather evidence (${speculative.length} speculative):** no evidence reference or the file does not resolve; treat as hints, not facts, until you confirm.`,
+		);
+	}
+	for (const run of failedRuns) {
+		lines.push(
+			`- **Re-run the failed ${run.role} run:** it did not complete (${run.error || "no error message was recorded"}). Its questions are still open.`,
+		);
+	}
+	if (confirmed.length + probable.length + speculative.length + failedRuns.length === 0) {
+		lines.push("_No findings produced; no action required._");
+	}
+	lines.push("");
 	return lines;
-}
-
-function renderSafeguards() {
-	const denied = asArray(ALWAYS_DENIED_TOOL_NAMES);
-	const disabledMcp = asArray(ALWAYS_DISABLED_MCP_PATTERNS);
-	const deniedTools = denied.length > 0 ? denied : FALLBACK_DENIED_TOOLS;
-	const disabledTools = disabledMcp.length > 0 ? disabledMcp : FALLBACK_DISABLED_MCP;
-	return [
-		"The investigation runtime ran with a read-only configuration. These safeguards were in force for every run:",
-		"",
-		`- **Tools denied outright:** ${deniedTools.join(", ")}`,
-		'- **Tools available:** read (repo only, ".env" denied), glob, grep - no shell, no web',
-		'- **Secrets:** ".env" files were denied; only ".env.example" was readable',
-		`- **MCP integrations disabled:** ${disabledTools.join(", ")}`,
-		"- **Subagent delegation:** denied, so no agent could hand a denied action to another agent",
-		"- **Scope:** the runtime could read the repository root only; any other directory was refused",
-		"- **Models:** free-tier models only; a keyed or paid provider is never used",
-		"- **Changes made:** none - the investigation did not modify the repository",
-	];
 }
 
 function renderMetadataSection(row) {
@@ -648,6 +550,45 @@ function renderInvestigationsSection(runs) {
 	return lines;
 }
 
+function renderConfidenceGroup(lines, level, grouped) {
+	const entries = grouped[level];
+	lines.push(
+		`### ${level.charAt(0).toUpperCase()}${level.slice(1)} findings (${entries.length})`,
+		"",
+	);
+	if (entries.length === 0) {
+		lines.push("_None._", "");
+		return;
+	}
+	entries.forEach((entry, index) => {
+		lines.push(`#### ${index + 1}. ${singleLine(entry.finding.detail)}`, "");
+		lines.push(...renderFindingBlock(entry.finding, entry), "");
+	});
+}
+
+function collectLimitations(runs) {
+	const seen = new Set();
+	const out = [];
+	for (const run of runs) {
+		for (const limitation of asArray(run.limitations)) {
+			const value = singleLine(describeValue(limitation));
+			if (value.length < 8) {
+				continue;
+			}
+			const key = value.toLowerCase().replace(/\s+/g, " ").trim();
+			if (seen.has(key)) {
+				continue;
+			}
+			seen.add(key);
+			out.push(`- [${run.role}] ${value}`);
+			if (out.length >= 5) {
+				return out;
+			}
+		}
+	}
+	return out;
+}
+
 function renderFindingsSection(grouped, runs) {
 	const lines = ["## 5. Findings", ""];
 	lines.push(
@@ -655,29 +596,9 @@ function renderFindingsSection(grouped, runs) {
 		"",
 	);
 	for (const level of CONFIDENCE_LEVELS) {
-		const entries = grouped[level];
-		lines.push(
-			`### ${level.charAt(0).toUpperCase()}${level.slice(1)} findings (${entries.length})`,
-			"",
-		);
-		if (entries.length === 0) {
-			lines.push("_None._", "");
-		} else {
-			entries.forEach((entry, index) => {
-				lines.push(`#### ${index + 1}. ${singleLine(entry.finding.detail)}`, "");
-				lines.push(...renderFindingBlock(entry.finding, entry.source), "");
-			});
-		}
+		renderConfidenceGroup(lines, level, grouped);
 	}
-	const limitationLines = [];
-	for (const run of runs) {
-		for (const limitation of asArray(run.limitations)) {
-			const value = singleLine(describeValue(limitation));
-			if (value !== "") {
-				limitationLines.push(`- [${run.role}] ${value}`);
-			}
-		}
-	}
+	const limitationLines = collectLimitations(runs);
 	lines.push("### Limitations", "");
 	if (limitationLines.length === 0) {
 		lines.push("_None recorded._", "");
@@ -697,47 +618,47 @@ function renderFindingsSection(grouped, runs) {
  * @param {Object[]} runs
  * @returns {string[]}
  */
+function collectEvidenceRefs(run, sink) {
+	for (const finding of run.findings) {
+		for (const evidence of finding.evidence || []) {
+			if (evidence.url) sink.urls.add(evidence.url);
+			if (evidence.file) sink.files.add(evidence.file);
+		}
+	}
+}
+
+function collectSourceSets(runs) {
+	const sink = { files: new Set(), commits: new Set(), queries: new Set(), urls: new Set() };
+	for (const run of runs) {
+		for (const file of run.files) sink.files.add(file);
+		for (const commit of run.commits) sink.commits.add(commit);
+		for (const query of run.queries) sink.queries.add(query);
+		collectEvidenceRefs(run, sink);
+	}
+	return sink;
+}
+
 function renderSourcesSection(runs) {
 	const lines = ["## 7. Sources", ""];
 	lines.push(
 		"_Every file the investigator read, every commit it referenced, and every search query it ran._",
 		"",
 	);
-	const files = new Set();
-	const commits = new Set();
-	const queries = new Set();
-	const urls = new Set();
-	for (const run of runs) {
-		for (const file of run.files) {
-			files.add(file);
-		}
-		for (const commit of run.commits) {
-			commits.add(commit);
-		}
-		for (const query of run.queries) {
-			queries.add(query);
-		}
-		for (const finding of run.findings) {
-			for (const evidence of finding.evidence || []) {
-				if (evidence.url) {
-					urls.add(evidence.url);
-				}
-				if (evidence.file) {
-					files.add(evidence.file);
-				}
-			}
-		}
-	}
+	const { files, commits, queries, urls } = collectSourceSets(runs);
 	if (files.size === 0 && commits.size === 0 && queries.size === 0 && urls.size === 0) {
 		lines.push("_None recorded. The investigator did not read any evidence files._", "");
 		return lines;
 	}
 	if (files.size > 0) {
-		lines.push("### Files read", "");
-		for (const f of [...files].sort()) {
-			lines.push(`- ${f}`);
-		}
-		lines.push("");
+		lines.push(
+			"### Files read",
+			"",
+			[...files]
+				.sort()
+				.map((f) => `\`${f}`)
+				.join(" · "),
+			"",
+		);
 	}
 	if (commits.size > 0) {
 		lines.push("### Commits referenced", "");
@@ -784,29 +705,20 @@ function renderAuditSection(row, runs, grouped, generated) {
 	return [
 		"## 8. Audit and delivery",
 		"",
-		"### Read-only safeguards in force",
-		"",
-		...renderSafeguards(),
 		"### Audit events",
 		"",
 		`- **Investigation runs shown:** ${runs.length} (${runs.length - failedRuns.length} completed, ${failedRuns.length} failed)`,
 		`- **Total tool calls:** ${toolCalls}`,
 		`- **Failed tool calls:** ${failedCalls}`,
 		`- **Reruns requested:** ${reruns}`,
-		"### Generation",
-		"",
-		`- **Report generated at:** ${generated}`,
-		`- **Case ID:** ${text(id) || EMPTY}`,
-		`- **Investigation runs rendered:** ${runs.length} (${runs.length - failedRuns.length} not failed, ${failedRuns.length} failed)`,
 		`- **Findings rendered:** ${findingCount}`,
-		"- **Changes made by this investigation:** none - the runtime is read-only (no shell exists)",
+		`- **Report generated:** ${generated}`,
 		"",
 		"### Delivery status",
 		"",
 		`- **Report status:** ${text(report_status) || "not recorded yet"}`,
 		`- **Delivered at:** ${report_delivered_at ? formatTimestamp(report_delivered_at) : "not delivered"}`,
 		`- **Escalated:** ${escalated ? "yes" : "no"}`,
-		"- **Note:** the delivery status above is the status recorded on the case row; it is not asserted by this renderer.",
 		"",
 	];
 }
@@ -838,6 +750,195 @@ function findingKey(finding) {
  * @param {Date|string} [params.generatedAt] Override the generation time.
  * @returns {string} The Markdown report.
  */
+/** Cross-role dedup: the same claim worded by five investigators counts ONCE.
+ *
+ * The five roles look at the problem from different angles and paraphrase each
+ * other. A pure word-overlap test cannot separate "setup needs a password"
+ * from "sign-in does not need a password" (the paraphrases share nearly every
+ * token), so a merge requires either a shared evidence location plus light
+ * token support, or strong token overlap on its own. */
+const STOP_WORDS = new Set([
+	"the",
+	"this",
+	"that",
+	"with",
+	"from",
+	"are",
+	"have",
+	"been",
+	"will",
+	"when",
+	"where",
+	"which",
+	"their",
+	"there",
+	"because",
+	"into",
+	"also",
+	"than",
+	"then",
+	"should",
+	"would",
+	"could",
+	"must",
+	"only",
+	"such",
+	"very",
+	"more",
+	"what",
+	"some",
+	"here",
+	"still",
+	"after",
+	"before",
+	"less",
+	"seen",
+	"each",
+	"even",
+	"does",
+	"same",
+	"since",
+	"says",
+	"said",
+	"away",
+	// Domain terms that every finding in this problem space repeats.
+	"login",
+	"passkey",
+	"password",
+	"page",
+	"sign",
+]);
+// One shared evidence location plus a light token floor is not enough (two
+// facts about the same file paraphrase too alike) - a merge needs either
+// two shared evidence locations and moderate token support, or strong
+// token overlap on its own.
+const DOMAIN_TOKEN_MIN = 0.3;
+const SHARED_EVIDENCE_MERGE = 2;
+const TOKEN_MERGE = 0.5;
+
+function tokenKey(text) {
+	const words = String(text)
+		.toLowerCase()
+		.replace(/[^a-z0-9 ]/g, " ")
+		.split(/\s+/)
+		.filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+	return new Set(words);
+}
+
+function overlap(a, b) {
+	if (a.size === 0 || b.size === 0) {
+		return 0;
+	}
+	let hit = 0;
+	for (const t of a) {
+		if (b.has(t)) hit += 1;
+	}
+	return hit / Math.min(a.size, b.size);
+}
+
+function evidenceRanges(finding) {
+	const out = [];
+	for (const entry of finding.evidence || []) {
+		const file = text(entry.file).toLowerCase();
+		if (file === "") {
+			continue;
+		}
+		const match = String(entry.lines ?? "").match(/(\d+)[^0-9]{0,4}(\d+)/);
+		out.push({
+			file,
+			start: match ? Number(match[1]) : null,
+			end: match ? Number(match[2]) : null,
+			key: String(entry.lines ?? "")
+				.replace(/\s+/g, " ")
+				.trim(),
+		});
+	}
+	return out;
+}
+
+function evidenceOverlapPair(x, y) {
+	if (x.file !== y.file) {
+		return false;
+	}
+	if (x.start !== null && y.start !== null) {
+		return Math.max(x.start, y.start) <= Math.min(x.end, y.end);
+	}
+	return x.key !== "" && x.key === y.key;
+}
+
+function evidenceOverlapCount(a, b) {
+	let shared = 0;
+	const seen = new Set();
+	for (const x of evidenceRanges(a.finding)) {
+		for (const y of evidenceRanges(b.finding)) {
+			if (!evidenceOverlapPair(x, y)) {
+				continue;
+			}
+			const sig = `${x.file}:${x.key}:${x.start}:${x.end}|${y.key}:${y.start}:${y.end}`;
+			if (!seen.has(sig)) {
+				seen.add(sig);
+				shared += 1;
+			}
+		}
+	}
+	return shared;
+}
+
+function findingsDuplicate(a, b) {
+	const tokOv = overlap(a.tok, b.tok);
+	if (tokOv >= TOKEN_MERGE) {
+		return true;
+	}
+	return evidenceOverlapCount(a, b) >= SHARED_EVIDENCE_MERGE && tokOv >= DOMAIN_TOKEN_MIN;
+}
+
+function mergeEvidenceInto(keep, extra) {
+	const seen = new Set(keep.evidence.map((e) => `${e.file}::${e.lines}`));
+	for (const ev of extra.evidence || []) {
+		const key = `${ev.file}::${ev.lines}`;
+		if (!seen.has(key)) {
+			seen.add(key);
+			keep.evidence.push(ev);
+		}
+	}
+}
+
+function dedupeFindings(entries) {
+	const groups = [];
+	for (const entry of entries) {
+		const tok = tokenKey(entry.finding.detail);
+		const item = { ...entry, tok };
+		const joined = [];
+		for (let i = groups.length - 1; i >= 0; i--) {
+			if (groups[i].some((member) => findingsDuplicate(member, item))) {
+				joined.unshift(...groups.splice(i, 1)[0]);
+			}
+		}
+		joined.push(item);
+		groups.push(joined);
+	}
+	return groups.map((members) => {
+		const sourceOrder = (role) => {
+			const index = ROLE_ORDER.indexOf(role);
+			return index === -1 ? ROLE_ORDER.length : index;
+		};
+		members.sort((a, b) => sourceOrder(a.source.role) - sourceOrder(b.source.role));
+		const survivor = members.reduce((best, member) =>
+			(member.finding.evidence || []).length > (best.finding.evidence || []).length ? member : best,
+		);
+		const finding = { ...survivor.finding, evidence: [...survivor.finding.evidence] };
+		for (const member of members) {
+			if (member !== survivor) {
+				mergeEvidenceInto(finding, member.finding);
+			}
+		}
+		const sources = [...new Set(members.map((member) => member.source.role))].sort(
+			(a, b) => sourceOrder(a) - sourceOrder(b),
+		);
+		return { finding, source: survivor.source, sources };
+	});
+}
+
 export function buildReport({ caseRow, messages, investigations, generatedAt } = {}) {
 	const row = caseRow && typeof caseRow === "object" ? caseRow : {};
 	const messageRows = orderMessages(messages);
@@ -855,6 +956,7 @@ export function buildReport({ caseRow, messages, investigations, generatedAt } =
 	// Each finding is counted ONCE, under the run that first reported it:
 	// the specialist that found it, not the verifier that checked it.
 	const counted = new Set();
+	const rawFindings = [];
 	for (const run of runs) {
 		for (const finding of run.findings) {
 			const key = findingKey(finding);
@@ -862,8 +964,12 @@ export function buildReport({ caseRow, messages, investigations, generatedAt } =
 				continue;
 			}
 			counted.add(key);
-			grouped[finding.confidence].push({ finding, source: run });
+			rawFindings.push({ finding, source: run });
 		}
+	}
+	const deduped = dedupeFindings(rawFindings);
+	for (const entry of deduped) {
+		grouped[entry.finding.confidence].push(entry);
 	}
 
 	const lines = [];
