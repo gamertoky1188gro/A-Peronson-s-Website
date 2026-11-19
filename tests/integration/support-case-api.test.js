@@ -396,21 +396,26 @@ describe("support case API (real router, real controller)", () => {
 		expect(after.body.messages).toHaveLength(0);
 	});
 
-	it("GET case returns a narrow investigations projection", async () => {
+	it("GET case returns findings in the investigations projection", async () => {
 		const created = await createCase();
 		state.investigations.push({
-			id: "inv-1",
+			id: "inv-verify",
 			case_id: created.id,
-			role: "repo",
+			role: "verify",
 			status: "complete",
 			started_at: new Date("2026-11-17T10:00:00Z"),
 			completed_at: new Date("2026-11-17T10:05:00Z"),
 			tool_log: [
 				{ tool: "read", status: "completed", kind: "read", label: "Reading walletService.js" },
 			],
-			// Deliberately present on the row, absent from the wire: the
-			// projection must not leak findings, prompts, evidence or errors.
-			findings: ["secret finding"],
+			findings: [
+				{
+					confidence: "confirmed",
+					detail: "the checkout route lacks a timeout",
+					evidence: [{ file: "server/routes/checkout.js", lines: "88-104" }],
+				},
+			],
+			// Sensitive server-side fields that must NOT cross the wire.
 			error: "secret error",
 		});
 
@@ -421,10 +426,22 @@ describe("support case API (real router, real controller)", () => {
 		expect(res.body.investigations).toHaveLength(1);
 		expect(Object.keys(res.body.investigations[0]).sort()).toEqual([
 			"completed_at",
+			"findings",
 			"role",
 			"status",
 			"tool_log",
 		]);
+		// Findings are scrubbed to a safe shape: confidence/detail/evidence,
+		// with malformed entries degraded rather than leaked raw.
+		expect(res.body.investigations[0].findings).toEqual([
+			{
+				confidence: "confirmed",
+				detail: "the checkout route lacks a timeout",
+				evidence: [{ file: "server/routes/checkout.js", lines: "88-104", commit: "", url: "" }],
+			},
+		]);
+		// server-side-only fields stay off the wire.
+		expect(res.body.investigations[0].error).toBeUndefined();
 		expect(res.body.investigations[0].tool_log[0]).toMatchObject({
 			kind: "read",
 			label: "Reading walletService.js",

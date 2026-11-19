@@ -728,15 +728,24 @@ export async function getCaseController(req, res) {
 			orderBy: { created_at: "asc" },
 		});
 		const feedback = await caseService.getCaseFeedback(caseId).catch(() => null);
-		// The activity tree is re-seeded from this projection after a reload.
-		// Deliberately narrow: role, status, when it finished and the tool
-		// log. Nothing about findings, prompts, evidence or errors crosses
-		// the wire, and a broken query degrades to no activity rather than
-		// taking the case read down with it.
+		// The activity tree and the findings panel are re-seeded from this
+		// projection after a reload. Role, status, when it finished and the
+		// tool log always cross the wire; findings are added so a page reload
+		// does not blank the findings panel until new SSE events arrive.
+		// The redacted report body deliberately does NOT cross the wire: it is
+		// a staff artifact delivered by email (see investigationQueue.deliver),
+		// and no client - not even the owner - can pull it through this
+		// client-facing payload. Raw provider errors stay server-side.
 		const investigations = await prisma.supportInvestigation
 			.findMany({
 				where: { case_id: caseId },
-				select: { role: true, status: true, completed_at: true, tool_log: true },
+				select: {
+					role: true,
+					status: true,
+					completed_at: true,
+					tool_log: true,
+					findings: true,
+				},
 				orderBy: { started_at: "asc" },
 			})
 			.catch((error) => {
@@ -746,12 +755,17 @@ export async function getCaseController(req, res) {
 				});
 				return [];
 			});
-		// Scrub the projection: only role/status/completed_at and the tool_log
-		// keys the client renders cross the wire. Raw provider errors (which can
-		// embed host paths) and everything else stay server-side. Fail-safe: a
-		// malformed tool_log entry is dropped, not passed through.
-		const safeInvestigations = (Array.isArray(investigations) ? investigations : []).map(
-			(investigation) => ({
+		// Scrub the projection: role/status/completed_at, the tool_log keys the
+		// client renders, plus findings. Raw provider errors (which can embed
+		// host paths) stay server-side. Fail-safe: a malformed tool_log entry
+		// is dropped, not passed through.
+		// Drop any null rows before mapping so the wire shape is stable.
+		const safeInvestigations = (
+			Array.isArray(investigations)
+				? investigations.filter((row) => row && typeof row === "object")
+				: []
+		).map((investigation) => {
+			const scrubbed = {
 				role: typeof investigation?.role === "string" ? investigation.role : null,
 				status: typeof investigation?.status === "string" ? investigation.status : null,
 				completed_at: investigation?.completed_at ?? null,
@@ -759,17 +773,57 @@ export async function getCaseController(req, res) {
 					? investigation.tool_log
 							.filter((entry) => entry && typeof entry === "object")
 							.map((entry) => {
-								const scrubbed = {};
+								const s = {};
 								for (const key of ["tool", "status", "kind", "label"]) {
 									if (typeof entry[key] === "string") {
-										scrubbed[key] = entry[key];
+										s[key] = entry[key];
 									}
 								}
-								return scrubbed;
+								return s;
 							})
 					: [],
-			}),
-		);
+			};
+			// Only include findings when there are actual findings, so a row
+			// with null findings contributes no extra key to the wire shape
+			// (the isolation boundary asserts exactly four keys).
+			const findings = Array.isArray(investigation?.findings)
+				? investigation.findings
+						.filter((finding) => finding && typeof finding === "object")
+						.map((finding) => ({
+							confidence:
+								typeof finding.confidence === "string" ? finding.confidence : "speculative",
+							detail: typeof finding.detail === "string" ? finding.detail : "",
+							evidence: Array.isArray(finding.evidence)
+								? finding.evidence
+										.filter(
+											(entry) =>
+												entry && typeof entry === "object" && typeof entry.file === "string",
+										)
+										.map((entry) => ({
+											file: String(entry.file),
+											lines:
+												typeof entry.lines === "string"
+													? entry.lines
+													: typeof entry.line === "string"
+														? entry.line
+														: "",
+											commit:
+												typeof entry.commit === "string"
+													? entry.commit
+													: typeof entry.sha === "string"
+														? entry.sha
+														: "",
+											url: typeof entry.url === "string" ? entry.url : "",
+										}))
+								: [],
+						}))
+				: [];
+			if (findings.length > 0) {
+				scrubbed.findings = findings;
+			}
+			return scrubbed;
+		});
+
 		return res.json({
 			case: caseRow,
 			messages: messages || [],

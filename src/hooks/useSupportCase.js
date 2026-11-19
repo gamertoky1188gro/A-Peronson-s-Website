@@ -364,6 +364,11 @@ function caseReducer(state, action) {
 				status: action.status ?? null,
 				attachments: mergeAttachments(state.attachments, action.attachments),
 				feedback: action.feedback ?? null,
+				// Re-hydrate findings and the redacted report from the server
+				// projection so they survive a page reload (SSE findings and
+				// report events only arrive while the page is open).
+				findings: Array.isArray(action.findings) ? action.findings : [],
+				report: action.report ?? state.report,
 				activity: mergeActivity(
 					state.activity,
 					seedActivityFromInvestigations(action.investigations),
@@ -422,6 +427,22 @@ async function loadCaseAction(caseId, dispatch, supportToken = "") {
 			headers: supportTokenHeaders(supportToken),
 			skipSessionClear: Boolean(supportToken),
 		});
+		// Aggregate every investigation row's findings into the flat
+		// { role, finding } shape the client state expects, so a page reload
+		// re-hydrates the findings panel instead of starting empty.
+		const allFindings = (Array.isArray(data?.investigations) ? data.investigations : []).flatMap(
+			(inv) => {
+				const role = inv?.role ?? null;
+				const findings = Array.isArray(inv?.findings) ? inv.findings : [];
+				return findings.map((finding) => ({ role, finding }));
+			},
+		);
+		// The redacted report text lives on the verify investigation row.
+		const verifyInv = (Array.isArray(data?.investigations) ? data.investigations : []).find(
+			(inv) => inv?.role === "verify",
+		);
+		const persistedReport = verifyInv?.report ?? null;
+
 		dispatch({
 			type: "load:ok",
 			caseRow: data?.case ?? null,
@@ -430,6 +451,10 @@ async function loadCaseAction(caseId, dispatch, supportToken = "") {
 			attachments: data?.attachments,
 			feedback: data?.feedback ?? null,
 			investigations: data?.investigations,
+			findings: allFindings,
+			report: persistedReport
+				? { report: persistedReport, reportStatus: data?.case?.report_status ?? null }
+				: null,
 		});
 		return data?.case ?? null;
 	} catch (err) {
