@@ -383,96 +383,32 @@ async function emitReportReady(caseId, report, reportStatus) {
 // Escalation
 // ---------------------------------------------------------------------------
 
-// A finding with no `category` of its own is classified from its detail
-// text. The security list is deliberately phrase-based rather than a bare
-// word list, so an ordinary confirmed finding ("the delete button does
-// nothing") never escalates.
-const SECURITY_CATEGORY_RE =
-	/\b(security|vulnerab\w*|exploit\w*|injection|breach|unauthori[sz]ed|unauthenticated|privilege\w*|traversal|csrf|xss|ssrf|rce|xxe|ssti|idor|leak\w*|exposure|hardcoded|plaintext|malware|ransomware|attacker)\b/u;
-const DATA_LOSS_CATEGORY_RE =
-	/\b(data[\s_-]?(loss|leak|breach|exposure|deletion)|loss[\s_-]?of[\s_-]?data|destructive[\s_-]?(delete|operation)|integrity[\s_-]?loss)\b/u;
+// Finding classification (kind + severity) lives in ./classification.js so
+// the report renderer can classify a finding without importing the mail
+// stack. Re-exported here so this module's public API is unchanged.
+import { classifyFinding, severityOf } from "./classification.js";
+
+export { classifyFinding, severityOf };
 
 /**
- * A finding that DENIES the harm is not evidence of the harm.
+ * File a GitHub issue for every CONFIRMED security / data-loss finding.
  *
- * The measured false positive: a CONFIRMED finding that correctly described
- * the API surface -
+ * A confirmed finding cites file, lines and commit; filing it by hand is the
+ * step where good investigations die. This files them through the GitHub REST
+ * API with the SAME token the investigation runtime uses, so no new credential
+ * is introduced.
  *
- *   "The only DELETE route in documentRoutes.js is DELETE /api/documents/:documentId,
- *    which is a hard delete of a Document row and IS NOT CALLED from ContractVault."
+ * Fail-safe by design:
+ *  - off unless GITHUB_SUPPORT_REPO (`owner/repo`) AND
+ *    GITHUB_PERSONAL_ACCESS_TOKEN are both set - the deployed configuration
+ *    does not set them, so this is opt-in for the owner;
+ *  - one issue per finding, capped at GITHUB_ISSUES_MAX (default 3);
+ *  - a failed issue is logged and skipped; it never delays or fails delivery.
  *
- * - was classified as a data-loss issue and escalated, because the phrase
- * "hard delete" appears in it. The finding says the OPPOSITE of an incident:
- * it says the destructive route is never reached. Escalating that pages the
- * staff for a missing feature.
- *
- * The list is deliberately narrow: it names the ways a finding says the harm
- * does not HAPPEN (not called, never called, no route, cannot delete), not the
- * ways a finding might merely mention a negative. A confirmed incident - "the
- * archive endpoint permanently deletes every contract" - contains none of
- * them and still escalates.
- *
- * "does nothing" belongs here for the same reason: "the delete button does
- * nothing when clicked" is the measured benign complaint, and it names the
- * harm in the very words a data-loss pattern looks for.
+ * @param {string} caseId
+ * @param {unknown} findings The final findings (array or wrapper).
+ * @returns {Promise<{created: number, skipped: number}>}
  */
-const HARM_DENIAL_RE =
-	/\b(?:is|are|was|were)\s+not\s+(?:called|used|wired|invoked|reached|executed|triggered|connected|linked)\b|\bnever\s+(?:called|used|wired|invoked|reached|executed|triggered|connected)\b|\bnot\s+(?:wired|connected|implemented|reachable|called\s+from|invoked\s+from|triggered\s+from)\b|\bno\s+(?:route|endpoint|button|path|server\s+endpoint|call)\b|\bcannot\s+(?:be\s+)?(?:delete|removed?|destroyed|wiped|erased|purged|leaked|exposed)\b|\bdoes\s+not\s+(?:delete|remove|destroy|wipe|erase|purge|leak|expose)\b|\bdoes\s+nothing\b|\bdoes\s+not\s+work\b|\b(?:has|have|had)\s+no\s+effect\b|\bno[\s-]?op\b/u;
-
-const DATA_NOUN_RE =
-	/\b(record|records|row|rows|data|file|files|document|documents|user|users|order|orders|contract|contracts|message|messages|table|tables|entry|entries|history|payment|payments|invoice|invoices|backup|backups)\b/u;
-// The present and future forms matter: a finding that says the endpoint
-// DELETES every contract is reporting a live harm, and only the past tense
-// was matched before.
-const DATA_LOSS_VERB_RE =
-	/\b(delet(?:e|es|ed|ing)|remov(?:e|es|ed|ing)|wip(?:e|es|ed)|er(?:a|as)se(?:d|s)?|destroy(?:s|ed|ing)?|lost|loss|missing|gone|vanish(?:ed|es)?|disappear(?:s|ed|ing)?|corrupt(?:s|ed|ing)?|truncat(?:e|es|ed)|overwritt?(?:e|en)|clobb(?:er|ered|ering)|leak(?:s|ed|ing)?|purg(?:e|es|ed|ing)|drop(?:s|ped|ping))\b/u;
-
-const SECURITY_PATTERNS = [
-	/\bsecurit(y|ies)\b/u,
-	/\bvulnerab(le|ility|ilities)\b/u,
-	/\bexploit(able|ed|s|ation)?\b/u,
-	/\b(sqli?|nosql|ldap|command|code|html|template|xpath|prototype|second[\s-]?order|blind)[\s-]?injection\b/u,
-	/\b(xss|csrf|ssrf|xxe|ssti|rce|idor|lfi|rfi)\b/u,
-	/\bcross[\s-]?site\b/u,
-	/\bremote code execution\b/u,
-	/\bprivilege escalation\b/u,
-	/\b(auth|authentication|authorization|authn|authz|access control|permission)s?\s+(check\s+)?(bypass|is bypassed|are bypassed)\b/u,
-	/\bbypass(es|ed|ing)?\s+(the\s+)?(auth|authentication|authorization|access control|permission|login)\b/u,
-	/\bmissing (authorization|authentication|access control)\b/u,
-	// "has no authorization check" is the same defect as "missing
-	// authorization", and it is how the code under investigation words it.
-	/\b(no|without|missing|lacks?|lacking|omits?|omitting)\s+(an?\s+)?(authorization|authentication|authz|authn|access[\s-]?control|permission)\b/u,
-	/\bunauthenticated\b/u,
-	/\bunauthori[sz]ed\b/u,
-	/\barbitrary (file|command|code|path|read|write|object)\b/u,
-	/\b(path|directory) traversal\b/u,
-	/\bworld[\s-]?readable\b/u,
-	/\bexposed\b[^.]{0,60}\b(api|endpoint|route|secret|key|password|credential|credentials|database|file|files|admin)\b/u,
-	/\b(secret|secrets|credential|credentials|password|passwords|api[\s-]?key|private key|tokens?)\b[^.]{0,60}\b(exposed|leaked|disclosed|committed|hardcoded|in the repo|in the source|plain ?text|plaintext)\b/u,
-	/\bhardcoded\b/u,
-	/\b(password|passwords|secret|secrets|credential|credentials|tokens?)\b[^.]{0,40}\bin plain ?text\b/u,
-	/\bunencrypted\b/u,
-	/\b(no|missing|without|lacks?|lacking)\s+encryption\b/u,
-	/\bweak (password|hash|encryption|cipher|token|secret|randomness)\b/u,
-	/\b(sensitive|personal|confidential|private)\s+(data|information|details|records?)\b[^.]{0,60}\b(exposed|leaked|public|world|unencrypted|unprotected|readable)\b/u,
-	/\b(sensitive|personal|confidential|private)\s+(data|information|details|records?)\b[^.]{0,60}\b(is|are|was|were)\s+(returned|sent|logged|printed|visible)\b/u,
-	/\battacker\b/u,
-	/\bmalicious\b/u,
-	/\bsession (fixation|hijack)\b/u,
-	/\bmfa (bypass|circumvention)\b/u,
-	/\b(missing|absent|broken)\s+csrf\b/u,
-];
-
-const DATA_LOSS_PATTERNS = [
-	/\bdata[\s-]?(loss|leak|breach|exposure|deletion)\b/u,
-	/\bloss of data\b/u,
-	// The separator is a hyphen as well as a space: the code under
-	// investigation writes "hard-deletes", not "hard delete".
-	/\b(permanently|hard|bulk|mass)[\s_-]?delet(?:e|es|ed|ing)\b/u,
-	new RegExp(`${DATA_LOSS_VERB_RE.source}[^.]{0,60}${DATA_NOUN_RE.source}`),
-	new RegExp(`${DATA_NOUN_RE.source}[^.]{0,60}${DATA_LOSS_VERB_RE.source}`),
-];
-
 /**
  * Accepts the findings as an array, as the `{ summary, findings, limitations }`
  * wrapper the investigation row stores, or as a JSON string of either.
@@ -563,35 +499,6 @@ async function notifyStaffOfEscalation({ caseId, category, detail, triggerCount,
 	return staff.length;
 }
 
-// ---------------------------------------------------------------------------
-// The two exports
-// ---------------------------------------------------------------------------
-
-/**
- * Sends the report to the owners/admins and records the SERVER's verdict on
- * the case.
- *
- * The HTML body carries the FULL REDACTED report inline in an escaped
- * <pre> block, so the owner never has to authenticate to read it; the text
- * body carries a compact digest because emailService caps it.
- *
- * The case records "sent" ONLY when sendEmail answered ok. A send that was
- * merely logged (`{ ok: false, status: "logged_no_gmail" }`) records
- * "failed" - never "sent".
- *
- * The report is REDACTED before it is used: the investigators can read the
- * repository, and the repository holds credentials, so a report that quotes
- * one would carry it into the database, the inbox and the client's browser.
- *
- * The report event is fired either way, carrying the delivery verdict: the
- * report body is a shared artefact and the delivery verdict is a separate
- * fact, and the client has to learn both.
- *
- * @param {Object} params
- * @param {Object} params.caseRow The SupportCase row.
- * @param {string} params.report The Markdown report.
- * @returns {Promise<{ok: boolean, status: string, error?: string}>}
- */
 export async function deliverReport({ caseRow, report } = {}) {
 	const caseId = String(caseRow?.id || "");
 	if (!caseId) {
@@ -706,43 +613,66 @@ export async function escalateIfNeeded(caseId, findings) {
 	return true;
 }
 
-/**
- * Classifies a finding as a security issue, a data-loss issue, or neither.
- *
- * Exported so the admin console (and the tests) can ask the same question
- * the escalation path asks.
- *
- * @param {Object} finding
- * @returns {"security"|"data_loss"|null}
- */
-export function classifyFinding(finding) {
-	const explicit = String(finding?.category || finding?.type || "").toLowerCase();
-	if (explicit) {
-		if (DATA_LOSS_CATEGORY_RE.test(explicit)) {
-			return "data_loss";
+export async function createGitHubIssuesForFindings(caseId, findings) {
+	const token = String(process.env.GITHUB_PERSONAL_ACCESS_TOKEN || "").trim();
+	const repo = String(process.env.GITHUB_SUPPORT_REPO || "").trim();
+	if (!(token && repo)) {
+		return { created: 0, skipped: 0 };
+	}
+
+	const maxIssues = Number.parseInt(process.env.GITHUB_ISSUES_MAX ?? "", 10);
+	const triggers = collectEscalationTriggers(findings).slice(
+		0,
+		Number.isFinite(maxIssues) && maxIssues > 0 ? maxIssues : 3,
+	);
+	if (triggers.length === 0) {
+		return { created: 0, skipped: 0 };
+	}
+
+	let created = 0;
+	let skipped = 0;
+	for (const trigger of triggers) {
+		const severity = severityOf({ confidence: "confirmed", detail: trigger.detail });
+		const title = sanitizeString(`[GarTexHub support] ${severity}: ${trigger.detail}`, 200);
+		const body = [
+			`Filed automatically from GarTexHub support case \`${caseId}\`.`,
+			"",
+			`**Severity:** ${severity}`,
+			`**Category:** ${trigger.category}`,
+			"",
+			trigger.detail,
+			"",
+			"_This issue was created by the AI support investigation. Verify the cited evidence before acting._",
+		].join("\n");
+		try {
+			const response = await fetch(`https://api.github.com/repos/${repo}/issues`, {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token}`,
+					Accept: "application/vnd.github+json",
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ title, body, labels: ["support-investigation", severity] }),
+			});
+			if (response.ok) {
+				created += 1;
+			} else {
+				skipped += 1;
+				logWarn("support_finding_issue_create_failed", {
+					case_id: caseId,
+					status: response.status,
+				});
+			}
+		} catch (error) {
+			skipped += 1;
+			logWarn("support_finding_issue_create_error", {
+				case_id: caseId,
+				error: error?.message || String(error),
+			});
 		}
-		if (SECURITY_CATEGORY_RE.test(explicit)) {
-			return "security";
-		}
 	}
-	const haystack = String(finding?.detail || finding?.text || "").toLowerCase();
-	if (!haystack) {
-		return null;
+	if (created > 0) {
+		logInfo("support_findings_filed_as_issues", { case_id: caseId, created, skipped });
 	}
-	// The finding says the harmful thing is not reached. It is describing a
-	// CAPABILITY, not reporting an incident, so it must not page anybody.
-	if (HARM_DENIAL_RE.test(haystack)) {
-		return null;
-	}
-	// SECURITY is tested FIRST. A finding that says "any authenticated user
-	// can delete another user's contract" matches BOTH sets - the access
-	// control is the defect, the deletion is the consequence - and the defect
-	// is the more precise classification.
-	if (SECURITY_PATTERNS.some((pattern) => pattern.test(haystack))) {
-		return "security";
-	}
-	if (DATA_LOSS_PATTERNS.some((pattern) => pattern.test(haystack))) {
-		return "data_loss";
-	}
-	return null;
+	return { created, skipped };
 }

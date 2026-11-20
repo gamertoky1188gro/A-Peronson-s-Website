@@ -57,8 +57,9 @@ describe.each([
 	it("uses native V2 ordered permissions, not the legacy grouped map", () => {
 		expect(file).toMatch(/^permissions:$/mu);
 		expect(file).not.toMatch(/^permission:$/mu);
-		// V1-only actions that silently vanish under V2 must not appear
-		for (const bad of ["bash", "write", "patch", "task", "list", "doom_loop"]) {
+		// V1-only actions that silently vanish under V2 must not appear.
+		// `bash` is intentionally ALLOWED in V2 as a read-only git allowlist.
+		for (const bad of ["write", "patch", "task", "list", "doom_loop"]) {
 			expect(actions(file)).not.toContain(bad);
 		}
 	});
@@ -81,7 +82,13 @@ describe.each([
 	});
 
 	it("expensive/mutating actions carry explicit denies", () => {
-		for (const action of ["edit", "webfetch", "websearch", "subagent", "question"]) {
+		// websearch is intentionally ALLOWED for the investigator (owner
+		// decision), but stays denied for the assistant.
+		const denied =
+			_name === "investigator"
+				? ["edit", "webfetch", "subagent", "question"]
+				: ["edit", "webfetch", "websearch", "subagent", "question"];
+		for (const action of denied) {
 			expect(file).toMatch(
 				new RegExp(`action: ${action}\\n\\s+resource: "\\*"\\n\\s+effect: deny`),
 			);
@@ -98,6 +105,10 @@ describe.each([
 			"git rev-list*",
 			"git ls-tree*",
 			"git cat-file*",
+			"git status*",
+			"git branch*",
+			"git log --*",
+			"git diff --*",
 			"rg*",
 			"grep*",
 			"head*",
@@ -106,7 +117,7 @@ describe.each([
 			"ls*",
 		]);
 		const shellAllows = [
-			...file.matchAll(/- action: shell\n\s+resource: "([^"]*)"\n\s+effect: allow/gu),
+			...file.matchAll(/- action: (?:shell|bash)\n\s+resource: "([^"]*)"\n\s+effect: allow/gu),
 		].map((m) => m[1]);
 		for (const pattern of shellAllows) {
 			expect(allowed.has(pattern)).toBe(true);
@@ -147,9 +158,13 @@ describe("investigator MCP allowlist (inert until .opencode.mcp.optional.json is
 		);
 	});
 
-	it("no MCP write-capable tool is allowed", () => {
+	it("only the owner-approved github_create_issue write tool is allowed", () => {
+		expect(investigator).toMatch(
+			/action: github_create_issue\n\s+resource: "\*"\n\s+effect: allow/u,
+		);
+		// Every OTHER write-capable MCP tool stays denied.
 		expect(investigator).not.toMatch(
-			/github_create_|github_push_|github_merge_|delete_file|pull_request_review_write|render_create_|render_update_|render_trigger_|render_delete_/u,
+			/github_push_|github_merge_|github_delete_|delete_file|pull_request_review_write|render_create_|render_update_|render_trigger_|render_delete_/u,
 		);
 	});
 });

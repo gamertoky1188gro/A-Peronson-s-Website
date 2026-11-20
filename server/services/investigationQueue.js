@@ -55,7 +55,10 @@ import {
 	applyVerification,
 	buildAgentPrompt,
 	buildVerifyPrompt,
+	classifyCaseType,
 	DEFAULT_TOOL_BUDGET,
+	getCaseTypeSpecialistRoles,
+	getCaseTypeToolBudget,
 } from "./investigation/agents.js";
 import { computeCaseModelOrder, effectiveCaseModelId } from "./investigation/caseModelChain.js";
 import {
@@ -250,7 +253,8 @@ export async function enqueueInvestigation(caseId) {
 		throw error;
 	}
 
-	const rows = await createQueuedRows(id);
+	const caseType = await resolveCaseType(id);
+	const rows = await createQueuedRows(id, getCaseTypeSpecialistRoles(caseType));
 
 	QUEUE.push({ caseId: id, rows, started: false });
 	logInfo("investigation queued", { caseId: id, depth: QUEUE.length, roles: rows.length });
@@ -302,18 +306,61 @@ function concurrencyLimit() {
 }
 
 /**
- * Create the `queued` row of every role.
+ * Derive the case type from what the client actually wrote.
+ *
+ * Reads the case with its messages and classifies subject + confirmed summary +
+ * the most recent client messages. Defensive: any failure classifies as
+ * "default", which runs the classic five-role pipeline.
+ */
+async function resolveCaseType(caseId) {
+	try {
+		const found = await getCaseWithMessages(caseId);
+		if (!found) {
+			return "default";
+		}
+		const parts = [];
+		const subject = typeof found.subject === "string" ? found.subject.trim() : "";
+		if (subject) parts.push(subject);
+		const summary = typeof found.summary === "string" ? found.summary.trim() : "";
+		if (summary) parts.push(summary);
+		const messages = Array.isArray(found.messages) ? found.messages : [];
+		const recentClient = messages
+			.slice(-6)
+			.filter((message) => String(message?.role || "").toLowerCase() !== "assistant")
+			.map((message) => String(message?.content || "").trim())
+			.filter(Boolean)
+			.join("\n");
+		if (recentClient) parts.push(recentClient);
+		return classifyCaseType(parts.join("\n\n"));
+	} catch (error) {
+		logWarn("investigation queue could not classify the case type", {
+			caseId,
+			error: error?.message || String(error),
+		});
+		return "default";
+	}
+}
+
+/**
+ * Create the `queued` row of every role THIS case type runs.
  *
  * The rows are created BEFORE the job starts, so a caller that returns from
  * `enqueueInvestigation` can already show the case as queued. `attempt` counts
  * the runs of the same case and role, so a re-run is distinguishable from the
  * run it repeats.
+ *
+ * @param {string} caseId
+ * @param {string[]} specialistRoles The specialist roles for this case type
+ *   (never includes `verify`, which always runs).
  */
-async function createQueuedRows(caseId) {
+async function createQueuedRows(caseId, specialistRoles) {
 	const attempts = await readPreviousAttempts(caseId);
 	const rows = [];
+	const roles = [...(specialistRoles || []), VERIFY_ROLE].filter(
+		(role, index, list) => list.indexOf(role) === index,
+	);
 
-	for (const role of AGENT_ROLES) {
+	for (const role of roles) {
 		const id = crypto.randomUUID();
 		const attempt = (attempts.get(role) || 0) + 1;
 		try {
@@ -395,27 +442,40 @@ async function runInvestigation(job) {
 			return;
 		}
 
+		const caseType = await resolveCaseType(caseId);
+		const specialistRoles = getCaseTypeSpecialistRoles(caseType);
+		const toolBudget = getCaseTypeToolBudget(caseType);
+
 		const outcomes = new Map();
 		let accumulated = [];
 
-		for (const role of SPECIALIST_ROLES) {
-			const prompt = buildAgentPrompt(role, {
-				description: context.description,
-				evidence: context.evidence,
-				toolBudget: agentToolBudget(),
-			});
-			const outcome = await runRole({
-				runtime,
-				models,
-				roleModels,
-				routing,
-				description,
-				role,
-				prompt,
-				row: findRow(rows, role),
-				caseId,
-				sessionIDs,
-			});
+		// Run all specialist roles in parallel - they are independent and only
+		// the verify role depends on their combined findings.
+		const specialistResults = await Promise.all(
+			specialistRoles.map(async (role) => {
+				const prompt = buildAgentPrompt(role, {
+					description: context.description,
+					evidence: context.evidence,
+					toolBudget,
+					caseType,
+				});
+				const outcome = await runRole({
+					runtime,
+					models,
+					roleModels,
+					routing,
+					description,
+					role,
+					prompt,
+					row: findRow(rows, role),
+					caseId,
+					sessionIDs,
+				});
+				return { role, outcome };
+			}),
+		);
+
+		for (const { role, outcome } of specialistResults) {
 			outcomes.set(role, outcome);
 			finished.add(role);
 			if (outcome.status === "complete") {
@@ -436,6 +496,9 @@ async function runInvestigation(job) {
 			rows,
 			finished,
 			sessionIDs,
+			specialistRoles,
+			caseType,
+			toolBudget,
 		});
 
 		// The investigation is over: the case waits for its report now. The
@@ -474,11 +537,15 @@ async function runVerification({
 	rows,
 	finished,
 	sessionIDs,
+	specialistRoles,
+	caseType,
+	toolBudget,
 }) {
 	const prompt = buildVerifyPrompt({
 		description: context.description,
 		candidateFindings: candidates,
-		toolBudget: agentToolBudget(),
+		toolBudget: toolBudget ?? agentToolBudget(),
+		caseType,
 	});
 
 	const outcome = await runRole({
@@ -1285,6 +1352,10 @@ async function finalizeInvestigation({ caseId, rows }) {
 	await persistReport(rows, safeReport);
 
 	await escalate(caseId, finalFindings(investigations));
+	// Filing confirmed security/data-loss findings as GitHub issues is
+	// independent of both mail paths: it happens after escalation, never
+	// blocks the report, and silently does nothing unless the owner opted in.
+	await fileIssues(caseId, finalFindings(investigations));
 	await deliver(caseRow, safeReport);
 	await setTerminalStatus(caseId, "completed");
 }
@@ -1416,6 +1487,26 @@ async function escalate(caseId, findings) {
 		return await delivery.escalateIfNeeded(caseId, findings);
 	} catch (error) {
 		logError("investigation escalation failed", error);
+		return false;
+	}
+}
+
+/**
+ * File confirmed security / data-loss findings as GitHub issues.
+ *
+ * Independent of mail and escalation: a failure here is logged and ignored,
+ * and the function is a no-op unless the owner opted in via env.
+ */
+async function fileIssues(caseId, findings) {
+	try {
+		const delivery = await loadDeliveryModule();
+		if (typeof delivery?.createGitHubIssuesForFindings !== "function") {
+			return false;
+		}
+		const result = await delivery.createGitHubIssuesForFindings(caseId, findings);
+		return Boolean(result?.created);
+	} catch (error) {
+		logError("investigation issue filing failed", error);
 		return false;
 	}
 }
@@ -1582,8 +1673,14 @@ function emitActivity(caseId, role, part, status) {
 	});
 }
 
-function emitProgress(caseId, role, status, detail) {
-	return emitCaseEvent("support.case.progress", { caseId, role, status, detail });
+function emitProgress(caseId, role, status, detail, label) {
+	return emitCaseEvent("support.case.progress", {
+		caseId,
+		role,
+		status,
+		detail,
+		...(label ? { label } : {}),
+	});
 }
 
 /**

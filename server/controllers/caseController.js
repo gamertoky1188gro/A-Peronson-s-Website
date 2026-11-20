@@ -72,6 +72,12 @@ const SUPPORT_EVIDENCE_PREFIX = "/uploads/support/";
 // investigated) — the client does not have to confirm it twice.
 const CONFIRMED_STATUSES = new Set(["investigating", "reporting", "completed"]);
 
+/**
+ * The statuses a case may hold for the buyer to file a follow-up on its report.
+ * `reporting` and `completed` are the only states in which a report exists.
+ */
+const FOLLOW_UP_STATUSES = new Set(["reporting", "completed"]);
+
 // The event type is fixed by contracts.md §4.
 const CASE_STATUS_EVENT = "support.case.status";
 
@@ -994,6 +1000,76 @@ export async function confirmCaseController(req, res) {
 		// summary and its report, and the case row is returned unchanged.
 		const { messages, ...caseRow } = found;
 		return res.json({ case: caseRow });
+	} catch (error) {
+		return handleControllerError(res, error);
+	}
+}
+
+/**
+ * POST /api/support/cases/:caseId/follow-up — the buyer answers the report.
+ *
+ * "That is not the problem" is a legitimate answer to an investigation, and
+ * before this route it could only be expressed by opening a second case. The
+ * follow-up appends the buyer's words to the SAME thread, moves the case back
+ * to `investigating`, and enqueues a NEW attempt (higher `attempt`, new rows),
+ * so the next run reads the correction in its context.
+ *
+ * It sends NO mail itself: delivery still happens only when the next run
+ * finalizes, which is what makes "keep going, do not email yet" the default
+ * answer to a correction.
+ *
+ * A case that has no report yet cannot take a follow-up - the clarification
+ * path (`POST /messages`) is how a case gets to its first investigation.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ */
+export async function followUpCaseController(req, res) {
+	try {
+		const caseId = sanitizeString(String(req.params.caseId || ""), 120);
+		if (!caseId) {
+			return res.status(400).json({ error: "caseId is required" });
+		}
+
+		const found = await caseService.getCaseWithMessages(caseId);
+		if (!found) {
+			return res.status(404).json({ error: "Case not found" });
+		}
+		if (!caseService.canReadCase(req.user, found)) {
+			return res.status(403).json({ error: "Forbidden" });
+		}
+
+		const status = String(found.status || "");
+		if (!FOLLOW_UP_STATUSES.has(status)) {
+			return res.status(409).json({
+				error:
+					status === "collecting"
+						? "This case has not been investigated yet - describe the problem first."
+						: "This case is already being investigated - follow the progress in the chat.",
+			});
+		}
+
+		const content = sanitizeString(String(req.body?.content || ""), MAX_MESSAGE_LENGTH);
+		if (!content) {
+			return res.status(400).json({ error: "content is required" });
+		}
+
+		const message = await caseService.appendCaseMessage({
+			caseId,
+			role: "client",
+			kind: deriveClientMessageKind(content),
+			content,
+			agent: null,
+		});
+
+		// Re-open under the same thread: the new attempt reads every message,
+		// including the correction that triggered it.
+		const updated = await startInvestigation(found, [
+			...(Array.isArray(found.messages) ? found.messages : []),
+			message,
+		]);
+
+		return res.status(201).json({ message, case: updated });
 	} catch (error) {
 		return handleControllerError(res, error);
 	}

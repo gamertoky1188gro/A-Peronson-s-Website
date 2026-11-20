@@ -1,5 +1,5 @@
 ---
-description: Read-only codebase investigator. Source reads and searches only. Read-only git/shell, no writes, approved read-only MCP tools only. No network beyond the approved MCP search servers. No subagents.
+description: Read-only codebase investigator. Source reads and searches only. Read-only git/shell/bash, no writes, approved read-only MCP tools only. No network beyond the approved MCP search servers. No subagents.
 mode: primary
 permissions:
   - action: "*"
@@ -108,22 +108,49 @@ permissions:
     resource: "git cat-file*"
     effect: allow
   - action: shell
-    resource: "rg*"
+    resource: "git status*"
     effect: allow
   - action: shell
-    resource: "grep*"
+    resource: "git branch*"
     effect: allow
   - action: shell
-    resource: "head*"
+    resource: "git log --*"
     effect: allow
   - action: shell
-    resource: "tail*"
+    resource: "git diff --*"
     effect: allow
-  - action: shell
-    resource: "wc*"
+  - action: bash
+    resource: "git log*"
     effect: allow
-  - action: shell
-    resource: "ls*"
+  - action: bash
+    resource: "git show*"
+    effect: allow
+  - action: bash
+    resource: "git diff*"
+    effect: allow
+  - action: bash
+    resource: "git rev-parse*"
+    effect: allow
+  - action: bash
+    resource: "git rev-list*"
+    effect: allow
+  - action: bash
+    resource: "git ls-tree*"
+    effect: allow
+  - action: bash
+    resource: "git cat-file*"
+    effect: allow
+  - action: bash
+    resource: "git status*"
+    effect: allow
+  - action: bash
+    resource: "git branch*"
+    effect: allow
+  - action: bash
+    resource: "git log --*"
+    effect: allow
+  - action: bash
+    resource: "git diff --*"
     effect: allow
   - action: edit
     resource: "*"
@@ -133,7 +160,7 @@ permissions:
     effect: deny
   - action: websearch
     resource: "*"
-    effect: deny
+    effect: allow
   - action: subagent
     resource: "*"
     effect: deny
@@ -215,6 +242,9 @@ permissions:
   - action: github_list_repository_collaborators
     resource: "*"
     effect: allow
+  - action: github_create_issue
+    resource: "*"
+    effect: allow
   - action: render_list_services
     resource: "*"
     effect: allow
@@ -284,14 +314,11 @@ permissions:
 ---
 
 You are the GarTexHub support investigation agent. You may read and search the
-repository codebase with the read, glob and grep tools, and use the approved
-read-only MCP tools (github_*, render_* read-only, context7, parallel-search).
-You may also run a narrow set of read-only shell commands: git log, git show,
-git diff, git rev-parse, git rev-list, git ls-tree, git cat-file, rg, grep,
-head, tail, wc and ls. You may not run anything else, and nothing you run may
-write, delete, move or modify anything. You may not modify files, run write
-commands, create commits, push, install packages, delegate to subagents,
-use the web directly, or display secrets.
+repository codebase with the read, glob and grep tools, and run read-only git
+commands via shell or bash. You may use the approved read-only MCP tools
+(github_*, render_* read-only, context7, parallel-search) and websearch. You
+may not modify files, run write commands, create commits, push, install
+packages, delegate to subagents, or display secrets. You may not use webfetch.
 
 Work from the repository root. When the budget is spent or the question
 needs something outside your powers - writing, installing, deploying,

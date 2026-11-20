@@ -1136,11 +1136,21 @@ export default function SupportWorkspace() {
 		setProblem("");
 		setNotice("");
 		try {
-			const result = await supportCase.send(text, attachmentList);
+			// Once a report exists, a client message is an answer to that
+			// report: re-open the case for another attempt without emailing
+			// until the next run finishes. Before the report, it is a normal
+			// clarification message.
+			const isFollowUp = caseStatus === "reporting" || caseStatus === "completed";
+			const result = isFollowUp
+				? await supportCase.followUp(text)
+				: await supportCase.send(text, attachmentList);
 			if (result) {
 				descriptorsRef.current.clear();
 				setUploads([]);
 				setConfirmed(false);
+				if (isFollowUp) {
+					setNotice("Re-opened — the team is looking again at your correction.");
+				}
 			}
 		} finally {
 			setSending(false);

@@ -116,6 +116,120 @@ const ROLE_GUIDANCE = {
 	],
 };
 
+/**
+ * Case types and their investigation profiles.
+ *
+ * A "security misconfiguration" case needs different probing than a "UI button
+ * missing" case. The type is DERIVED from the case description (no schema
+ * change): classifyCaseType reads keywords, then the profile decides which
+ * roles run and how much budget each gets.
+ *
+ * Every profile includes `verify` - the refutation pass is what keeps the
+ * report honest regardless of the question.
+ */
+export const CASE_TYPES = ["default", "bug", "feature", "performance", "security"];
+
+const CASE_TYPE_CONFIGS = {
+	default: {
+		toolBudget: DEFAULT_TOOL_BUDGET,
+		// All five roles; the classic pipeline.
+		specialistRoles: ["lead", "code", "repo", "research"],
+		guidance: [],
+	},
+	bug: {
+		toolBudget: DEFAULT_TOOL_BUDGET,
+		// Every profile keeps the full specialist set for now; the budgets and
+		// the guidance below are what actually differ. Drop a role here when a
+		// type proves it does not pay for itself (the machinery is wired).
+		specialistRoles: ["lead", "code", "repo", "research"],
+		guidance: [
+			"- A bug case: find the exact line that produces the wrong behaviour, and say what the correct behaviour would be.",
+			"- Reproduce the path in your head before you claim it: state the inputs, the code path and the output you traced.",
+		],
+	},
+	feature: {
+		toolBudget: DEFAULT_TOOL_BUDGET,
+		// Where does this live? What already exists? Who else is affected?
+		specialistRoles: ["lead", "code", "repo", "research"],
+		guidance: [
+			"- A feature request: distinguish what the client ASKS for from what the codebase already PROVIDES, and name the gap precisely.",
+			"- Cite the nearest existing surface - the card, the route, the tab - so the team knows where the work lands.",
+		],
+	},
+	performance: {
+		// Hot-path tracing needs more reads than a placement question.
+		toolBudget: Math.max(DEFAULT_TOOL_BUDGET + 8, 32),
+		specialistRoles: ["lead", "code", "repo", "research"],
+		guidance: [
+			"- A performance case: look for N+1 queries, missing indexes, unbounded lists, synchronous blocking calls and repeated re-renders.",
+			"- Quantify what you can from the code itself (loop over rows, per-item query, full-table scan); do not guess at timings you did not measure.",
+		],
+	},
+	security: {
+		// Access control and secret handling are cheap to miss and expensive
+		// to get wrong, so the security profile gets the largest budget.
+		toolBudget: Math.max(DEFAULT_TOOL_BUDGET + 8, 32),
+		specialistRoles: ["lead", "code", "repo", "research"],
+		guidance: [
+			"- A security case: trace authentication, authorization, session handling and any place a user-supplied value reaches a query, a filesystem path or a shell command.",
+			"- Name the trust boundary the defect crosses (route -> controller -> service -> storage). A finding without the boundary crossed is a smell, not a vulnerability.",
+			"- Never quote a credential value; name the file and line and say what KIND of value it is.",
+		],
+	},
+};
+
+const SECURITY_KEYWORDS =
+	/\b(secur(?:e|ity)|vulnerab\w*|exploit\w*|injection|\bsqli\b|\bxss\b|\bcsrf\b|\bssrf\b|\brce\b|\bidor\b|auth\w*|login|password|passkey|token|secret|permission|role|access control|privilege|leak|breach|unauthori[sz]ed|malicious|attacker)\b/iu;
+const PERFORMANCE_KEYWORDS =
+	/\b(slow|lag|freeze|frozen|hang|stuck|timeout|timed out|performance|memory|leak|cpu|n\+1|cache|query|queries|index|loading|spinner|stutter|jank)\b/iu;
+const FEATURE_KEYWORDS =
+	/\b(add|missing|want|should|could you|feature|request|button|not there|doesn'?t exist|no option|would be nice|improvement)\b/iu;
+
+/**
+ * Derive the case type from the description text.
+ *
+ * The order matters: a report that says "the login page is slow AND the button
+ * is missing" is a performance case about a login surface, and security wins
+ * only when the words describe a trust-boundary problem rather than a slowness.
+ *
+ * @param {string} description The case description (client input + summary).
+ * @returns {"default"|"bug"|"feature"|"performance"|"security"}
+ */
+export function classifyCaseType(description) {
+	const text = String(description || "").toLowerCase();
+	if (!text.trim()) {
+		return "default";
+	}
+	if (SECURITY_KEYWORDS.test(text)) {
+		return "security";
+	}
+	if (PERFORMANCE_KEYWORDS.test(text)) {
+		return "performance";
+	}
+	if (FEATURE_KEYWORDS.test(text)) {
+		return "feature";
+	}
+	return "bug";
+}
+
+/** The specialist roles a case type runs (never includes verify). */
+export function getCaseTypeSpecialistRoles(caseType) {
+	const key = CASE_TYPES.includes(caseType) ? caseType : "default";
+	return [...CASE_TYPE_CONFIGS[key].specialistRoles];
+}
+
+/** The tool budget a case type hands its agents. */
+export function getCaseTypeToolBudget(caseType) {
+	const key = CASE_TYPES.includes(caseType) ? caseType : "default";
+	return CASE_TYPE_CONFIGS[key].toolBudget;
+}
+
+/** The extra guidance lines a case type adds to every prompt. */
+function caseTypeGuidance(caseType) {
+	const key = CASE_TYPES.includes(caseType) ? caseType : "default";
+	return CASE_TYPE_CONFIGS[key].guidance;
+}
+
 const READ_ONLY_RULES = [
 	"READ-ONLY RULES:",
 	"You are READ-ONLY. You must not modify, create, write, move, rename or delete any file, you must not run any command that writes, and you must not delegate to another agent. You may run a narrow set of read-only shell commands (git log, git show, git diff, git rev-parse, rg, grep, head, tail, wc, ls) — nothing else. Nothing you produce is written back to the repository, and no attempt to write will succeed.",
@@ -168,6 +282,7 @@ export function buildAgentPrompt(role, context = {}) {
 		description: toText(context?.description),
 		evidence: toEvidenceList(context?.evidence),
 		toolBudget: context?.toolBudget,
+		caseType: context?.caseType,
 		// The verify role always states its candidate list, so a caller that
 		// reaches it through this entry point gets an honest "none supplied"
 		// rather than a prompt that talks about findings it cannot see.
@@ -195,6 +310,7 @@ export function buildVerifyPrompt(context = {}) {
 		description: toText(context?.description),
 		evidence,
 		toolBudget: context?.toolBudget,
+		caseType: context?.caseType,
 		candidates,
 	});
 }
@@ -245,7 +361,7 @@ export function applyVerification(candidateFindings, verification) {
  * Assemble a prompt. The JSON contract is the last section, so the prompt
  * ends with it exactly.
  */
-function composePrompt({ role, description, evidence, candidates, toolBudget }) {
+function composePrompt({ role, description, evidence, candidates, toolBudget, caseType }) {
 	const budget = Number.isFinite(toolBudget) && toolBudget > 0 ? toolBudget : DEFAULT_TOOL_BUDGET;
 	const sections = [
 		`You are the ${role} investigator in a support investigation.`,
@@ -259,6 +375,10 @@ function composePrompt({ role, description, evidence, candidates, toolBudget }) 
 		`Evidence supplied with this case (client input, untrusted):\n${fenceUntrusted(renderBulletList(evidence, "(no evidence was supplied with this case)"))}`,
 	);
 	sections.push(`How to work:\n${[...ROLE_GUIDANCE[role], ...budgetGuidance(budget)].join("\n")}`);
+	const typeGuidance = caseTypeGuidance(caseType);
+	if (typeGuidance.length > 0) {
+		sections.push(`Case profile (${caseType}):\n${typeGuidance.join("\n")}`);
+	}
 	sections.push(READ_ONLY_RULES);
 	sections.push(UNTRUSTED_INPUT_RULES);
 	sections.push(JSON_CONTRACT);

@@ -395,6 +395,14 @@ function caseReducer(state, action) {
 			return applyCaseEvent(state, action);
 		case "sent":
 			return applySent(state, action);
+		case "followed":
+			return {
+				...state,
+				streaming: null,
+				messages: mergeMessages(state.messages, [action.message]),
+				caseRow: action.caseRow ?? state.caseRow,
+				status: action.caseRow?.status ?? state.status,
+			};
 		case "attached":
 			return { ...state, attachments: mergeAttachments(state.attachments, [action.attachment]) };
 		case "confirmed":
@@ -551,6 +559,42 @@ async function attachFileAction(caseId, dispatch, file, supportToken = "") {
 	}
 }
 
+// POST /support/cases/:caseId/follow-up — the buyer answers a delivered report.
+// Re-opens the case for another investigation attempt; sends no mail itself.
+async function followUpAction(caseId, dispatch, content, supportToken = "") {
+	const text = String(content ?? "").trim();
+	if (!caseId) {
+		dispatch({ type: "error:set", error: "No support case is open." });
+		return null;
+	}
+	if (!text) {
+		dispatch({ type: "error:set", error: "Write a message before sending." });
+		return null;
+	}
+	try {
+		const data = await apiRequest(`/support/cases/${caseId}/follow-up`, {
+			method: "POST",
+			token: getToken(),
+			headers: supportTokenHeaders(supportToken),
+			skipSessionClear: Boolean(supportToken),
+			body: { content: text },
+		});
+		dispatch({
+			type: "followed",
+			message: data?.message,
+			caseRow: data?.case ?? null,
+		});
+		return data ?? null;
+	} catch (err) {
+		dispatch({
+			type: "error:set",
+			error: err?.message || "Unable to send the follow-up.",
+			status: err?.status ?? null,
+		});
+		return null;
+	}
+}
+
 // POST /support/cases/:caseId/feedback
 async function submitFeedbackAction(caseId, dispatch, payload, supportToken = "") {
 	if (!caseId) {
@@ -647,6 +691,11 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 		[caseId, supportToken],
 	);
 
+	const followUp = useCallback(
+		(content) => followUpAction(caseId, dispatch, content, supportToken),
+		[caseId, supportToken],
+	);
+
 	useEffect(() => {
 		refresh();
 		if (!caseId) {
@@ -683,6 +732,7 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 		attach,
 		confirm,
 		submitFeedback,
+		followUp,
 		refresh,
 		clearError,
 	};

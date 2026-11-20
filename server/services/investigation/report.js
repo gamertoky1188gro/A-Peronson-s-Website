@@ -23,6 +23,8 @@
  * be indistinguishable from a failed investigation.
  */
 
+import { severityOf } from "./classification.js";
+
 /** The confidence buckets, in the order they are reported. */
 const CONFIDENCE_LEVELS = ["confirmed", "probable", "speculative"];
 
@@ -407,6 +409,9 @@ function renderFindingBlock(finding, entry) {
 			: "";
 	const lines = [];
 	lines.push(`**${finding.confidence}${tag}${note}**`);
+	lines.push(
+		`- **Severity:** ${severityOf({ confidence: finding.confidence, detail: finding.detail })}`,
+	);
 	if (finding.evidence.length === 0) {
 		lines.push("**Evidence:** none recorded - an unevidenced claim cannot be confirmed", "");
 	} else {
@@ -986,6 +991,28 @@ export function buildReport({ caseRow, messages, investigations, generatedAt } =
 			"",
 		);
 	}
+
+	// Executive summary: three lines a non-technical owner can read in Gmail.
+	// It sits above the detail so "what's broken / how bad / what first" is
+	// visible without scrolling to the findings.
+	const confirmed = grouped.confirmed;
+	const severities = confirmed.map((entry) =>
+		severityOf({ confidence: "confirmed", detail: entry.finding.detail }),
+	);
+	const criticalCount = severities.filter((s) => s === "critical").length;
+	const highCount = severities.filter((s) => s === "high").length;
+	const firstFinding = confirmed[0] || grouped.probable[0] || grouped.speculative[0];
+	lines.push("## Executive summary", "");
+	lines.push(
+		`- **What's broken:** ${confirmed.length > 0 ? singleLine(firstFinding.finding.detail).slice(0, 200) : "No confirmed defect was found; see the findings below."}`,
+	);
+	lines.push(
+		`- **How bad:** ${confirmed.length} confirmed finding${confirmed.length === 1 ? "" : "s"} (${criticalCount} critical, ${highCount} high), ${grouped.probable.length} probable, ${grouped.speculative.length} speculative.`,
+	);
+	lines.push(
+		`- **What to do first:** ${criticalCount > 0 ? "Fix the critical finding(s) before the next release." : highCount > 0 ? "Review the high-severity finding(s) with the owning team." : "Review the confirmed findings with the owning team."}`,
+		"",
+	);
 
 	lines.push(...renderMetadataSection(row));
 	lines.push(...renderComplaintSection(messageRows));

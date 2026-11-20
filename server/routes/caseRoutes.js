@@ -3,6 +3,7 @@ import {
 	confirmCaseController,
 	createCaseController,
 	deleteCaseController,
+	followUpCaseController,
 	getCaseController,
 	listCasesController,
 	postCaseMessageController,
@@ -89,6 +90,15 @@ router.post(
 	caseLimiter,
 	caseWriteLimiter,
 	confirmCaseController,
+);
+// The buyer's answer to a delivered report: re-opens the case for another
+// investigation attempt. Sends no mail of its own.
+router.post(
+	"/:caseId/follow-up",
+	requireAuthOrSupportToken,
+	caseLimiter,
+	caseWriteLimiter,
+	followUpCaseController,
 );
 router.post(
 	"/:caseId/feedback",
