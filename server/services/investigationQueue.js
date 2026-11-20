@@ -575,6 +575,21 @@ async function runRole({
 		return { role, status: "failed", findings: [], limitations: [], summary: "", error: "no row" };
 	}
 
+	// If this row already completed (e.g. from a previous run that the
+	// server died before finalizing), return its stored findings instead of
+	// re-running. The recovery path re-queues incomplete roles but carries
+	// completed rows along so verify can read them.
+	const storedFindings = row?.findings;
+	if (row.status === "complete" && storedFindings && typeof storedFindings === "object") {
+		return {
+			role,
+			status: "complete",
+			findings: Array.isArray(storedFindings.findings) ? storedFindings.findings : [],
+			limitations: Array.isArray(storedFindings.limitations) ? storedFindings.limitations : [],
+			summary: typeof storedFindings.summary === "string" ? storedFindings.summary : "",
+		};
+	}
+
 	// The order of preference: the model pinned to this role, then the model
 	// a routing rule points at for this role, then the rest of the chain.
 	const chain = orderChainForRole((Array.isArray(models) ? models : [models]).filter(Boolean), [
@@ -1621,3 +1636,128 @@ function toStringList(value) {
 function normalizeDetail(value) {
 	return typeof value === "string" ? value.trim() : "";
 }
+
+/**
+ * Recover investigations interrupted by a server restart.
+ *
+ * On boot, some `SupportInvestigation` rows may be left in `queued` or
+ * `running` status because the server died before they could finish. This
+ * scans those rows, groups them by case, and re-queues only the roles that
+ * still need to run. Roles that already reached `complete` keep their stored
+ * findings and are not re-run.
+ *
+ * Roles that completed but whose case never reached a terminal status are
+ * finalized: the report is rebuilt from the stored rows and the case is
+ * moved to `completed`/`failed`.
+ *
+ * Safe to call multiple times; a case with no orphaned rows is a no-op.
+ */
+async function recoverOrphanedInvestigations() {
+	const orphaned = await prisma.supportInvestigation.findMany({
+		where: {
+			status: { in: ["queued", "running"] },
+		},
+		select: {
+			id: true,
+			case_id: true,
+			role: true,
+			status: true,
+			attempt: true,
+			findings: true,
+		},
+		orderBy: { case_id: true, started_at: true },
+	});
+
+	// Group orphaned rows by case.
+	const byCase = new Map();
+	for (const row of orphaned) {
+		const rows = byCase.get(row.case_id) || [];
+		rows.push(row);
+		byCase.set(row.case_id, rows);
+	}
+
+	for (const [caseId, rows] of byCase) {
+		const completedRoles = new Set();
+		const incompleteRows = [];
+
+		for (const row of rows) {
+			if (row.status === "complete") {
+				completedRoles.add(row.role);
+			} else {
+				incompleteRows.push(row);
+			}
+		}
+
+		// Determine which roles still need to run.
+		const rolesToRun = AGENT_ROLES.filter((role) => !completedRoles.has(role));
+
+		if (rolesToRun.length === 0) {
+			// Every role finished but the case never reached a terminal
+			// status (server died before finalizeInvestigation ran).
+			// Rebuild the report from the stored rows.
+			const allExisting = await prisma.supportInvestigation.findMany({
+				where: { case_id: caseId },
+				select: { id: true, role: true, status: true, attempt: true },
+			});
+			const jobRows = allExisting.map((r) => ({
+				role: r.role,
+				id: r.id,
+				attempt: r.attempt,
+			}));
+			await finalizeInvestigation({ caseId, rows: jobRows });
+			logInfo("investigation recovered on boot (finalized)", { caseId });
+			continue;
+		}
+
+		// Re-queue only the roles that still need to run. Include every
+		// existing row for the case (completed ones too) so that
+		// readRunRows/finalizeInvestigation can read completed specialists'
+		// findings when the verify role runs.
+		const allExisting = await prisma.supportInvestigation.findMany({
+			where: { case_id: caseId },
+			select: { id: true, role: true, status: true, attempt: true },
+		});
+		const attempts = await readPreviousAttempts(caseId);
+		const newRows = [];
+
+		for (const role of rolesToRun) {
+			const id = crypto.randomUUID();
+			const attempt = (attempts.get(role) || 0) + 1;
+			try {
+				await prisma.supportInvestigation.create({
+					data: {
+						id,
+						case_id: caseId,
+						role,
+						status: "queued",
+						attempt,
+					},
+				});
+				newRows.push({ role, id, attempt });
+			} catch (error) {
+				logWarn("recovery could not re-queue investigation", {
+					caseId,
+					role,
+					error: error?.message || String(error),
+				});
+			}
+		}
+
+		const jobRows = [
+			...allExisting.map((r) => ({ role: r.role, id: r.id, attempt: r.attempt })),
+			...newRows,
+		];
+
+		QUEUE.push({ caseId, rows: jobRows, started: false });
+		logInfo("investigation recovered on boot", {
+			caseId,
+			rolesToRun,
+			completedRoles: [...completedRoles],
+			depth: QUEUE.length,
+		});
+	}
+
+	dispatch();
+}
+
+export { recoverOrphanedInvestigations };

@@ -20,6 +20,8 @@ import { requestLogger } from "./middleware/requestLogger.js";
 import { REALTIME_EVENTS, realtimeBus } from "./realtime/realtimeBus.js";
 import adminConfigRoutes from "./routes/adminConfigRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import adminSupportModelRoutes from "./routes/adminSupportModelRoutes.js";
+import adminSupportTokenRoutes from "./routes/adminSupportTokenRoutes.js";
 import agentSubIdRoutes from "./routes/agentSubIdRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
@@ -71,8 +73,6 @@ import socialRoutes from "./routes/socialRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import supportRoutes from "./routes/supportRoutes.js";
 import supportTokenRoutes from "./routes/supportTokenRoutes.js";
-import adminSupportTokenRoutes from "./routes/adminSupportTokenRoutes.js";
-import adminSupportModelRoutes from "./routes/adminSupportModelRoutes.js";
 import syncRoutes from "./routes/syncRoutes.js";
 import systemRoutes from "./routes/systemRoutes.js";
 import uploadsRoutes from "./routes/uploadsRoutes.js";
@@ -87,6 +87,7 @@ import { runJoinRequestReminderSweep } from "./services/companyJoinService.js";
 import { refreshRates } from "./services/currencyService.js";
 import { startEsignWebhookRetryWorker } from "./services/esignRetryService.js";
 import { startEventQualityReporter } from "./services/eventIngestionService.js";
+import { recoverOrphanedInvestigations } from "./services/investigationQueue.js";
 import { runLeadReminderSweep } from "./services/leadReminderService.js";
 import { canAccessMatch, listMessagesByMatch, postMessage } from "./services/messageService.js";
 import { startOpenSearchHeartbeat } from "./services/openSearchService.js";
@@ -469,8 +470,8 @@ app.get("/ready", async (_req, res) => {
 app.use(errorHandler);
 
 if (serveDist && fs.existsSync(distRoot)) {
-	app.get(/.*/, (req, res) => {
-		if (req.path.match(/\.\w+$/)) {
+	app.get(/.*/u, (req, res) => {
+		if (req.path.match(/\.\w+$/u)) {
 			return res.status(404).end();
 		}
 		res.sendFile(path.join(distRoot, "index.html"));
@@ -1305,6 +1306,11 @@ async function start() {
 	server.listen(PORT, () => {
 		logInfo(`Verification MVP API running on http://localhost:${PORT}`);
 		maybeAutoLaunchLogTui();
+		// Recover investigations interrupted by a server restart: re-queue
+		// orphaned roles and finalize cases whose run was cut short.
+		recoverOrphanedInvestigations().catch((error) =>
+			logError("investigation recovery failed", error),
+		);
 	});
 
 	// Feed live runtime metrics (redis/workers/queue depths) to the log hub.
