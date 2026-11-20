@@ -10,11 +10,11 @@ import {
 	ShieldCheck,
 	Sparkles,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GlassCard } from "../../components/support/GlassCard.jsx";
 import { apiRequest, getToken } from "../../lib/auth.js";
-import { clearSupportSession, setSupportSession } from "../../lib/supportToken.js";
+import { setSupportSession } from "../../lib/supportToken.js";
 
 const FEATURES = [
 	{
@@ -63,11 +63,6 @@ export default function SupportLanding() {
 	const [submitting, setSubmitting] = useState(false);
 	const [formError, setFormError] = useState("");
 	const [ticketId, setTicketId] = useState(null);
-
-	// A token session is good for one visit; a refresh starts clean.
-	useEffect(() => {
-		clearSupportSession();
-	}, []);
 
 	const signedIn = Boolean(getToken());
 
