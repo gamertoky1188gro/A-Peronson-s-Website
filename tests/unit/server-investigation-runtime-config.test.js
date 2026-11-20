@@ -33,28 +33,8 @@ describe("investigation runtime project config (.opencode/)", () => {
 		expect(config.default_agent).toBeUndefined();
 		expect(config.permission).toBeUndefined();
 		expect(config.permissions).toBeUndefined();
-		// Agents carry their own lockdown; the project config only declares MCP.
-	});
-
-	it("the project carries the three owner-approved MCP servers", () => {
-		const servers = config.mcp?.servers ?? {};
-		expect(Object.keys(servers).sort((a, b) => a.localeCompare(b))).toEqual([
-			"github",
-			"parallel-search",
-			"render",
-		]);
-		expect(servers.github?.oauth).toBe(false);
-		expect(servers.render?.oauth).toBe(false);
-		expect(servers["parallel-search"]?.oauth).toBe(false);
-		expect(servers.github?.codemode).toBe(false);
-		expect(servers.render?.codemode).toBe(false);
-		expect(servers["parallel-search"]?.codemode).toBe(false);
-		expect(servers.github?.headers?.Authorization).toBe(
-			"Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}",
-		);
-		expect(servers.render?.headers?.Authorization).toBe("Bearer {env:RENDER_API_KEY}");
-		expect(servers.context7).toBeUndefined();
-		expect(JSON.stringify(servers)).not.toMatch(/ghp_|rnd_|ctx7sk-|tvly-/u);
+		// Agents carry their own lockdown; MCP is opt-in only via the optional block.
+		expect(config.mcp).toBeUndefined();
 	});
 
 	it("the context7 optional block remains unmerged", () => {
@@ -62,6 +42,11 @@ describe("investigation runtime project config (.opencode/)", () => {
 		expect(fs.existsSync(optionalPath)).toBe(true);
 		const optional = JSON.parse(fs.readFileSync(optionalPath, "utf8"));
 		expect(Object.keys(optional.mcp?.servers ?? {})).toEqual(["context7"]);
+		expect(optional.mcp.servers.context7?.oauth).toBe(false);
+		expect(optional.mcp.servers.context7?.codemode).toBe(false);
+		expect(optional.mcp.servers.context7?.headers?.["CONTEXT7_API_KEY"]).toBe(
+			"{env:CONTEXT7_API_KEY}",
+		);
 	});
 });
 
@@ -150,12 +135,9 @@ describe.each([
 });
 
 describe("investigator MCP allowlist (inert until .opencode.mcp.optional.json is merged)", () => {
-	it("github/render/context7/parallel-search read tools allowed", () => {
+	it("github/render/context7 read tools allowed", () => {
 		expect(investigator).toMatch(
 			/action: github_get_file_contents\n\s+resource: "\*"\n\s+effect: allow/u,
-		);
-		expect(investigator).toMatch(
-			/action: parallel-search_web_search\n\s+resource: "\*"\n\s+effect: allow/u,
 		);
 		expect(investigator).toMatch(
 			/action: context7_query-docs\n\s+resource: "\*"\n\s+effect: allow/u,

@@ -23,6 +23,60 @@ permissions:
   - action: read
     resource: "*.env.example"
     effect: allow
+  - action: read
+    resource: "node_modules/**"
+    effect: deny
+  - action: read
+    resource: "dist/**"
+    effect: deny
+  - action: read
+    resource: "build/**"
+    effect: deny
+  - action: read
+    resource: ".next/**"
+    effect: deny
+  - action: read
+    resource: "coverage/**"
+    effect: deny
+  - action: read
+    resource: ".nyc_output/**"
+    effect: deny
+  - action: glob
+    resource: "node_modules/**"
+    effect: deny
+  - action: glob
+    resource: "dist/**"
+    effect: deny
+  - action: glob
+    resource: "build/**"
+    effect: deny
+  - action: glob
+    resource: ".next/**"
+    effect: deny
+  - action: glob
+    resource: "coverage/**"
+    effect: deny
+  - action: glob
+    resource: ".nyc_output/**"
+    effect: deny
+  - action: grep
+    resource: "node_modules/**"
+    effect: deny
+  - action: grep
+    resource: "dist/**"
+    effect: deny
+  - action: grep
+    resource: "build/**"
+    effect: deny
+  - action: grep
+    resource: ".next/**"
+    effect: deny
+  - action: grep
+    resource: "coverage/**"
+    effect: deny
+  - action: grep
+    resource: ".nyc_output/**"
+    effect: deny
   - action: glob
     resource: "*"
     effect: allow
@@ -159,12 +213,6 @@ permissions:
     resource: "*"
     effect: allow
   - action: github_list_repository_collaborators
-    resource: "*"
-    effect: allow
-  - action: parallel-search_web_search
-    resource: "*"
-    effect: allow
-  - action: parallel-search_web_fetch
     resource: "*"
     effect: allow
   - action: render_list_services
