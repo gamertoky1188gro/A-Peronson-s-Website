@@ -23,7 +23,9 @@ const rows = [
 ];
 
 it("renders labels with no paths and collapses on toggle", () => {
-	const { container } = render(<ActivityTree activity={rows} status="investigating" />);
+	const { container } = render(
+		<ActivityTree activity={rows} status="investigating" defaultSimple={false} />,
+	);
 	expect(screen.getByText("Reading walletService.js")).toBeTruthy();
 	expect(screen.getByText("Searching code")).toBeTruthy();
 	expect(container.textContent).not.toContain("server/");
@@ -34,18 +36,24 @@ it("renders labels with no paths and collapses on toggle", () => {
 });
 
 it("shows How this was investigated when completed and no rows leak tool errors", () => {
-	render(<ActivityTree activity={rows.map((r) => ({ ...r, error: "no" }))} status="completed" />);
+	render(
+		<ActivityTree
+			activity={rows.map((r) => ({ ...r, error: "no" }))}
+			status="completed"
+			defaultSimple={false}
+		/>,
+	);
 	expect(screen.getByText(/How this was investigated/iu)).toBeTruthy();
 });
 
 it("renders collapsed by default once the investigation is completed", () => {
-	render(<ActivityTree activity={rows} status="completed" />);
+	render(<ActivityTree activity={rows} status="completed" defaultSimple={false} />);
 	expect(screen.queryByText("Reading walletService.js")).toBeNull(); // rows hidden
 	expect(screen.getByRole("button", { name: /investigat/iu })).toBeTruthy(); // header stays
 });
 
 it("renders open by default while the investigation is running", () => {
-	render(<ActivityTree activity={rows} status="investigating" />);
+	render(<ActivityTree activity={rows} status="investigating" defaultSimple={false} />);
 	expect(screen.getByText("Reading walletService.js")).toBeTruthy(); // rows visible
 	expect(screen.getByRole("button", { name: /working/iu })).toBeTruthy();
 });
@@ -58,7 +66,14 @@ it("renders nothing when there are no rows and nothing is running", () => {
 it("groups nodes by stage and opens the inspector on click", () => {
 	const onInspect = jest.fn();
 	// running keeps the tree open so stage groups are visible.
-	render(<ActivityTree activity={rows} status="investigating" onInspect={onInspect} />);
+	render(
+		<ActivityTree
+			activity={rows}
+			status="investigating"
+			onInspect={onInspect}
+			defaultSimple={false}
+		/>,
+	);
 	// Stage headers name the roles.
 	expect(screen.getByText("Planning")).toBeTruthy();
 	expect(screen.getByText("Repository history")).toBeTruthy();
@@ -69,4 +84,14 @@ it("groups nodes by stage and opens the inspector on click", () => {
 	const node = onInspect.mock.calls[0][0];
 	expect(node.type).toBe("read");
 	expect(node.title).toContain("Reading walletService.js");
+});
+
+it("defaults to simple, buyer-friendly milestones and can toggle to technical view", () => {
+	render(<ActivityTree activity={rows} status="investigating" />);
+	// Raw tool labels are hidden in the default simple view.
+	expect(screen.queryByText("Reading walletService.js")).toBeNull();
+	expect(screen.getAllByText("Checking evidence").length).toBeGreaterThan(0);
+	// A toggle switches to the technical view.
+	fireEvent.click(screen.getByRole("button", { name: /technical view/iu }));
+	expect(screen.getByText("Reading walletService.js")).toBeTruthy();
 });

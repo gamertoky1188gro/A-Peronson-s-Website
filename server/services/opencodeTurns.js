@@ -155,10 +155,12 @@ export async function waitForAssistantTurn({
 	pollIntervalMs = DEFAULT_POLL_INTERVAL_MS,
 	stablePollsToSettle = DEFAULT_STABLE_POLLS,
 	onText = null,
+	onToolStart = null,
 	onToolSettled = null,
 	onUsage = null,
 }) {
 	const announced = new Set();
+	const announcedStart = new Set();
 	let seen = new Set();
 	try {
 		seen = new Set(
@@ -200,6 +202,37 @@ export async function waitForAssistantTurn({
 		content = assistants.flatMap((message) => message.content || []);
 		parts = (newest?.content || []).map(mapAssistantPart);
 		texts = content.filter((part) => part.type === "text").map((part) => part.text || "");
+
+		// A tool's lifecycle is start → settle. Fire onToolStart the first time
+		// a tool appears with running/streaming status so the client can render
+		// an individual tool as actively running (not just settled). The key
+		// matches the settled key so start and settle pair up on the client.
+		if (typeof onToolStart === "function") {
+			for (const part of content) {
+				if (!part || part.type !== "tool") {
+					continue;
+				}
+				const status = String(part.state?.status ?? "");
+				if (status !== "running" && status !== "streaming") {
+					continue;
+				}
+				let key;
+				try {
+					key = `${part.name || part.tool || "tool"}|start|${JSON.stringify(part.state?.input ?? null)}`;
+				} catch {
+					key = `${part.name || part.tool || "tool"}|start|unserializable`;
+				}
+				if (announcedStart.has(key)) {
+					continue;
+				}
+				announcedStart.add(key);
+				try {
+					onToolStart(part, status);
+				} catch {
+					// telemetry must never break the poll loop
+				}
+			}
+		}
 
 		if (typeof onToolSettled === "function") {
 			for (const part of content) {

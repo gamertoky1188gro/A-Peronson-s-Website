@@ -391,6 +391,67 @@ async function loadDiscussionService() {
 	}
 }
 
+async function loadHandoffService() {
+	try {
+		return await import("../services/caseHandoffService.js");
+	} catch (error) {
+		logWarn("handoff service module is not available", {
+			reason: error?.message || String(error),
+		});
+		return null;
+	}
+}
+
+/** POST /api/support/cases/:caseId/handoff — buyer asks for a human. */
+export async function handoffCaseController(req, res) {
+	try {
+		const caseId = sanitizeString(String(req.params.caseId || ""), 120);
+		if (!caseId) {
+			return res.status(400).json({ error: "caseId is required" });
+		}
+		const found = await caseService.getCaseWithMessages(caseId);
+		if (!found) {
+			return res.status(404).json({ error: "Case not found" });
+		}
+		if (!caseService.canReadCase(req.user, found)) {
+			return res.status(403).json({ error: "Forbidden" });
+		}
+		const handoff = await loadHandoffService();
+		if (!handoff) {
+			return res.status(503).json({ error: "The handoff service is unavailable." });
+		}
+		// The case-row delegate does not include investigations, so read the
+		// recorded findings directly for the handoff context.
+		let investigations = [];
+		try {
+			investigations = await prisma.supportInvestigation.findMany({ where: { case_id: caseId } });
+		} catch {
+			investigations = [];
+		}
+		const result = await handoff.requestHandoff({
+			caseId,
+			caseRow: found,
+			messages: found.messages || [],
+			findings: investigations.flatMap((inv) => {
+				const payload = inv?.findings;
+				const list = Array.isArray(payload)
+					? payload
+					: payload && Array.isArray(payload.findings)
+						? payload.findings
+						: [];
+				return list.map((finding) => ({ role: inv.role, finding }));
+			}),
+			reason: sanitizeString(String(req.body?.reason || ""), 2000),
+		});
+		if (!result.ok) {
+			return res.status(400).json({ error: result.error || "Unable to request a human." });
+		}
+		return res.json({ ok: true, status: "human_support" });
+	} catch (error) {
+		return handleControllerError(res, error);
+	}
+}
+
 /**
  * Refuse the work when the queue is already full.
  *
@@ -1018,6 +1079,23 @@ export async function confirmCaseController(req, res) {
 			return res.json({ case: updated });
 		}
 
+		// The buyer confirms a delivered report, closing the case. One case =
+		// one problem, one report, one completion: this is the terminal step
+		// and it only moves a case that is still `reporting`.
+		if (String(found.status || "") === "reporting" && req.body?.action === "complete_report") {
+			await prisma.supportCase.update({
+				where: { id: caseId },
+				data: { status: "completed", updated_at: new Date() },
+			});
+			realtime.emitCaseEvent?.(caseId, CASE_STATUS_EVENT, {
+				caseId,
+				status: "completed",
+			});
+			const refreshed = await caseService.getCaseWithMessages(caseId);
+			const { messages, ...caseRow } = refreshed || found;
+			return res.json({ case: caseRow });
+		}
+
 		// The case has already left `collecting`. It keeps its status, its
 		// summary and its report, and the case row is returned unchanged.
 		const { messages, ...caseRow } = found;
@@ -1216,7 +1294,10 @@ export async function discussCaseController(req, res) {
 		}
 
 		if (action === "confirm") {
-			const confirmed = await discussion.confirmDiscussionSummary({ caseId });
+			const confirmed = await discussion.confirmDiscussionSummary({
+				caseId,
+				brief: typeof req.body?.brief === "string" ? req.body.brief : undefined,
+			});
 			if (!confirmed.ok) {
 				return res.status(400).json({ error: confirmed.error || "Nothing to confirm" });
 			}
@@ -1225,6 +1306,18 @@ export async function discussCaseController(req, res) {
 				confirmed.summary || found.summary || "",
 			);
 			return res.json({ case: updated, action: "investigating" });
+		}
+
+		if (action === "update_brief") {
+			const brief = typeof req.body?.brief === "string" ? req.body.brief.trim() : "";
+			if (!brief) {
+				return res.status(400).json({ error: "brief is required" });
+			}
+			const updated = await discussion.updateProblemBrief({ caseId, brief });
+			if (!updated.ok) {
+				return res.status(400).json({ error: updated.error || "Unable to update the brief." });
+			}
+			return res.json({ case: found, action: "brief_updated", brief });
 		}
 
 		if (action === "deny") {

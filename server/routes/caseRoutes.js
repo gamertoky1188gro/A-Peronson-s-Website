@@ -8,6 +8,7 @@ import {
 	discussStateController,
 	followUpCaseController,
 	getCaseController,
+	handoffCaseController,
 	listCasesController,
 	postCaseMessageController,
 	streamCaseController,
@@ -102,6 +103,15 @@ router.post(
 	caseLimiter,
 	caseWriteLimiter,
 	postCaseMessageController,
+);
+// The buyer asks for a human support representative at any time. The handoff
+// carries the full conversation, brief, findings and the buyer's reason.
+router.post(
+	"/:caseId/handoff",
+	requireAuthOrSupportToken,
+	caseLimiter,
+	caseWriteLimiter,
+	handoffCaseController,
 );
 router.post(
 	"/:caseId/confirm",

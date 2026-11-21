@@ -391,6 +391,7 @@ export async function runAgentPrompt({
 	sessionID,
 	text,
 	timeoutMs = 180_000,
+	onToolStart = null,
 	onToolSettled = null,
 	onUsage = null,
 }) {
@@ -403,6 +404,7 @@ export async function runAgentPrompt({
 			timeoutMs,
 			pollIntervalMs: POLL_INTERVAL_MS,
 			stablePollsToSettle: STABLE_POLLS_TO_SETTLE,
+			onToolStart,
 			onToolSettled,
 			onUsage,
 		});

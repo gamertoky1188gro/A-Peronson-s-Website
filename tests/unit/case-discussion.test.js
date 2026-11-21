@@ -42,6 +42,7 @@ const {
 	discuss,
 	confirmDiscussionSummary,
 	denyDiscussionSummary,
+	updateProblemBrief,
 	getDiscussionState,
 	clearDiscussion,
 } = await import("../../server/services/caseDiscussionService.js");
@@ -218,6 +219,58 @@ describe("caseDiscussionService", () => {
 		expect(denied.ok).toBe(true);
 		const after = await getDiscussionState(CASE_ID);
 		expect(after.proposedSummary).toBeNull();
+	});
+
+	it("seeds an editable problem brief from the proposed summary", async () => {
+		providerMock.mockResolvedValueOnce("SUMMARY: The upload rejects a supported file.");
+		await discuss({
+			caseId: CASE_ID,
+			caseRow: { subject: "Upload broken" },
+			history: [],
+			clientMessage: "My upload fails",
+		});
+		const state = await getDiscussionState(CASE_ID);
+		expect(state.problemBrief).toContain("upload");
+		expect(state.briefStatus).toBe("draft");
+	});
+
+	it("lets the buyer edit the brief and confirms the edited text", async () => {
+		providerMock.mockResolvedValueOnce("SUMMARY: The upload rejects a supported file.");
+		await discuss({
+			caseId: CASE_ID,
+			caseRow: { subject: "Upload broken" },
+			history: [],
+			clientMessage: "My upload fails",
+		});
+
+		const edited = "The PDF upload fails for files over 5MB.";
+		const updated = await updateProblemBrief({ caseId: CASE_ID, brief: edited });
+		expect(updated.ok).toBe(true);
+		expect((await getDiscussionState(CASE_ID)).problemBrief).toBe(edited);
+
+		const confirmed = await confirmDiscussionSummary({ caseId: CASE_ID, brief: edited });
+		expect(confirmed.ok).toBe(true);
+		expect(confirmed.summary).toBe(edited);
+		const after = await getDiscussionState(CASE_ID);
+		expect(after.briefStatus).toBe("confirmed");
+	});
+
+	it("records thinking with a running→done lifecycle", async () => {
+		providerMock.mockResolvedValueOnce("A question?");
+		await discuss({
+			caseId: CASE_ID,
+			caseRow: { subject: "x" },
+			history: [],
+			clientMessage: "help",
+		});
+		const thinking = activityEvents.filter(
+			(e) => e.type === "support.case.activity" && /thinking/iu.test(e.payload.label || ""),
+		);
+		// The same activity id flips from running to done.
+		expect(thinking.length).toBeGreaterThanOrEqual(2);
+		expect(thinking[0].payload.status).toBe("running");
+		expect(thinking.at(-1).payload.status).toBe("done");
+		expect(thinking[0].payload.id).toBe(thinking.at(-1).payload.id);
 	});
 
 	it("caps the discussion at the round limit and forces a summary", async () => {

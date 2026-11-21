@@ -71,6 +71,29 @@ function summarize(rows) {
 	return null;
 }
 
+// Simple view: map a technical tool label to the buyer-facing milestone it
+// corresponds to. Never exposes raw tool names, paths or MCP calls.
+const SIMPLE_MILESTONE = {
+	think: "Examining your issue",
+	read: "Checking evidence",
+	search: "Searching for the cause",
+	write: "Preparing the report",
+	shell: "Checking evidence",
+	test: "Verifying results",
+	mcp: "Checking evidence",
+	browser: "Researching",
+	skill: "Examining your issue",
+	agent: "Investigating",
+	error: "Checking evidence",
+	other: "Investigating",
+};
+function displayLabel(row, simple) {
+	if (!simple) {
+		return String(row?.label ?? "Working");
+	}
+	return SIMPLE_MILESTONE[classifyNode(row).type] || "Investigating";
+}
+
 function statusText(status) {
 	const map = {
 		done: "Done",
@@ -93,7 +116,7 @@ function timeOf(value) {
 }
 
 /** One activity row. Clicking it opens the inspector via onInspect. */
-function Node({ row, selected, onInspect }) {
+function Node({ row, selected, onInspect, simple }) {
 	const meta = classifyNode(row);
 	const Icon = meta.Icon;
 	const failed = row?.status === "failed";
@@ -104,11 +127,11 @@ function Node({ row, selected, onInspect }) {
 		() => ({
 			...row,
 			type: meta.type,
-			title: row?.label ?? "Working",
+			title: displayLabel(row, simple),
 			status: row?.status ?? "done",
 			time: timeOf(row?.at),
 		}),
-		[row, meta.type],
+		[row, meta.type, simple],
 	);
 	return (
 		<li class="tree-item">
@@ -142,7 +165,7 @@ function Node({ row, selected, onInspect }) {
 						failed ? "text-rose-200" : "text-[#dcd2ea]",
 					)}
 				>
-					{row?.label ?? "Working"}
+					{displayLabel(row, simple)}
 				</span>
 				{time ? <span class="shrink-0 text-[9px] tabular-nums text-[#6f647d]">{time}</span> : null}
 				<span
@@ -158,7 +181,11 @@ function Node({ row, selected, onInspect }) {
 					<span
 						class={cn(
 							"h-1.5 w-1.5 rounded-full",
-							failed ? "bg-rose-400" : running ? "bg-blue-400 animate-pulse" : "bg-emerald-400",
+							failed
+								? "bg-rose-400"
+								: running
+									? "bg-blue-400 animate-pulse motion-reduce:animate-none"
+									: "bg-emerald-400",
 						)}
 					/>
 					{statusText(row?.status)}
@@ -172,7 +199,7 @@ function Node({ row, selected, onInspect }) {
  * Stage group: header is a native <details> summary so expand/collapse is
  * free and keyboard accessible. Children are activity nodes.
  */
-function Stage({ stage, filter, selectedId, onInspect, expandSignal }) {
+function Stage({ stage, filter, selectedId, onInspect, expandSignal, simple }) {
 	const [open, setOpen] = useState(true);
 	const visible = stage.rows.filter(
 		(row) => filter === "all" || classifyNode(row).filter === filter,
@@ -227,6 +254,7 @@ function Stage({ stage, filter, selectedId, onInspect, expandSignal }) {
 							row={row}
 							selected={selectedId && row?.id === selectedId}
 							onInspect={onInspect}
+							simple={simple}
 						/>
 					))}
 				</ul>
@@ -246,8 +274,15 @@ export function ActivityTree({
 	active = null,
 	onInspect = null,
 	selectedId = null,
+	// When set, only this role's activity group renders (one investigator).
+	role = null,
+	// When set, only this investigation run's activity renders.
+	runId = null,
+	// Default to the buyer-friendly simple view.
+	defaultSimple = true,
 }) {
 	const rows = Array.isArray(activity) ? activity : [];
+	const [simple, setSimple] = useState(defaultSimple);
 	const statusKey = String(status ?? "").toLowerCase();
 	const phaseRunning = ["investigating", "verifying", "reporting"].includes(statusKey);
 	const running = active === null ? phaseRunning : active;
@@ -259,9 +294,15 @@ export function ActivityTree({
 		if (running) setOpen(true);
 	}, [running]);
 
+	// Scope to one role and/or one run so the tree renders a single
+	// investigator's group instead of the whole investigation.
+	const scoped = rows.filter(
+		(row) => (role === null || row?.role === role) && (runId === null || row?.runId === runId),
+	);
+
 	const ordered = useMemo(
-		() => [...rows].sort((left, right) => orderOf(left?.role) - orderOf(right?.role) || 0),
-		[rows],
+		() => [...scoped].sort((left, right) => orderOf(left?.role) - orderOf(right?.role) || 0),
+		[scoped],
 	);
 	const stages = useMemo(() => {
 		const map = new Map();
@@ -273,18 +314,18 @@ export function ActivityTree({
 		return [...map.values()];
 	}, [ordered]);
 
-	if (rows.length === 0 && !running) return null;
+	if (scoped.length === 0 && !running) return null;
 
-	const duration = summarize(rows);
-	const doneCount = rows.filter(
+	const duration = summarize(scoped);
+	const doneCount = scoped.filter(
 		(row) => !["running", "queued", "waiting", "failed"].includes(row?.status),
 	).length;
-	const pct = rows.length > 0 ? Math.round((doneCount / rows.length) * 100) : 0;
-	const failedCount = rows.filter((row) => row?.status === "failed").length;
-	const runningCount = rows.filter((row) => row?.status === "running").length;
+	const pct = scoped.length > 0 ? Math.round((doneCount / scoped.length) * 100) : 0;
+	const failedCount = scoped.filter((row) => row?.status === "failed").length;
+	const runningCount = scoped.filter((row) => row?.status === "running").length;
 	const heading = running
 		? "Working…"
-		: `How this was investigated · ${rows.length} steps${duration ? ` · ${duration}` : ""}`;
+		: `How this was investigated · ${scoped.length} steps${duration ? ` · ${duration}` : ""}`;
 
 	const filters = [
 		["all", "All"],
@@ -317,7 +358,11 @@ export function ActivityTree({
 						)}
 						aria-hidden="true"
 					>
-						{running ? <LoaderCircle class="h-4 w-4 animate-spin" /> : <Check class="h-4 w-4" />}
+						{running ? (
+							<LoaderCircle class="h-4 w-4 animate-spin motion-reduce:animate-none" />
+						) : (
+							<Check class="h-4 w-4" />
+						)}
 					</span>
 					<span class="min-w-0 flex-1">
 						<span class="block truncate text-[12px] font-semibold text-[#f0e9fa]">
@@ -346,7 +391,7 @@ export function ActivityTree({
 							class={cn(
 								"h-1.5 w-1.5 rounded-full",
 								running
-									? "animate-pulse bg-blue-400"
+									? "animate-pulse motion-reduce:animate-none bg-blue-400"
 									: failedCount > 0
 										? "bg-rose-400"
 										: "bg-emerald-400",
@@ -403,6 +448,20 @@ export function ActivityTree({
 							<span class="flex-1" />
 							<button
 								type="button"
+								onClick={() => setSimple((v) => !v)}
+								aria-pressed={!simple}
+								title={simple ? "Show technical tool names" : "Show simple milestones"}
+								class={cn(
+									"rounded-md border px-2 py-1 text-[10px] transition",
+									simple
+										? "border-transparent text-[#9c8fb4] hover:bg-white/5 hover:text-white"
+										: "border-cyan-500/25 bg-cyan-500/10 text-cyan-200",
+								)}
+							>
+								{simple ? "Technical view" : "Simple view"}
+							</button>
+							<button
+								type="button"
 								onClick={() => setExpandSignal(true)}
 								class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] text-[#9c8fb4] transition hover:bg-white/5 hover:text-white"
 								title="Expand all stages"
@@ -429,6 +488,7 @@ export function ActivityTree({
 									selectedId={selectedId}
 									onInspect={onInspect}
 									expandSignal={expandSignal}
+									simple={simple}
 								/>
 							))}
 							{stages.every(

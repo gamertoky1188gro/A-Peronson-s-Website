@@ -499,11 +499,50 @@ async function notifyStaffOfEscalation({ caseId, category, detail, triggerCount,
 	return staff.length;
 }
 
+/**
+ * Ping every owner/admin in-app that a report is ready, with its delivery
+ * verdict. This is the "report ready" notification — unlike escalation it
+ * fires for EVERY case, not just security/data-loss ones, so the owner sees
+ * a completed investigation even when there is nothing urgent in it.
+ */
+async function notifyStaffOfReportReady({ caseId, subject, summary, delivered }) {
+	const staff = await resolveStaffUsers();
+	await Promise.all(
+		staff.map((user) =>
+			createNotification(user.id, {
+				type: "support_case_report_ready",
+				entity_type: "support_case",
+				entity_id: caseId,
+				message: delivered
+					? `Investigation report ready for case ${caseId}`
+					: `Report generated but email delivery failed for case ${caseId}`,
+				meta: {
+					case_id: caseId,
+					subject: String(subject || ""),
+					summary: sanitizeString(summary, DETAIL_MAX_CHARS),
+					delivered,
+				},
+			}).catch((error) => {
+				logError("support_report_ready_notification_failed", error);
+			}),
+		),
+	);
+	return staff.length;
+}
+
 export async function deliverReport({ caseRow, report } = {}) {
 	const caseId = String(caseRow?.id || "");
 	if (!caseId) {
 		logWarn("support_report_delivery_without_case", {});
 		return { ok: false, status: STATUS_FAILED, error: "case_row_required" };
+	}
+
+	// Dedupe: if this case's report was already delivered, do not send again.
+	// The mail path is idempotent - a re-run must not duplicate the report in
+	// the owner's inbox.
+	if (String(caseRow?.report_status || "").toLowerCase() === STATUS_SENT) {
+		logInfo("support_report_delivery_dedupe", { case_id: caseId });
+		return { ok: true, status: STATUS_SENT };
 	}
 
 	// The report is redacted BEFORE anything reads it. The investigators can
@@ -529,6 +568,13 @@ export async function deliverReport({ caseRow, report } = {}) {
 	// written down.
 	const reportStatus = outcome.ok ? STATUS_SENT : STATUS_FAILED;
 	await emitReportReady(caseId, safeReport, reportStatus);
+	// In-app "report ready" ping for the owner/admin, independent of mail.
+	await notifyStaffOfReportReady({
+		caseId,
+		subject: caseRow?.subject,
+		summary,
+		delivered: outcome.ok,
+	});
 
 	if (!outcome.ok) {
 		logWarn("support_report_delivery_failed", {

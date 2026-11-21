@@ -824,11 +824,14 @@ describe("the end of the investigation", () => {
 		);
 	});
 
-	test("the case ends completed", async () => {
+	test("the case ends in reporting, waiting for the buyer to confirm the report", async () => {
 		await enqueueInvestigation(CASE_ID);
 		await waitForDrain();
 
-		expect(cases.get(CASE_ID).status).toBe("completed");
+		// The case is NOT auto-completed: it stays in "reporting" until the
+		// buyer explicitly confirms the report (POST /:caseId/confirm with
+		// action "complete_report"). This is the one-case-one-completion rule.
+		expect(cases.get(CASE_ID).status).toBe("reporting");
 	});
 
 	test("a case that cannot be found is failed, not left investigating", async () => {

@@ -70,14 +70,21 @@ const SUMMARY_MARKER = /^SUMMARY:\s*(.+)$/iu;
  * not just a count after the turn finishes. Uses the same
  * `support.case.activity` wire shape as the investigation roles, so the
  * ActivityTree renders both phases identically.
+ *
+ * `id` is optional: when given, re-emitting with the same id updates the
+ * existing row (used for the Thinking running→done lifecycle). Without an id
+ * a fresh row is created.
  */
-function emitDiscussionActivity(caseId, state, kind, label, status = "done") {
+function emitDiscussionActivity(caseId, state, kind, label, status = "done", id) {
 	// Persist first so a reload re-seeds the tree; then emit live over SSE.
-	recordActivity(state, kind, label, status);
+	// recordActivity returns the exact row written (it may UPDATE an existing
+	// id in place rather than append), so emit that row — not the last one.
+	const row = recordActivity(state, kind, label, status, id);
 	try {
 		emitCaseEvent(caseId, CASE_EVENTS?.activity ?? "support.case.activity", {
 			caseId,
-			...state.activity[state.activity.length - 1],
+			...row,
+			...(id ? { runId: state.runId } : {}),
 		});
 	} catch {
 		// telemetry must never break the discussion loop
@@ -136,8 +143,13 @@ function defaultDiscussionState() {
 	return {
 		rounds: 0,
 		proposedSummary: null,
+		problemBrief: null,
+		briefStatus: "draft",
 		discussionComplete: false,
 		filesRead: [],
+		// Isolates this discussion's activity from investigation runs and from
+		// other discussion rounds on the same case.
+		runId: crypto.randomUUID(),
 		// Live activity rows are persisted here so the tree survives a reload.
 		activity: [],
 		// Last token-usage ping, persisted so the context meter survives a reload
@@ -146,20 +158,34 @@ function defaultDiscussionState() {
 	};
 }
 
-/** Append one activity row to the persisted state (capped, like the client). */
-function recordActivity(state, kind, label, status = "done") {
+/** Append one activity row to the persisted state (capped, like the client).
+ * When `id` is given, replace the existing row with that id instead of
+ * appending — used for the Thinking running→done lifecycle. */
+function recordActivity(state, kind, label, status = "done", id) {
 	if (!Array.isArray(state.activity)) {
 		state.activity = [];
 	}
-	state.activity.push({
-		id: crypto.randomUUID(),
+	const row = {
+		id: id ?? crypto.randomUUID(),
 		role: "assistant",
 		kind,
 		label,
 		status,
+		runId: state.runId,
 		at: new Date().toISOString(),
-	});
+	};
+	if (id) {
+		const index = state.activity.findIndex((entry) => entry.id === id);
+		if (index >= 0) {
+			state.activity[index] = row;
+		} else {
+			state.activity.push(row);
+		}
+	} else {
+		state.activity.push(row);
+	}
 	state.activity = state.activity.slice(-200);
+	return row;
 }
 
 async function readDiscussionState(caseId) {
@@ -348,7 +374,11 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 			fileContents,
 		});
 
-		emitDiscussionActivity(id, state, "other", "Thinking");
+		// Thinking starts as "running" while the provider works, and flips to
+		// "done" once the reply settles — a proper lifecycle instead of
+		// recording completion before the provider has finished.
+		const thinkingId = `thinking-${subTurn}`;
+		emitDiscussionActivity(id, state, "think", "Thinking", "running", thinkingId);
 
 		let reply = null;
 		if (provider) {
@@ -363,6 +393,7 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 				reply = null;
 			}
 		}
+		emitDiscussionActivity(id, state, "think", "Thinking", "done", thinkingId);
 
 		if (!reply) {
 			// No provider: degrade to a fixed clarifying question.
@@ -373,12 +404,15 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 		const parsed = parseAssistantReply(reply);
 
 		if (parsed.summary) {
-			// The assistant proposes a summary. Store it and ask the client to confirm.
+			// The assistant proposes a summary. Store it as the editable
+			// problem brief and ask the client to confirm.
 			const summary = safeProse(parsed.summary, 200);
 			const nextState = {
 				...state,
 				rounds,
 				proposedSummary: summary,
+				problemBrief: summary,
+				briefStatus: "draft",
 				discussionComplete: true,
 				filesRead: [...state.filesRead, ...filesReadThisTurn],
 			};
@@ -392,6 +426,8 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 				state: "summary_proposed",
 				reply: summary,
 				summary,
+				problemBrief: summary,
+				briefStatus: "draft",
 				rounds,
 				reads: filesReadThisTurn,
 			};
@@ -444,24 +480,65 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 }
 
 /**
- * The client confirms the proposed summary. The case moves to investigation.
+ * The client edits the proposed problem brief before confirming.
  *
- * @param {string} caseId
+ * @param {Object} params
+ * @param {string} params.caseId
+ * @param {string} params.brief The edited brief text.
+ * @returns {Promise<{ ok: boolean, error?: string }>}
+ */
+export async function updateProblemBrief({ caseId, brief } = {}) {
+	const id = String(caseId || "");
+	if (!id) {
+		return { ok: false, error: "caseId required" };
+	}
+	const text = String(brief ?? "").trim();
+	if (!text) {
+		return { ok: false, error: "brief required" };
+	}
+	const state = await readDiscussionState(id);
+	const nextState = {
+		...state,
+		problemBrief: text,
+		briefStatus: "draft",
+	};
+	await writeDiscussionState(id, nextState);
+	logInfo("problem brief updated", { caseId: id });
+	return { ok: true };
+}
+
+/**
+ * The client confirms the proposed summary. The case moves to investigation.
+ * The confirmed brief (possibly edited) becomes the case summary.
+ *
+ * @param {Object} params
+ * @param {string} params.caseId
+ * @param {string} [params.brief] Optional edited brief; falls back to the
+ *   proposed summary.
  * @returns {Promise<{ ok: boolean, summary?: string, error?: string }>}
  */
-export async function confirmDiscussionSummary({ caseId } = {}) {
+export async function confirmDiscussionSummary({ caseId, brief } = {}) {
 	const id = String(caseId || "");
 	if (!id) {
 		return { ok: false, error: "caseId required" };
 	}
 	const state = await readDiscussionState(id);
-	if (!state.proposedSummary) {
+	if (!(state.proposedSummary || brief)) {
 		return { ok: false, error: "No summary to confirm" };
 	}
-	const nextState = { ...state, discussionComplete: true };
+	const confirmedBrief = brief && brief.trim() ? brief.trim() : state.proposedSummary;
+	const nextState = {
+		...state,
+		discussionComplete: true,
+		briefStatus: "confirmed",
+	};
+	if (confirmedBrief) {
+		nextState.problemBrief = confirmedBrief;
+		nextState.proposedSummary = confirmedBrief;
+	}
 	await writeDiscussionState(id, nextState);
-	logInfo("discussion summary confirmed", { caseId: id, summary: state.proposedSummary });
-	return { ok: true, summary: state.proposedSummary };
+	logInfo("discussion summary confirmed", { caseId: id, summary: confirmedBrief });
+	return { ok: true, summary: confirmedBrief };
 }
 
 /**

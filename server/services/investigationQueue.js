@@ -558,9 +558,15 @@ async function runInvestigation(job) {
 		// can never undo a state the case has already left.
 		await advanceCaseStatus(caseId, "reporting");
 
-		// The report, the escalation, the mail and the terminal status. This
-		// is the end of the job: without it the investigation would run and
-		// nobody would ever read what it found.
+		// The report, the escalation, and the mail. The case is left in
+		// "reporting" after delivery: it only reaches "completed" when the
+		// buyer explicitly confirms the report (POST /:caseId/confirm with
+		// action "complete_report`). This keeps the completion decision with
+		// the buyer and makes a failed mail delivery non-terminal - the case
+		// can be retried instead of wrongly closed.
+		//
+		// These steps are independent of each other: escalation and issue
+		// filing never wait for the mail, and the mail never waits for them.
 		await finalizeInvestigation({ caseId, rows });
 	} catch (error) {
 		logError("investigation failed", error);
@@ -761,6 +767,7 @@ async function runRole({
  * @returns {Promise<{role: string, status: string, findings: object[], limitations: string[], summary: string, error?: string, retryable?: boolean}>}
  */
 async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionIDs }) {
+	const runId = row?.id ?? String(caseId);
 	await updateRow(row, {
 		status: "running",
 		attempt: row.attempt,
@@ -795,10 +802,19 @@ async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionI
 			sessionID,
 			text: prompt,
 			timeoutMs: agentTimeoutMs(),
+			onToolStart: (part, status) => {
+				try {
+					const id = toolStartId(part);
+					emitActivity(caseId, role, part, "running", id, runId);
+				} catch {
+					// telemetry must never break the poll loop
+				}
+			},
 			onToolSettled: (part, status) => {
 				settledAt.push(new Date().toISOString());
 				try {
-					emitActivity(caseId, role, part, status);
+					const id = toolStartId(part);
+					emitActivity(caseId, role, part, status, id, runId);
 				} catch {
 					// telemetry must never break the poll loop
 				}
@@ -1426,7 +1442,10 @@ async function finalizeInvestigation({ caseId, rows }) {
 	// blocks the report, and silently does nothing unless the owner opted in.
 	await fileIssues(caseId, finalFindings(investigations));
 	await deliver(caseRow, safeReport);
-	await setTerminalStatus(caseId, "completed");
+	// The case stays in "reporting" here. It reaches "completed" only when
+	// the buyer confirms the report (POST /:caseId/confirm, action
+	// "complete_report`). A mail failure leaves it in "reporting" so it can
+	// be retried instead of wrongly closed.
 }
 
 /**
@@ -1784,15 +1803,29 @@ async function emitCaseEvent(type, payload) {
 	}
 }
 
-function emitActivity(caseId, role, part, status) {
+/** A stable id for one tool call, derived from its name + input so the start
+ * and settle events of the same call can be paired on the client. */
+function toolStartId(part) {
+	try {
+		return `${part.name || part.tool || "tool"}|${JSON.stringify(part.state?.input ?? null)}`;
+	} catch {
+		return `${part.name || part.tool || "tool"}|unserializable`;
+	}
+}
+
+function emitActivity(caseId, role, part, status, id, runId) {
 	const { kind, label } = activityLabelFor(part);
+	// Pass the lifecycle status through: "running" while the tool is in
+	// flight, "done"/"failed" once it settles. runId isolates this run's
+	// activity from other runs on the same case.
 	return emitCaseEvent("support.case.activity", {
 		caseId,
 		role,
-		id: crypto.randomUUID(),
+		id: id ?? crypto.randomUUID(),
 		kind,
 		label,
-		status: status === "completed" ? "done" : "failed",
+		status: status === "completed" ? "done" : status === "running" ? "running" : "failed",
+		runId,
 		at: new Date().toISOString(),
 	});
 }

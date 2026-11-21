@@ -177,6 +177,7 @@ function seedActivityFromInvestigations(investigations) {
 				kind,
 				label: String(label).slice(0, 80),
 				status: failed ? "failed" : "done",
+				runId: String(investigation?.id ?? investigation?.attempt ?? ""),
 				at,
 			});
 		});
@@ -319,6 +320,10 @@ function applyCaseEvent(state, action) {
 			if (!activityPayload?.id) {
 				return state;
 			}
+			// Preserve the full lifecycle status (running / queued / waiting /
+			// done / failed) instead of collapsing everything to done or failed.
+			// runId isolates activity from one investigation run from another so
+			// multiple rounds on the same case never mix.
 			const entry = {
 				id: String(activityPayload.id),
 				role: typeof activityPayload.role === "string" ? activityPayload.role : undefined,
@@ -327,7 +332,11 @@ function applyCaseEvent(state, action) {
 					typeof activityPayload.label === "string"
 						? activityPayload.label.slice(0, 80)
 						: "Working",
-				status: activityPayload.status === "failed" ? "failed" : "done",
+				status:
+					typeof activityPayload.status === "string" && activityPayload.status
+						? activityPayload.status
+						: "done",
+				runId: typeof activityPayload.runId === "string" ? activityPayload.runId : undefined,
 				at: typeof activityPayload.at === "string" ? activityPayload.at : undefined,
 			};
 			return { ...state, activity: upsertActivityRow(state.activity, entry) };
@@ -438,6 +447,15 @@ function caseReducer(state, action) {
 					lastSummary: action.result?.summary,
 					lastReads: action.result?.reads,
 					rounds: action.result?.rounds ?? state.discussion?.rounds ?? 0,
+					problemBrief:
+						action.result?.problemBrief ??
+						(action.result?.brief ? action.result.brief : state.discussion?.problemBrief),
+					briefStatus:
+						action.result?.action === "confirm"
+							? "confirmed"
+							: action.result?.action === "update_brief"
+								? "draft"
+								: state.discussion?.briefStatus,
 				},
 			};
 		case "discuss:state": {
@@ -675,6 +693,31 @@ async function cancelAction(caseId, dispatch, supportToken = "") {
 	}
 }
 
+// POST /support/cases/:caseId/handoff — the buyer asks for a human.
+async function handoffAction(caseId, dispatch, reason, supportToken = "") {
+	if (!caseId) {
+		dispatch({ type: "error:set", error: "No support case is open." });
+		return null;
+	}
+	try {
+		const data = await apiRequest(`/support/cases/${encodeURIComponent(caseId)}/handoff`, {
+			method: "POST",
+			token: getToken(),
+			headers: supportTokenHeaders(supportToken),
+			skipSessionClear: Boolean(supportToken),
+			body: { reason },
+		});
+		return data ?? null;
+	} catch (err) {
+		dispatch({
+			type: "error:set",
+			error: err?.message || "Unable to request a human support representative.",
+			status: err?.status ?? null,
+		});
+		return null;
+	}
+}
+
 // A discussion turn waits on a real model turn that can read several files —
 // measured at ~9 minutes on a free model. Every layer must allow that long:
 // the browser fetch, the API request logger, and the provider itself.
@@ -685,19 +728,30 @@ const DISCUSSION_TIMEOUT_MS = 15 * 60_000;
 //   - "discuss": the assistant asks a question, reads a file, or proposes a summary.
 //   - "confirm": the client confirmed the proposed summary → investigation starts.
 //   - "deny": the client rejected the proposed summary → discussion continues.
-async function discussAction(caseId, dispatch, content, action = "discuss", supportToken = "") {
+async function discussAction(
+	caseId,
+	dispatch,
+	content,
+	action = "discuss",
+	supportToken = "",
+	brief,
+) {
 	if (!caseId) {
 		dispatch({ type: "error:set", error: "No support case is open." });
 		return null;
 	}
 	try {
+		const body = { content, action };
+		if (action === "confirm" && brief) {
+			body.brief = brief;
+		}
 		const data = await apiRequest(`/support/cases/${encodeURIComponent(caseId)}/discuss`, {
 			method: "POST",
 			token: getToken(),
 			headers: supportTokenHeaders(supportToken),
 			skipSessionClear: Boolean(supportToken),
 			timeoutMs: DISCUSSION_TIMEOUT_MS,
-			body: { content, action },
+			body,
 		});
 		dispatch({ type: "discuss:result", result: data });
 		return data ?? null;
@@ -842,12 +896,59 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 	);
 
 	const confirmDiscussion = useCallback(
-		() => discussAction(caseId, dispatch, "", "confirm", supportToken),
+		(brief) => {
+			if (!caseId) {
+				dispatch({ type: "error:set", error: "No support case is open." });
+				return null;
+			}
+			return discussAction(caseId, dispatch, "", "confirm", supportToken, brief);
+		},
 		[caseId, supportToken],
 	);
 
 	const denyDiscussion = useCallback(
 		() => discussAction(caseId, dispatch, "", "deny", supportToken),
+		[caseId, supportToken],
+	);
+
+	const updateProblemBrief = useCallback(
+		(brief) => {
+			if (!caseId) {
+				dispatch({ type: "error:set", error: "No support case is open." });
+				return null;
+			}
+			return apiRequest(`/support/cases/${encodeURIComponent(caseId)}/discuss`, {
+				method: "POST",
+				token: getToken(),
+				headers: supportTokenHeaders(supportToken),
+				skipSessionClear: Boolean(supportToken),
+				timeoutMs: DISCUSSION_TIMEOUT_MS,
+				body: { action: "update_brief", brief },
+			})
+				.then((data) => {
+					dispatch({
+						type: "discuss:result",
+						result: {
+							action: data?.action,
+							brief,
+						},
+					});
+					return data ?? null;
+				})
+				.catch((err) => {
+					dispatch({
+						type: "error:set",
+						error: err?.message || "Unable to update the problem brief.",
+						status: err?.status ?? null,
+					});
+					return null;
+				});
+		},
+		[caseId, supportToken],
+	);
+
+	const requestHuman = useCallback(
+		(reason = "") => handoffAction(caseId, dispatch, reason, supportToken),
 		[caseId, supportToken],
 	);
 
@@ -898,6 +999,8 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 		discuss,
 		confirmDiscussion,
 		denyDiscussion,
+		updateProblemBrief,
+		requestHuman,
 		loadDiscussionState,
 		refresh,
 		clearError,

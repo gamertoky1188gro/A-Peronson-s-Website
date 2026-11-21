@@ -23,9 +23,11 @@ import {
 	Check,
 	ExternalLink,
 	File,
+	FilePen,
 	FileText,
 	FileVideo,
 	Image as ImageIcon,
+	LoaderCircle,
 	Lock,
 	LogOut,
 	PanelLeft,
@@ -33,6 +35,7 @@ import {
 	ShieldCheck,
 	Sparkles,
 	Trash2,
+	UserRound,
 	X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -59,11 +62,18 @@ import { useSupportCase } from "../../hooks/useSupportCase.js";
 import { apiRequest, getCurrentUser, getToken } from "../../lib/auth.js";
 import { cn } from "../../lib/cn.js";
 import { formatBytes } from "../../lib/formatBytes.js";
+import { downloadReportHtml } from "../../lib/reportExport.js";
 import { SUPPORTED_ATTACHMENT_MIME_TYPES } from "../../lib/supportedAttachments.js";
 
 const SUPPORTED_MEDIA_ACCEPT = SUPPORTED_ATTACHMENT_MIME_TYPES.join(",");
 
 import { signOne } from "../../lib/signedFile.js";
+import {
+	getSupportLanguage,
+	SUPPORT_LANGUAGES,
+	saveSupportLanguage,
+	t,
+} from "../../lib/supportI18n.js";
 import { clearSupportSession, getSupportSession } from "../../lib/supportToken.js";
 
 // The six investigation steps, in run order. Derived from the case status —
@@ -637,7 +647,10 @@ function FindingsPanel({ findingRows }) {
 					const finding = entry?.finding || {};
 					const confidence = String(finding.confidence || "speculative");
 					const evidence = Array.isArray(finding.evidence) ? finding.evidence : [];
+					const limitations = Array.isArray(finding.limitations) ? finding.limitations : [];
+					const verified = finding.verified === true;
 					let tone = "bg-slate-500/15 text-slate-400";
+					const confidenceLabel = CONFIDENCE_LABELS[confidence] || confidence;
 					if (confidence === "confirmed") {
 						tone = "bg-emerald-500/15 text-emerald-300";
 					} else if (confidence === "probable") {
@@ -645,10 +658,16 @@ function FindingsPanel({ findingRows }) {
 					}
 					return (
 						<li key={key} class="rounded-xl border border-white/10 bg-[#0b0714]/60 p-3">
-							<div class="flex flex-wrap items-center gap-2">
+							<div class="flex flex-wrap items-center gap-2 mb-1">
 								<span class={cn("rounded-full px-2.5 py-1 text-[11px] font-semibold", tone)}>
-									{CONFIDENCE_LABELS[confidence] || confidence}
+									{confidenceLabel}
 								</span>
+								{verified ? (
+									<span class="flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-semibold text-emerald-300">
+										<Check class="h-2.5 w-2.5" aria-hidden="true" />
+										Independently verified
+									</span>
+								) : null}
 								{entry?.role ? (
 									<span class="rounded-full bg-white/5 px-2.5 py-1 text-[11px] text-[#a99bbd]">
 										{entry.role}
@@ -656,40 +675,63 @@ function FindingsPanel({ findingRows }) {
 								) : null}
 							</div>
 							<p class="mt-2 text-sm leading-6 text-[#f4eeff]">{finding.detail || ""}</p>
+							{limitations.length > 0 ? (
+								<div class="mt-2 rounded-xl border border-amber-400/30 bg-amber-500/5 p-2">
+									<p class="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300/90">
+										Limitations
+									</p>
+									<p class="text-xs leading-5 text-amber-100">
+										{limitations.map((lim, i) => (
+											<span key={i}>
+												{i > 0 ? "; " : ""}
+												{String(lim)}
+											</span>
+										))}
+									</p>
+								</div>
+							) : null}
 							{evidence.length > 0 ? (
-								<ul class="mt-2 space-y-1">
-									{evidence.map((item) => {
-										const href = safeExternalUrl(item?.url);
-										const label = item?.file || item?.commit || "evidence";
-										const suffix = item?.lines ? ` (lines ${item.lines})` : "";
-										return (
-											<li key={`${label}${suffix}`} class="text-xs">
-												{href ? (
-													<a
-														href={href}
-														target="_blank"
-														rel="noopener noreferrer"
-														class="inline-flex items-center gap-1 text-cyan-300 underline underline-offset-2"
-													>
-														{label}
-														{suffix}
-														<ExternalLink class="h-3 w-3" aria-hidden="true" />
-													</a>
-												) : (
-													<span class="text-[#a99bbd]">
-														{label}
-														{suffix}
-													</span>
-												)}
-											</li>
-										);
-									})}
-								</ul>
+								<div class="mt-2">
+									<p class="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+										Evidence
+									</p>
+									<ul class="space-y-1">
+										{evidence.map((item) => {
+											const href = safeExternalUrl(item?.url);
+											const label = item?.file || item?.commit || "evidence";
+											const suffix = item?.lines ? ` (lines ${item.lines})` : "";
+											return (
+												<li key={`${label}${suffix}`} class="text-xs">
+													{href ? (
+														<a
+															href={href}
+															target="_blank"
+															rel="noopener noreferrer"
+															class="inline-flex items-center gap-1 text-cyan-300 underline underline-offset-2"
+														>
+															{label}
+															{suffix}
+															<ExternalLink class="h-3 w-3" aria-hidden="true" />
+														</a>
+													) : (
+														<span class="text-[#a99bbd]">
+															{label}
+															{suffix}
+														</span>
+													)}
+												</li>
+											);
+										})}
+									</ul>
+								</div>
 							) : null}
 						</li>
 					);
 				})}
 			</ul>
+			{findingRows.length === 0 ? (
+				<p class="mt-3 text-[11px] text-[#a99bbd]">No findings recorded yet.</p>
+			) : null}
 		</section>
 	);
 }
@@ -726,10 +768,29 @@ const REPORT_MARKDOWN_COMPONENTS = {
 
 /**
  * The discussion summary panel. Shown when the assistant has proposed a
- * summary and is waiting for the client to confirm ("yes, that's it") or
- * deny ("nope, keep looking"). Nothing is emailed until the client confirms.
+ * summary and is waiting for the client to confirm. The client can:
+ *
+ *   - Confirm: the brief (as-is or edited) is accepted and the investigation starts.
+ *   - Edit details: change the brief text, then confirm.
+ *   - Not quite right: the assistant re-proposes after hearing the denial.
+ *
+ * Nothing is emailed until the client confirms.
  */
-function DiscussionSummaryPanel({ summary, reads, onConfirm, onDeny, confirming }) {
+function DiscussionSummaryPanel({
+	summary,
+	problemBrief,
+	briefStatus,
+	editingBrief,
+	briefDraft,
+	reads,
+	onConfirm,
+	onDeny,
+	onUpdateBrief,
+	onEditBrief,
+	onBriefChange,
+	confirming,
+}) {
+	const brief = problemBrief || summary;
 	return (
 		<section
 			aria-label="Proposed summary"
@@ -739,51 +800,109 @@ function DiscussionSummaryPanel({ summary, reads, onConfirm, onDeny, confirming 
 				<div class="flex h-8 w-8 items-center justify-center rounded-full border border-purple-500/40 bg-purple-500/20 text-purple-400">
 					<Sparkles class="h-4 w-4" aria-hidden="true" />
 				</div>
-				<h3 class="text-sm font-semibold text-[#f4eeff]">The assistant has a summary</h3>
+				<h3 class="text-sm font-semibold text-[#f4eeff]">
+					{briefStatus === "confirmed" ? "Summary confirmed" : "The assistant has a summary"}
+				</h3>
 			</div>
-			<p class="mb-3 text-sm leading-6 text-[#f4eeff]">{summary}</p>
-			{reads && reads.length > 0 && (
-				<div class="mb-3 rounded-xl border border-white/10 bg-white/5 p-2">
-					<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd] mb-1">
-						Files reviewed
+
+			{editingBrief ? (
+				<>
+					<p class="mb-3 text-sm leading-6 text-[#f4eeff]">
+						Edit the problem summary so the investigation starts from what you actually experienced.
 					</p>
-					<ul class="space-y-1 text-xs text-[#a99bbd] font-mono">
-						{reads.map((file) => (
-							<li key={file} class="truncate">
-								{file}
-							</li>
-						))}
-					</ul>
-				</div>
-			)}
-			<p class="mb-4 text-[11px] leading-5 text-[#a99bbd]">
-				Is this the problem you're experiencing? Confirm and I&rsquo;ll investigate and email you
-				the report. Deny and we&rsquo;ll keep discussing.
-			</p>
-			<div class="flex flex-wrap items-center gap-3">
-				<button
-					type="button"
-					onClick={onConfirm}
-					disabled={confirming}
-					class="inline-flex items-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-xs font-semibold text-purple-300 transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-				>
-					{confirming ? (
-						<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
-					) : (
-						<Check class="h-3 w-3" />
+					<div class="mb-3 rounded-xl border border-white/10 bg-white/5 p-3">
+						<textarea
+							value={briefDraft}
+							onChange={(e) => onBriefChange(e.target.value)}
+							class="w-full min-h-[6rem] rounded-lg border border-white/20 bg-[#0b0714] p-3 font-mono text-[11px] leading-6 text-[#f4eeff] focus:outline-none focus:border-purple-500/50"
+							placeholder="Describe the problem in your own words…"
+						/>
+					</div>
+					<div class="flex flex-wrap items-center gap-3">
+						<button
+							type="button"
+							onClick={onUpdateBrief}
+							disabled={confirming || !briefDraft.trim()}
+							class="inline-flex items-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-xs font-semibold text-purple-300 transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							{confirming ? (
+								<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
+							) : (
+								<Check class="h-3 w-3" />
+							)}
+							Update brief
+						</button>
+						<button
+							type="button"
+							onClick={onEditBrief}
+							disabled={confirming}
+							class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-[#a99bbd] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+						>
+							<X class="h-3 w-3" />
+							Cancel
+						</button>
+					</div>
+				</>
+			) : (
+				<>
+					<p class="mb-3 text-sm leading-6 text-[#f4eeff]">{brief}</p>
+					{reads && reads.length > 0 && (
+						<div class="mb-3 rounded-xl border border-white/10 bg-white/5 p-2">
+							<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd] mb-1">
+								Files reviewed
+							</p>
+							<ul class="space-y-1 text-xs text-[#a99bbd] font-mono">
+								{reads.map((file) => (
+									<li key={file} class="truncate">
+										{file}
+									</li>
+								))}
+							</ul>
+						</div>
 					)}
-					Yes, that&rsquo;s the problem
-				</button>
-				<button
-					type="button"
-					onClick={onDeny}
-					disabled={confirming}
-					class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-[#a99bbd] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
-				>
-					<X class="h-3 w-3" />
-					Nope, keep looking
-				</button>
-			</div>
+					{briefStatus === "confirmed" ? null : (
+						<p class="mb-4 text-[11px] leading-5 text-[#a99bbd]">
+							Is this the problem you're experiencing? Confirm and I&rsquo;ll investigate and email
+							you the report. Deny and we&rsquo;ll keep discussing.
+						</p>
+					)}
+					{briefStatus === "confirmed" ? null : (
+						<div class="flex flex-wrap items-center gap-3">
+							<button
+								type="button"
+								onClick={onConfirm}
+								disabled={confirming}
+								class="inline-flex items-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-xs font-semibold text-purple-300 transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+							>
+								{confirming ? (
+									<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
+								) : (
+									<Check class="h-3 w-3" />
+								)}
+								Yes, that&rsquo;s the problem
+							</button>
+							<button
+								type="button"
+								onClick={onEditBrief}
+								disabled={confirming}
+								class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-[#a99bbd] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+							>
+								<FilePen class="h-3 w-3" />
+								Edit details
+							</button>
+							<button
+								type="button"
+								onClick={onDeny}
+								disabled={confirming}
+								class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-[#a99bbd] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+							>
+								<X class="h-3 w-3" />
+								Nope, keep looking
+							</button>
+						</div>
+					)}
+				</>
+			)}
 		</section>
 	);
 }
@@ -933,6 +1052,9 @@ export default function SupportWorkspace() {
 	// confirms ("yes, that's it") or denies ("nope, keep looking").
 	const [discussionSummary, setDiscussionSummary] = useState("");
 	const [discussionAwaitingConfirm, setDiscussionAwaitingConfirm] = useState(false);
+	// The buyer can edit the proposed problem brief before confirming.
+	const [editingBrief, setEditingBrief] = useState(false);
+	const [briefDraft, setBriefDraft] = useState("");
 	// null while the capabilities request is in flight; "error" when it fails;
 	// otherwise the envelope from GET /api/support/capabilities.
 	const [capabilities, setCapabilities] = useState(null);
@@ -1035,11 +1157,14 @@ export default function SupportWorkspace() {
 	useEffect(() => {
 		if (discussion?.lastAction === "summary_proposed" && discussion?.lastSummary) {
 			setDiscussionSummary(discussion.lastSummary);
+			setBriefDraft(discussion.problemBrief || discussion.lastSummary);
 			setDiscussionAwaitingConfirm(true);
+			setEditingBrief(false);
 		}
 		if (caseStatus === "investigating" || caseStatus === "completed") {
 			setDiscussionAwaitingConfirm(false);
 			setDiscussionSummary("");
+			setEditingBrief(false);
 		}
 	}, [discussion, caseStatus]);
 
@@ -1290,13 +1415,27 @@ export default function SupportWorkspace() {
 		}
 	}
 
+	function handleDownloadReport() {
+		if (!supportCase.report?.report) {
+			return;
+		}
+		downloadReportHtml({
+			caseId,
+			title: supportCase.caseRow?.subject || `Investigation ${caseId}`,
+			subtitle: `Case ${caseId} · Generated ${new Date().toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}`,
+			markdown: supportCase.report.report,
+			footer: "GarTexHub AI Investigation — evidence-backed support report",
+		});
+	}
+
 	async function handleConfirmDiscussion() {
 		setConfirming(true);
 		setProblem("");
 		try {
-			await confirmDiscussion();
+			await confirmDiscussion(briefDraft || discussionSummary || "");
 			setDiscussionAwaitingConfirm(false);
 			setDiscussionSummary("");
+			setEditingBrief(false);
 		} finally {
 			setConfirming(false);
 		}
@@ -1309,9 +1448,51 @@ export default function SupportWorkspace() {
 			await denyDiscussion();
 			setDiscussionAwaitingConfirm(false);
 			setDiscussionSummary("");
+			setEditingBrief(false);
 			setNotice("Noted — let's keep discussing.");
 		} finally {
 			setConfirming(false);
+		}
+	}
+
+	async function handleUpdateBrief() {
+		if (!briefDraft.trim()) {
+			return;
+		}
+		setConfirming(true);
+		try {
+			await updateProblemBrief(briefDraft.trim());
+			setDiscussionSummary(briefDraft.trim());
+			setEditingBrief(false);
+			setNotice("Brief updated — confirm when it's right.");
+		} finally {
+			setConfirming(false);
+		}
+	}
+
+	const [handoffOpen, setHandoffOpen] = useState(false);
+	const [handoffReason, setHandoffReason] = useState("");
+	const [handoffSending, setHandoffSending] = useState(false);
+	const [language, setLanguage] = useState(() => getSupportLanguage());
+	const tr = useCallback((key) => t(language, key), [language]);
+	function changeLanguage(code) {
+		setLanguage(code);
+		saveSupportLanguage(code);
+	}
+
+	async function handleHandoff() {
+		if (!caseId) {
+			return;
+		}
+		setHandoffSending(true);
+		try {
+			const result = await supportCase.requestHuman(handoffReason);
+			if (result) {
+				setHandoffOpen(false);
+				setNotice("A support representative will take it from here — no need to repeat yourself.");
+			}
+		} finally {
+			setHandoffSending(false);
 		}
 	}
 
@@ -1388,14 +1569,35 @@ export default function SupportWorkspace() {
 				<div class="min-w-0">
 					<p class="text-sm font-semibold text-[#f4eeff]">Support</p>
 					<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-purple-400">
-						AI Investigation
+						{tr("aiInvestigation")}
 					</p>
 				</div>
 			</div>
 
+			<div class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 p-2">
+				<label
+					for="support-language"
+					class="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a99bbd]"
+				>
+					{tr("language")}
+				</label>
+				<select
+					id="support-language"
+					value={language}
+					onChange={(e) => changeLanguage(e.target.value)}
+					class="ml-auto rounded-lg border border-white/10 bg-[#0b0714] px-2 py-1 text-[11px] text-[#f4eeff] focus:outline-none focus:border-purple-500/50"
+				>
+					{SUPPORT_LANGUAGES.map((lang) => (
+						<option key={lang.code} value={lang.code}>
+							{lang.label}
+						</option>
+					))}
+				</select>
+			</div>
+
 			<div class="rounded-xl border border-white/10 bg-white/5 p-3">
 				<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
-					Case reference
+					{tr("caseReference")}
 				</p>
 				<p
 					class="mt-1 truncate text-[12px] text-[#f4eeff]"
@@ -1458,6 +1660,54 @@ export default function SupportWorkspace() {
 					publicly.
 				</p>
 			</div>
+
+			<div class="rounded-xl border border-white/10 bg-white/5 p-3">
+				<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+					{tr("myCaseControls")}
+				</p>
+				<div class="flex flex-col gap-1.5">
+					<button
+						type="button"
+						onClick={handleDownloadReport}
+						disabled={!supportCase.report?.report}
+						class="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[11px] text-[#dcd2ea] transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+					>
+						<FileText class="h-3.5 w-3.5 shrink-0 text-cyan-300" aria-hidden="true" />
+						{tr("downloadReport")}
+					</button>
+					{caseStatus === "investigating" ? (
+						<button
+							type="button"
+							onClick={handleCancel}
+							class="inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[11px] text-[#dcd2ea] transition hover:bg-white/5"
+						>
+							<X class="h-3.5 w-3.5 shrink-0 text-rose-300" aria-hidden="true" />
+							tr("stopInvestigation")
+						</button>
+					) : null}
+					{caseStatus === "reporting" || caseStatus === "completed" ? (
+						<p class="px-2 py-1 text-[10px] leading-4 text-[#a99bbd]">
+							To raise something new, write below — it reopens this investigation with your message
+							as new evidence.
+						</p>
+					) : null}
+				</div>
+			</div>
+
+			{caseStatus !== "completed" && caseStatus !== "human_support" ? (
+				<button
+					type="button"
+					onClick={() => setHandoffOpen(true)}
+					class="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-2.5 text-xs font-semibold text-amber-200 transition hover:border-amber-400/50 hover:bg-amber-500/15"
+				>
+					<UserRound class="h-4 w-4" aria-hidden="true" />
+					{tr("talkToHuman")}
+				</button>
+			) : caseStatus === "human_support" ? (
+				<p class="rounded-xl border border-amber-400/30 bg-amber-500/10 p-3 text-[11px] leading-5 text-amber-200">
+					A support representative is handling this case. You can still add messages below.
+				</p>
+			) : null}
 
 			<button
 				type="button"
@@ -1768,6 +2018,12 @@ export default function SupportWorkspace() {
 						</div>
 					) : null}
 
+					{/* Screen-reader status announcements (accessibility): meaningful
+					    case-state changes are spoken once, politely. */}
+					<span class="sr-only" role="status" aria-live="polite" aria-atomic="true">
+						{`Case status: ${statusLabel}. ${notice}`}
+					</span>
+
 					<div
 						ref={transcriptRef}
 						role="log"
@@ -1853,59 +2109,112 @@ export default function SupportWorkspace() {
 								) : null}
 
 								{isInvestigating || caseStatus === "reporting" || caseStatus === "completed" ? (
-									<section
-										aria-label="Investigation plan"
-										class="rounded-2xl border border-cyan-400/20 bg-cyan-400/5 p-3"
-									>
-										<p class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-300">
-											<Check class="h-3.5 w-3.5" aria-hidden="true" />
-											Plan created
+									<>
+										{/* Chronological investigation timeline: one expandable
+										     activity group per specialist role, in run order. Each
+										     group shows its tools with running/done/failed state so
+										     the buyer can see what happened and inspect any node. */}
+										<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-300">
+											Investigation activity
 										</p>
-										<ol class="mt-2 space-y-1">
-											{["lead", "code", "repo", "research", "verify"].map((role) => {
-												const entry = (supportCase.progress || []).find((p) => p?.role === role);
-												const status = entry?.status || "queued";
-												const done = status === "complete" || status === "completed";
-												const active = status === "running";
-												return (
-													<li key={role} class="flex items-center gap-2 text-[11px]">
+										{["lead", "code", "repo", "research", "verify"].map((role) => {
+											const roleActivity = (supportCase.activity ?? []).filter(
+												(row) => row?.role === role,
+											);
+											const entry = (supportCase.progress || []).find((p) => p?.role === role);
+											const groupStatus =
+												entry?.status || (roleActivity.length > 0 ? "queued" : "idle");
+											const running = groupStatus === "running" || groupStatus === "queued";
+											const done = groupStatus === "complete";
+											const failed = groupStatus === "failed";
+											const tone = failed
+												? "border-rose-400/20 bg-rose-500/10 text-rose-300"
+												: running
+													? "border-cyan-400/20 bg-cyan-500/10 text-cyan-300"
+													: done
+														? "border-emerald-400/20 bg-emerald-500/10 text-emerald-300"
+														: "border-white/10 bg-white/5 text-[#a99bbd]";
+											return (
+												<section
+													key={role}
+													class={cn(
+														"rounded-2xl border p-3 mb-3 border-t border-l-2",
+														failed
+															? "border-rose-500/40 bg-rose-500/5"
+															: running
+																? "border-cyan-500/40 bg-cyan-500/5"
+																: done
+																	? "border-emerald-500/40 bg-emerald-500/5"
+																	: "border-white/5 bg-white/5",
+													)}
+												>
+													<h3
+														class="flex items-center gap-2 mb-2 text-xs font-semibold text-[#f4eeff]"
+														aria-level="3"
+													>
 														<span
-															aria-hidden="true"
 															class={cn(
-																"h-1.5 w-1.5 rounded-full",
-																done && "bg-emerald-400",
-																active && "animate-pulse motion-reduce:animate-none bg-cyan-400",
-																!(done || active) && "bg-white/20",
+																"flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
+																failed
+																	? "border-rose-400 bg-rose-500/10 text-rose-300"
+																	: running
+																		? "border-cyan-400 bg-cyan-500/10 text-cyan-300"
+																		: done
+																			? "border-emerald-400 bg-emerald-500/10 text-emerald-300"
+																			: "border-white/15 bg-white/5",
 															)}
-														/>
-														<span class="capitalize text-[#f4eeff]">{role}</span>
-														<span class="ml-auto text-[10px] text-[#a99bbd]">
-															{done ? "Done" : active ? "Running" : "Queued"}
+														>
+															{running ? (
+																<LoaderCircle class="h-3 w-3 animate-spin" />
+															) : done ? (
+																<Check class="h-3 w-3" />
+															) : null}
 														</span>
-													</li>
-												);
-											})}
-										</ol>
-									</section>
-								) : null}
-
-								{(supportCase.activity?.length ?? 0) > 0 || isInvestigating ? (
-									<ActivityTree
-										activity={supportCase.activity}
-										status={caseStatus}
-										active={sending || isInvestigating}
-										onInspect={setInspectedNode}
-										selectedId={inspectedNode?.id ?? null}
-									/>
+														<span class="text-xs font-semibold text-[#f4eeff]">
+															{role.charAt(0).toUpperCase() + role.slice(1)} investigator
+														</span>
+														<span class="ml-auto text-[10px] text-[#a99bbd]">
+															{failed ? "Failed" : running ? "Running" : done ? "Done" : "Queued"}
+														</span>
+													</h3>
+													{roleActivity.length > 0 ? (
+														<ActivityTree
+															activity={roleActivity}
+															role={role}
+															status={groupStatus}
+															active={running}
+															onInspect={setInspectedNode}
+															selectedId={inspectedNode?.id ?? null}
+														/>
+													) : (
+														<p class="text-[11px] text-[#6f647d]">
+															{failed
+																? "This role did not complete."
+																: running
+																	? "Waiting for results…"
+																	: "No activity recorded yet."}
+														</p>
+													)}
+												</section>
+											);
+										})}
+									</>
 								) : null}
 								{findingRows.length > 0 ? <FindingsPanel findingRows={findingRows} /> : null}
 
 								{discussionAwaitingConfirm && discussionSummary ? (
 									<DiscussionSummaryPanel
 										summary={discussionSummary}
+										problemBrief={discussion?.problemBrief ?? discussionSummary}
+										briefStatus={discussion?.briefStatus}
+										editingBrief={editingBrief}
+										briefDraft={briefDraft}
 										reads={discussion?.lastReads}
 										onConfirm={handleConfirmDiscussion}
 										onDeny={handleDenyDiscussion}
+										onUpdateBrief={handleUpdateBrief}
+										onEditBrief={setEditingBrief}
+										onBriefChange={setBriefDraft}
 										confirming={confirming}
 									/>
 								) : null}
@@ -2188,6 +2497,57 @@ export default function SupportWorkspace() {
 
 			{/* Click-to-inspect activity details */}
 			<ActivityInspector node={inspectedNode} onClose={() => setInspectedNode(null)} />
+
+			{/* Human handoff request */}
+			{handoffOpen ? (
+				<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+					<button
+						type="button"
+						aria-label="Close handoff dialog"
+						class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+						onClick={() => setHandoffOpen(false)}
+					/>
+					<div
+						role="dialog"
+						aria-modal="true"
+						aria-label={tr("talkToHuman")}
+						class="relative w-full max-w-md rounded-2xl border border-amber-400/30 bg-[#110c1d] p-5 shadow-2xl"
+					>
+						<h2 class="text-base font-semibold text-[#f4eeff]">{tr("talkToHuman")}</h2>
+						<p class="mt-2 text-[12px] leading-6 text-[#a99bbd]">
+							A support representative will receive this whole conversation — your problem, the
+							investigation and its findings — so you won't have to explain it again.
+						</p>
+						<label class="mt-4 block text-[11px] font-semibold text-[#c9bce0]" for="handoff-reason">
+							Anything you'd like them to know? (optional)
+						</label>
+						<textarea
+							id="handoff-reason"
+							value={handoffReason}
+							onChange={(e) => setHandoffReason(e.target.value)}
+							placeholder="e.g. This is urgent for our team"
+							class="mt-1.5 w-full min-h-[5rem] rounded-xl border border-white/15 bg-[#0b0714] p-3 text-[12px] leading-5 text-[#f4eeff] focus:outline-none focus:border-amber-400/50"
+						/>
+						<div class="mt-4 flex justify-end gap-2">
+							<button
+								type="button"
+								onClick={() => setHandoffOpen(false)}
+								class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-[#a99bbd] hover:bg-white/10"
+							>
+								Cancel
+							</button>
+							<button
+								type="button"
+								onClick={handleHandoff}
+								disabled={handoffSending}
+								class="rounded-xl border border-amber-400/30 bg-amber-500/15 px-4 py-2 text-xs font-semibold text-amber-200 hover:bg-amber-500/25 disabled:opacity-50"
+							>
+								{handoffSending ? "Requesting…" : "Request a human"}
+							</button>
+						</div>
+					</div>
+				</div>
+			) : null}
 		</div>
 	);
 }

@@ -1014,6 +1014,36 @@ export function buildReport({ caseRow, messages, investigations, generatedAt } =
 		"",
 	);
 
+	// Developer attention: the cases the owner must actually act on. A failed
+	// run, a critical/high finding or an escalation are the things that need a
+	// human; a clean report says so explicitly instead of leaving the owner to
+	// guess whether anything is waiting on them.
+	const attention = [];
+	if (failedRuns.length > 0) {
+		attention.push(
+			`${failedRuns.length} investigation run(s) failed — the case is incomplete and may need a re-run.`,
+		);
+	}
+	if (criticalCount > 0 || highCount > 0) {
+		attention.push(
+			`${criticalCount} critical and ${highCount} high severity confirmed finding(s) need review.`,
+		);
+	}
+	if (row?.escalated === true) {
+		attention.push("The case was escalated (security or data-loss finding confirmed).");
+	}
+	lines.push("## Developer attention required", "");
+	if (attention.length > 0) {
+		for (const item of attention) {
+			lines.push(`- ${item}`);
+		}
+	} else {
+		lines.push(
+			"- No immediate action needed. Review the findings and recommended next steps below.",
+		);
+	}
+	lines.push("");
+
 	lines.push(...renderMetadataSection(row));
 	lines.push(...renderComplaintSection(messageRows));
 	lines.push(...renderConversationSection(messageRows));
