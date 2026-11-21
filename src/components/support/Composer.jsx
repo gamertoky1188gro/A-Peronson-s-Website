@@ -26,6 +26,7 @@ const MAX_AUTOGROW_PX = 160;
  * @param {boolean} [props.attachVisible] - Default true.
  * @param {boolean} [props.attachEnabled] - Default true.
  * @param {string} [props.attachAccept] - MIME allowlist.
+ * @param {boolean} [props.focusShortcut] - Bind `/` to focus the textarea (off by default).
  * @param {string} [props.className]
  */
 export function Composer({
@@ -37,6 +38,7 @@ export function Composer({
 	attachVisible = true,
 	attachEnabled = true,
 	attachAccept = SUPPORTED_ATTACHMENT_ACCEPT,
+	focusShortcut = false,
 	className,
 }) {
 	const [draft, setDraft] = useState("");
@@ -54,6 +56,29 @@ export function Composer({
 		}
 	}, []);
 	useEffect(resize, [draft, resize]);
+
+	// `/` focuses the composer when nothing else has focus, matching the hint
+	// shown in modern agent UIs. Never hijack it while the user is typing in
+	// another field or a modifier is held.
+	useEffect(() => {
+		if (!focusShortcut) {
+			return;
+		}
+		const onKeyDown = (event) => {
+			if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey) {
+				return;
+			}
+			const target = event.target;
+			const tag = target?.tagName;
+			if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) {
+				return;
+			}
+			event.preventDefault();
+			textareaRef.current?.focus();
+		};
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [focusShortcut]);
 
 	// Notify the parent whenever the pending list changes, including mount ([]).
 	useEffect(() => {

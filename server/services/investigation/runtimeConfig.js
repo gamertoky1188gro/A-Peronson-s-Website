@@ -10,26 +10,26 @@
  * reimplementing the resolver.
  */
 
+// Tool names that are refused on EVERY resource. These are the mutating and
+// delegation tools — the trust boundary. `shell`/`bash` and `websearch` are
+// deliberately NOT here: the investigator agent (`.opencode/agents/investigator.md`)
+// allows a narrow read-only git shell allowlist and websearch, per AGENTS.md §33.
+// A shell action still resolves to `deny` for an arbitrary resource because the
+// allow rules only name specific git patterns; only `read`/`glob`/`grep` and
+// those narrow patterns are permitted.
 const ALWAYS_DENIED_TOOL_NAMES = [
 	"edit",
 	"write",
 	"patch",
-	"bash",
-	"shell",
 	"task",
 	"subagent",
 	"webfetch",
-	"websearch",
 	"question",
 	"external_directory",
 	"doom_loop",
 ];
 
-const ALWAYS_DISABLED_MCP_PATTERNS = [
-	"chrome-devtools_*",
-	"blender-mcp_*",
-	"minecraft_*",
-];
+const ALWAYS_DISABLED_MCP_PATTERNS = ["chrome-devtools_*", "blender-mcp_*", "minecraft_*"];
 
 /**
  * Deprecated no-op. Kept only because the read-only spike still imports it;
@@ -94,8 +94,8 @@ function normalizePermissionSources(permission) {
 function matchesPattern(pattern, value) {
 	if (pattern === "*") return true;
 	const escaped = String(pattern)
-		.replace(/[.+^${}()|[\]\\]/g, "\\$&")
-		.replace(/\*/g, ".*");
+		.replace(/[.+^${}()|[\]\\]/gu, "\\$&")
+		.replace(/\*/gu, ".*");
 	return new RegExp(`^${escaped}$`).test(String(value));
 }
 

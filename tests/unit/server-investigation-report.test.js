@@ -257,7 +257,7 @@ function confidenceFor(markdown, index) {
 	const lineIndex = markdown.slice(0, index).split("\n").length - 1;
 	const neighbourhood = [lines.at(lineIndex), ...lines.slice(lineIndex + 1, lineIndex + 12)];
 	for (const line of neighbourhood) {
-		const match = String(line).match(/\b(confirmed|probable|speculative)\b/i);
+		const match = String(line).match(/\b(confirmed|probable|speculative)\b/iu);
 		if (match) {
 			return match[1].toLowerCase();
 		}
@@ -276,24 +276,24 @@ describe("buildReport — the complete report", () => {
 		});
 	});
 
-	test("the case id is in the report", () => {
+	it("the case id is in the report", () => {
 		expect(md).toContain("case-42");
 	});
 
-	test("the case metadata carries the subject, the status and the owner", () => {
+	it("the case metadata carries the subject, the status and the owner", () => {
 		expect(md).toContain("Payment step returns HTTP 500");
-		expect(md).toMatch(/\binvestigating\b/);
+		expect(md).toMatch(/\binvestigating\b/u);
 		expect(md).toContain("client-7");
-		expect(md.toLowerCase()).toMatch(/created/);
+		expect(md.toLowerCase()).toMatch(/created/u);
 	});
 
-	test("the original complaint is quoted, not paraphrased away", () => {
-		expect(md.toLowerCase()).toMatch(/complaint/);
+	it("the original complaint is quoted, not paraphrased away", () => {
+		expect(md.toLowerCase()).toMatch(/complaint/u);
 		expect(md).toContain(COMPLAINT);
 	});
 
-	test("the conversation log carries every message with its role", () => {
-		expect(md.toLowerCase()).toMatch(/conversation/);
+	it("the conversation log carries every message with its role", () => {
+		expect(md.toLowerCase()).toMatch(/conversation/u);
 		const lower = md.toLowerCase();
 		for (const message of MESSAGES) {
 			expect(md).toContain(message.content);
@@ -301,47 +301,47 @@ describe("buildReport — the complete report", () => {
 		}
 	});
 
-	test("every agent that ran is named", () => {
+	it("every agent that ran is named", () => {
 		for (const investigation of INVESTIGATIONS) {
 			expect(md.toLowerCase()).toContain(investigation.role);
 		}
 	});
 
-	test("every finding is quoted with its detail", () => {
+	it("every finding is quoted with its detail", () => {
 		expect(md).toContain(CONFIRMED_DETAIL);
 		expect(md).toContain(PROBABLE_DETAIL);
 		expect(md).toContain(LEAD_DETAIL);
 		expect(md).toContain(UNSUPPORTED_DETAIL);
 	});
 
-	test("the confidence of every finding is shown", () => {
-		expect(md.toLowerCase()).toMatch(/confirmed/);
-		expect(md.toLowerCase()).toMatch(/probable/);
-		expect(md.toLowerCase()).toMatch(/speculative/);
+	it("the confidence of every finding is shown", () => {
+		expect(md.toLowerCase()).toMatch(/confirmed/u);
+		expect(md.toLowerCase()).toMatch(/probable/u);
+		expect(md.toLowerCase()).toMatch(/speculative/u);
 	});
 
-	test("the evidence references are shown", () => {
+	it("the evidence references are shown", () => {
 		expect(md).toContain("server/routes/paymentRoutes.js");
-		expect(md).toMatch(/88\D{0,3}104/);
-		expect(md).toMatch(/abc1234/);
+		expect(md).toMatch(/88\D{0,3}104/u);
+		expect(md).toMatch(/abc1234/u);
 		expect(md).toContain(EVIDENCE_URL);
 	});
 
-	test("the limitations are shown", () => {
-		expect(md.toLowerCase()).toMatch(/limitation/);
+	it("the limitations are shown", () => {
+		expect(md.toLowerCase()).toMatch(/limitation/u);
 		expect(md).toContain("The live gateway logs were not reachable from the read-only sandbox.");
 		expect(md).toContain("The sandbox has no network access.");
 	});
 
-	test("there is a next steps section with content in it", () => {
-		const index = md.search(/next steps/i);
+	it("there is a next steps section with content in it", () => {
+		const index = md.search(/next steps/iu);
 		expect(index).toBeGreaterThan(-1);
 		expect(md.slice(index).trim().length).toBeGreaterThan("next steps".length + 10);
 	});
 
-	test("the audit and delivery section is present", () => {
-		expect(md.toLowerCase()).toMatch(/audit/);
-		expect(md.toLowerCase()).toMatch(/deliver/);
+	it("the audit and delivery section is present", () => {
+		expect(md.toLowerCase()).toMatch(/audit/u);
+		expect(md.toLowerCase()).toMatch(/deliver/u);
 	});
 });
 
@@ -356,24 +356,24 @@ describe("buildReport — a failed investigation is incomplete, not empty", () =
 		});
 	});
 
-	test("the report says the investigation was incomplete", () => {
-		expect(md.toLowerCase()).toMatch(/incomplete/);
+	it("the report says the investigation was incomplete", () => {
+		expect(md.toLowerCase()).toMatch(/incomplete/u);
 	});
 
-	test("the failure and its error are reported", () => {
+	it("the failure and its error are reported", () => {
 		expect(md).toContain("agent turn timed out after 120000ms");
-		expect(md.toLowerCase()).toMatch(/failed/);
+		expect(md.toLowerCase()).toMatch(/failed/u);
 	});
 
-	test("a failed investigation is not reported as 'no findings found'", () => {
-		expect(md.toLowerCase()).not.toMatch(/no findings/);
+	it("a failed investigation is not reported as 'no findings found'", () => {
+		expect(md.toLowerCase()).not.toMatch(/no findings/u);
 	});
 
 	// The case where the dishonesty actually bites: the ONLY run failed, so
 	// there is nothing else in the report. A renderer that treats a crashed
 	// run as an empty one has nothing left to say and writes "no findings
 	// found" — which reads as "we looked and there was nothing to find".
-	test("a case whose only run failed does not read as 'no findings found'", () => {
+	it("a case whose only run failed does not read as 'no findings found'", () => {
 		const onlyFailed = buildReport({
 			caseRow: CASE_ROW,
 			messages: MESSAGES,
@@ -381,18 +381,18 @@ describe("buildReport — a failed investigation is incomplete, not empty", () =
 		});
 
 		expect(onlyFailed.toLowerCase()).toContain("incomplete");
-		expect(onlyFailed.toLowerCase()).not.toMatch(/no findings/);
+		expect(onlyFailed.toLowerCase()).not.toMatch(/no findings/u);
 		expect(onlyFailed).toContain("agent turn timed out after 120000ms");
 	});
 
-	test("the specialists that did finish still have their findings in the report", () => {
+	it("the specialists that did finish still have their findings in the report", () => {
 		expect(md).toContain(CONFIRMED_DETAIL);
 		expect(md).toContain(LEAD_DETAIL);
 	});
 });
 
 describe("buildReport — an unevidenced claim is never sold as confirmed", () => {
-	test("a finding with no evidence renders, and is labelled speculative", () => {
+	it("a finding with no evidence renders, and is labelled speculative", () => {
 		const md = buildReport({
 			caseRow: CASE_ROW,
 			messages: MESSAGES,
@@ -428,7 +428,7 @@ describe("buildReport — the final finding set is counted once", () => {
 		},
 	};
 
-	test("a finding the verify row repeats is counted once", () => {
+	it("a finding the verify row repeats is counted once", () => {
 		const md = buildReport({
 			caseRow: CASE_ROW,
 			messages: MESSAGES,
@@ -443,7 +443,7 @@ describe("buildReport — the final finding set is counted once", () => {
 		expect(md).toContain("**Source role:** code");
 	});
 
-	test("the count of rendered findings is the count of the findings", () => {
+	it("the count of rendered findings is the count of the findings", () => {
 		const md = buildReport({
 			caseRow: CASE_ROW,
 			messages: MESSAGES,
@@ -453,7 +453,6 @@ describe("buildReport — the final finding set is counted once", () => {
 		expect(md).toContain("**Findings rendered:** 2");
 	});
 });
-
 
 describe("buildReport — sources and audit events", () => {
 	let md = "";
@@ -466,18 +465,32 @@ describe("buildReport — sources and audit events", () => {
 		});
 	});
 
-	test("there is a Sources section listing files read and commits referenced", () => {
-		expect(md).toMatch(/## 7\. Sources/i);
+	it("there is a Sources section listing files read and commits referenced", () => {
+		expect(md).toMatch(/## 7\. Sources/iu);
 		expect(md).toContain("### Files read");
 		expect(md).toContain("### Commits referenced");
 		expect(md).toContain("server/routes/paymentRoutes.js");
 		expect(md).toContain("abc1234");
 	});
 
-	test("there is an audit events section with tool call totals", () => {
-		expect(md).toMatch(/### Audit events/i);
-		expect(md).toMatch(/Total tool calls/i);
-		expect(md).toMatch(/Failed tool calls/i);
-		expect(md).toMatch(/Reruns requested/i);
+	it("every file reference in Files read is a closed inline code span", () => {
+		// Regression: the files were rendered with a stray opening backtick
+		// and no closing one, which Markdown renders as literal text.
+		const lines = md.split("\n");
+		const headerIndex = lines.findIndex((line) => line === "### Files read");
+		expect(headerIndex).toBeGreaterThan(-1);
+		const filesLine = lines[headerIndex + 2]; // header, blank, then the files
+		expect(filesLine).toBeDefined();
+		const backticks = filesLine.match(/`/gu) || [];
+		expect(backticks.length).toBeGreaterThan(0);
+		expect(backticks.length % 2).toBe(0);
+		expect(filesLine).toContain("`server/routes/paymentRoutes.js`");
+	});
+
+	it("there is an audit events section with tool call totals", () => {
+		expect(md).toMatch(/### Audit events/iu);
+		expect(md).toMatch(/Total tool calls/iu);
+		expect(md).toMatch(/Failed tool calls/iu);
+		expect(md).toMatch(/Reruns requested/iu);
 	});
 });

@@ -40,6 +40,7 @@ import { ThreeDot } from "react-loading-indicators";
 import ReactMarkdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import remarkGfm from "remark-gfm";
+import { ActivityInspector } from "../../components/support/ActivityInspector.jsx";
 import { ActivityTree } from "../../components/support/ActivityTree.jsx";
 import { Composer } from "../../components/support/Composer.jsx";
 import { ContextMeter } from "../../components/support/ContextMeter.jsx";
@@ -723,6 +724,70 @@ const REPORT_MARKDOWN_COMPONENTS = {
 	},
 };
 
+/**
+ * The discussion summary panel. Shown when the assistant has proposed a
+ * summary and is waiting for the client to confirm ("yes, that's it") or
+ * deny ("nope, keep looking"). Nothing is emailed until the client confirms.
+ */
+function DiscussionSummaryPanel({ summary, reads, onConfirm, onDeny, confirming }) {
+	return (
+		<section
+			aria-label="Proposed summary"
+			class="rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-fuchsia-500/5 p-4"
+		>
+			<div class="flex items-center gap-2 mb-3">
+				<div class="flex h-8 w-8 items-center justify-center rounded-full border border-purple-500/40 bg-purple-500/20 text-purple-400">
+					<Sparkles class="h-4 w-4" aria-hidden="true" />
+				</div>
+				<h3 class="text-sm font-semibold text-[#f4eeff]">The assistant has a summary</h3>
+			</div>
+			<p class="mb-3 text-sm leading-6 text-[#f4eeff]">{summary}</p>
+			{reads && reads.length > 0 && (
+				<div class="mb-3 rounded-xl border border-white/10 bg-white/5 p-2">
+					<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd] mb-1">
+						Files reviewed
+					</p>
+					<ul class="space-y-1 text-xs text-[#a99bbd] font-mono">
+						{reads.map((file) => (
+							<li key={file} class="truncate">
+								{file}
+							</li>
+						))}
+					</ul>
+				</div>
+			)}
+			<p class="mb-4 text-[11px] leading-5 text-[#a99bbd]">
+				Is this the problem you're experiencing? Confirm and I&rsquo;ll investigate and email you
+				the report. Deny and we&rsquo;ll keep discussing.
+			</p>
+			<div class="flex flex-wrap items-center gap-3">
+				<button
+					type="button"
+					onClick={onConfirm}
+					disabled={confirming}
+					class="inline-flex items-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2.5 text-xs font-semibold text-purple-300 transition hover:bg-purple-500/20 disabled:cursor-not-allowed disabled:opacity-50"
+				>
+					{confirming ? (
+						<ThreeDot variant="bounce" color="#f4eeff" size="small" text="" textColor="" />
+					) : (
+						<Check class="h-3 w-3" />
+					)}
+					Yes, that&rsquo;s the problem
+				</button>
+				<button
+					type="button"
+					onClick={onDeny}
+					disabled={confirming}
+					class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-[#a99bbd] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+				>
+					<X class="h-3 w-3" />
+					Nope, keep looking
+				</button>
+			</div>
+		</section>
+	);
+}
+
 /** The finished report, plus the ticket preview for the team. */
 function ReportPanel({ report, confirming, confirmed, onConfirm, preview }) {
 	return (
@@ -799,10 +864,10 @@ function ReportPanel({ report, confirming, confirmed, onConfirm, preview }) {
 					) : (
 						<Check class="h-4 w-4" />
 					)}
-					Confirm this is accurate
+					Acknowledge this report
 				</button>
 				{confirmed ? (
-					<p class="text-xs text-emerald-300">Thanks — your confirmation was recorded.</p>
+					<p class="text-xs text-emerald-300">Thanks — your acknowledgement was recorded.</p>
 				) : null}
 			</div>
 		</section>
@@ -847,7 +912,9 @@ export default function SupportWorkspace() {
 	const caseId = isNew ? createdCaseId : rawCaseId;
 
 	const supportCase = useSupportCase(caseId ?? null, supportToken);
+	const { discuss, confirmDiscussion, denyDiscussion, loadDiscussionState } = supportCase;
 	const usage = supportCase.usage ?? null;
+	const discussion = supportCase.discussion ?? null;
 
 	const [creating, setCreating] = useState(false);
 	const [sending, setSending] = useState(false);
@@ -857,9 +924,15 @@ export default function SupportWorkspace() {
 	const [problem, setProblem] = useState("");
 	const [uploads, setUploads] = useState([]); // { key, file, name, status, pct }
 	const [viewerIndex, setViewerIndex] = useState(null);
+	// The activity node currently open in the inspect panel.
+	const [inspectedNode, setInspectedNode] = useState(null);
 	const [signedUrls, setSignedUrls] = useState({});
 	const [leftDrawerOpen, setLeftDrawerOpen] = useState(false);
 	const [rightDrawerOpen, setRightDrawerOpen] = useState(false);
+	// Discussion flow: the assistant may propose a summary that the client
+	// confirms ("yes, that's it") or denies ("nope, keep looking").
+	const [discussionSummary, setDiscussionSummary] = useState("");
+	const [discussionAwaitingConfirm, setDiscussionAwaitingConfirm] = useState(false);
 	// null while the capabilities request is in flight; "error" when it fails;
 	// otherwise the envelope from GET /api/support/capabilities.
 	const [capabilities, setCapabilities] = useState(null);
@@ -879,6 +952,14 @@ export default function SupportWorkspace() {
 	const messages = supportCase.messages ?? [];
 	const streaming = supportCase.streaming ?? null;
 	const messageCount = messages.length;
+	// The "Fixed it / Still broken" feedback is a verdict on a delivered
+	// report, not on every clarifying question: show it only on the newest
+	// assistant message, and only once a report exists.
+	const hasReport = Boolean(supportCase.report?.report);
+	const lastAssistantSequence = useMemo(() => {
+		const assistant = [...messages].reverse().find((m) => String(m?.role || "") === "assistant");
+		return assistant ? Number(assistant?.sequence) : null;
+	}, [messages]);
 	const failure = problem || supportCase.error || "";
 	const isInvestigating = caseStatus === "investigating";
 	const statusLabel = isInvestigating ? "Investigating" : "Ready";
@@ -941,10 +1022,26 @@ export default function SupportWorkspace() {
 					setRecentCases("error");
 				}
 			});
+		// Load the discussion state so the UI can show a proposed summary
+		// and the confirm/deny flow.
+		loadDiscussionState?.();
 		return () => {
 			cancelled = true;
 		};
-	}, [caseId, jwt, supportToken]);
+	}, [caseId, jwt, supportToken, loadDiscussionState]);
+
+	// When the assistant proposes a summary, show the confirm/deny panel.
+	// When the case moves to investigating (client confirmed), clear it.
+	useEffect(() => {
+		if (discussion?.lastAction === "summary_proposed" && discussion?.lastSummary) {
+			setDiscussionSummary(discussion.lastSummary);
+			setDiscussionAwaitingConfirm(true);
+		}
+		if (caseStatus === "investigating" || caseStatus === "completed") {
+			setDiscussionAwaitingConfirm(false);
+			setDiscussionSummary("");
+		}
+	}, [discussion, caseStatus]);
 
 	// Escape closes either mobile drawer.
 	const anyDrawerOpen = leftDrawerOpen || rightDrawerOpen;
@@ -1136,14 +1233,19 @@ export default function SupportWorkspace() {
 		setProblem("");
 		setNotice("");
 		try {
-			// Once a report exists, a client message is an answer to that
-			// report: re-open the case for another attempt without emailing
-			// until the next run finishes. Before the report, it is a normal
-			// clarification message.
+			// Three phases, three paths:
+			//  - collecting: the interactive discussion loop (ask / read code /
+			//    propose summary). This is the hear → discuss → read → discuss flow.
+			//  - reporting/completed: the buyer answers a delivered report and
+			//    the case re-opens for another attempt.
+			//  - anything else: the normal clarification message.
 			const isFollowUp = caseStatus === "reporting" || caseStatus === "completed";
+			const isDiscussing = caseStatus === "collecting";
 			const result = isFollowUp
 				? await supportCase.followUp(text)
-				: await supportCase.send(text, attachmentList);
+				: isDiscussing
+					? await discuss(text)
+					: await supportCase.send(text, attachmentList);
 			if (result) {
 				descriptorsRef.current.clear();
 				setUploads([]);
@@ -1170,6 +1272,44 @@ export default function SupportWorkspace() {
 				setConfirmed(true);
 				setNotice(wasCollecting ? "Investigation started." : "");
 			}
+		} finally {
+			setConfirming(false);
+		}
+	}
+
+	async function handleCancel() {
+		if (!caseId) {
+			return;
+		}
+		setProblem("");
+		try {
+			await supportCase.cancel();
+			setNotice("Investigation stopped.");
+		} catch {
+			// the hook records the error in state
+		}
+	}
+
+	async function handleConfirmDiscussion() {
+		setConfirming(true);
+		setProblem("");
+		try {
+			await confirmDiscussion();
+			setDiscussionAwaitingConfirm(false);
+			setDiscussionSummary("");
+		} finally {
+			setConfirming(false);
+		}
+	}
+
+	async function handleDenyDiscussion() {
+		setConfirming(true);
+		setProblem("");
+		try {
+			await denyDiscussion();
+			setDiscussionAwaitingConfirm(false);
+			setDiscussionSummary("");
+			setNotice("Noted — let's keep discussing.");
 		} finally {
 			setConfirming(false);
 		}
@@ -1224,7 +1364,7 @@ export default function SupportWorkspace() {
 			probableCount,
 			severity: latestAssistantSeverity?.label ?? null,
 			severityEmoji: latestAssistantSeverity?.emoji ?? null,
-			note: "Confirming tells us the summary is accurate. The team gets it by email either way.",
+			note: "Acknowledging tells us the report was useful. The team already received it by email — this does not re-send or re-run anything.",
 		};
 	}, [supportCase.report, supportCase.caseRow, messages, findingRows, latestAssistantSeverity]);
 
@@ -1333,6 +1473,40 @@ export default function SupportWorkspace() {
 	const rightRail = (
 		<>
 			<ContextMeter used={usage?.used ?? null} limit={effectiveModel?.contextLimit ?? null} />
+
+			{caseStatus === "collecting" ? (
+				<div class="rounded-2xl border border-purple-500/20 bg-purple-500/5 p-3">
+					<p class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-purple-400">
+						<Sparkles class="h-3.5 w-3.5" aria-hidden="true" />
+						Discussion
+					</p>
+					<dl class="mt-2 space-y-1.5 text-[11px]">
+						<div class="flex items-center justify-between gap-2">
+							<dt class="text-[#a99bbd]">Rounds</dt>
+							<dd class="tabular-nums text-[#f4eeff]">{discussion?.rounds ?? 0}</dd>
+						</div>
+						<div class="flex items-center justify-between gap-2">
+							<dt class="text-[#a99bbd]">Files reviewed</dt>
+							<dd class="tabular-nums text-[#f4eeff]">{discussion?.lastReads?.length ?? 0}</dd>
+						</div>
+						<div class="flex items-center justify-between gap-2">
+							<dt class="text-[#a99bbd]">Summary</dt>
+							<dd class={discussionAwaitingConfirm ? "text-purple-300" : "text-[#a99bbd]"}>
+								{discussionAwaitingConfirm ? "Awaiting your confirmation" : "Not proposed yet"}
+							</dd>
+						</div>
+					</dl>
+					{(discussion?.lastReads?.length ?? 0) > 0 ? (
+						<ul class="mt-2 space-y-1 border-t border-white/5 pt-2">
+							{discussion.lastReads.map((file) => (
+								<li key={file} class="truncate font-mono text-[10px] text-[#a99bbd]" title={file}>
+									{file}
+								</li>
+							))}
+						</ul>
+					) : null}
+				</div>
+			) : null}
 
 			<div>
 				<p class="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-purple-400">
@@ -1624,8 +1798,11 @@ export default function SupportWorkspace() {
 										<MessageBubble
 											key={message?.id ?? `seq-${message?.sequence ?? 0}`}
 											message={message}
-											onFeedback={(verdict) =>
-												handleSend(verdict === "fixed" ? "Fixed it." : "Still broken.")
+											onFeedback={
+												hasReport && message?.sequence === lastAssistantSequence
+													? (verdict) =>
+															handleSend(verdict === "fixed" ? "Fixed it." : "Still broken.")
+													: undefined
 											}
 											feedbackDisabled={sending}
 											onAttachFile={handleFiles}
@@ -1675,10 +1852,63 @@ export default function SupportWorkspace() {
 									</div>
 								) : null}
 
+								{isInvestigating || caseStatus === "reporting" || caseStatus === "completed" ? (
+									<section
+										aria-label="Investigation plan"
+										class="rounded-2xl border border-cyan-400/20 bg-cyan-400/5 p-3"
+									>
+										<p class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-300">
+											<Check class="h-3.5 w-3.5" aria-hidden="true" />
+											Plan created
+										</p>
+										<ol class="mt-2 space-y-1">
+											{["lead", "code", "repo", "research", "verify"].map((role) => {
+												const entry = (supportCase.progress || []).find((p) => p?.role === role);
+												const status = entry?.status || "queued";
+												const done = status === "complete" || status === "completed";
+												const active = status === "running";
+												return (
+													<li key={role} class="flex items-center gap-2 text-[11px]">
+														<span
+															aria-hidden="true"
+															class={cn(
+																"h-1.5 w-1.5 rounded-full",
+																done && "bg-emerald-400",
+																active && "animate-pulse motion-reduce:animate-none bg-cyan-400",
+																!(done || active) && "bg-white/20",
+															)}
+														/>
+														<span class="capitalize text-[#f4eeff]">{role}</span>
+														<span class="ml-auto text-[10px] text-[#a99bbd]">
+															{done ? "Done" : active ? "Running" : "Queued"}
+														</span>
+													</li>
+												);
+											})}
+										</ol>
+									</section>
+								) : null}
+
 								{(supportCase.activity?.length ?? 0) > 0 || isInvestigating ? (
-									<ActivityTree activity={supportCase.activity} status={caseStatus} />
+									<ActivityTree
+										activity={supportCase.activity}
+										status={caseStatus}
+										active={sending || isInvestigating}
+										onInspect={setInspectedNode}
+										selectedId={inspectedNode?.id ?? null}
+									/>
 								) : null}
 								{findingRows.length > 0 ? <FindingsPanel findingRows={findingRows} /> : null}
+
+								{discussionAwaitingConfirm && discussionSummary ? (
+									<DiscussionSummaryPanel
+										summary={discussionSummary}
+										reads={discussion?.lastReads}
+										onConfirm={handleConfirmDiscussion}
+										onDeny={handleDenyDiscussion}
+										confirming={confirming}
+									/>
+								) : null}
 
 								{supportCase.report?.report ? (
 									<>
@@ -1812,9 +2042,12 @@ export default function SupportWorkspace() {
 							onSend={handleSend}
 							onFiles={handleFiles}
 							disabled={sending || creating || !caseId || uploadsBusy}
+							sending={isInvestigating || sending}
+							onStop={handleCancel}
 							attachVisible={Boolean(jwt)}
 							attachEnabled={attachGate.enabled}
 							attachAccept={attachGate.accept}
+							focusShortcut={true}
 						/>
 						{caseId && caseStatus === "collecting" ? (
 							<div class="mt-2 flex justify-end">
@@ -1952,6 +2185,9 @@ export default function SupportWorkspace() {
 					onNavigate={setViewerIndex}
 				/>
 			) : null}
+
+			{/* Click-to-inspect activity details */}
+			<ActivityInspector node={inspectedNode} onClose={() => setInspectedNode(null)} />
 		</div>
 	);
 }

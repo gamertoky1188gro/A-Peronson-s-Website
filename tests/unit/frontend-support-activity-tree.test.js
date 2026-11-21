@@ -1,4 +1,5 @@
 /** @jest-environment allure-jest/jsdom */
+import { jest } from "@jest/globals";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ActivityTree } from "../../src/components/support/ActivityTree.jsx";
 
@@ -52,4 +53,20 @@ it("renders open by default while the investigation is running", () => {
 it("renders nothing when there are no rows and nothing is running", () => {
 	const { container } = render(<ActivityTree activity={[]} status="collecting" />);
 	expect(container.firstChild).toBeNull();
+});
+
+it("groups nodes by stage and opens the inspector on click", () => {
+	const onInspect = jest.fn();
+	// running keeps the tree open so stage groups are visible.
+	render(<ActivityTree activity={rows} status="investigating" onInspect={onInspect} />);
+	// Stage headers name the roles.
+	expect(screen.getByText("Planning")).toBeTruthy();
+	expect(screen.getByText("Repository history")).toBeTruthy();
+	const nodes = screen.getAllByTestId("activity-node");
+	expect(nodes.length).toBe(2);
+	fireEvent.click(nodes[0]);
+	expect(onInspect).toHaveBeenCalledTimes(1);
+	const node = onInspect.mock.calls[0][0];
+	expect(node.type).toBe("read");
+	expect(node.title).toContain("Reading walletService.js");
 });

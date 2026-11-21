@@ -161,7 +161,7 @@ function renderTabs(overrides = {}) {
 }
 
 describe("<CaseDetailTabs>", () => {
-	it("renders the six tabs with the overview selected by default", () => {
+	it("renders all tabs with the overview selected by default", () => {
 		renderTabs();
 		expect(screen.getByRole("tablist", { name: "Case detail" })).toBeTruthy();
 		const tabs = screen.getAllByRole("tab");
@@ -170,6 +170,8 @@ describe("<CaseDetailTabs>", () => {
 			"Conversation",
 			"Evidence",
 			"Code findings",
+			"Usage",
+			"Compare attempts",
 			"Activity",
 			"Email report",
 		]);
@@ -236,7 +238,10 @@ describe("<CaseDetailTabs>", () => {
 		expect(within(panel).getByText(/Delivered/u)).toBeTruthy();
 		fireEvent.click(screen.getByRole("button", { name: /Resend report/iu }));
 		expect(onResendReport).toHaveBeenCalledTimes(1);
-		expect(screen.getByText(/The export fails because the CSV column map is null\./u)).toBeTruthy();
+		// Scoped to the panel: the Compare-attempts tab also renders the report.
+		expect(
+			within(panel).getByText(/The export fails because the CSV column map is null\./u),
+		).toBeTruthy();
 	});
 });
 

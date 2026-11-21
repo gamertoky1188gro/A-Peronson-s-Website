@@ -364,6 +364,60 @@ export async function setCaseFeedback(caseId, { rating, note }) {
 }
 
 /**
+ * Per-finding feedback. Stored out-of-line in local_json like case feedback,
+ * keyed by case id. Each entry is `{ [findingKey]: { rating, note, updated_at } }`
+ * where findingKey is a hash of the finding's detail — a finding carries no id,
+ * so the detail string is its stable identity within a case. A staff member's
+ * thumbs up/down over time is the signal that trains severity scoring.
+ */
+export const FINDING_FEEDBACK_STORE = "support_finding_feedback.json";
+
+function findingKey(detail) {
+	// crypto is not imported here (this module stays dependency-light); a
+	// deterministic non-crypto hash is enough for a per-case map key.
+	const text = String(detail || "");
+	let hash = 0;
+	for (let i = 0; i < text.length; i += 1) {
+		hash = ((hash << 5) - hash + text.charCodeAt(i)) | 0;
+	}
+	return `f${(hash >>> 0).toString(36)}`;
+}
+
+export async function getCaseFindingFeedback(caseId) {
+	try {
+		const store = await readLocalJson(FINDING_FEEDBACK_STORE, {});
+		return store[String(caseId)] ?? null;
+	} catch {
+		return null;
+	}
+}
+
+export async function setFindingFeedback(caseId, { detail, rating, note }) {
+	const key = findingKey(detail);
+	const verdict = String(rating || "")
+		.toLowerCase()
+		.trim();
+	if (verdict !== "up" && verdict !== "down") {
+		const error = new Error("rating must be one of: up, down");
+		error.status = 400;
+		throw error;
+	}
+	const entry = {
+		detail: sanitizeString(String(detail || ""), 500),
+		rating: verdict,
+		note: sanitizeString(String(note || ""), MAX_FEEDBACK_NOTE).trim(),
+		updated_at: new Date().toISOString(),
+	};
+	const store = await readLocalJson(FINDING_FEEDBACK_STORE, {});
+	const caseMap =
+		store[String(caseId)] && typeof store[String(caseId)] === "object" ? store[String(caseId)] : {};
+	caseMap[key] = entry;
+	store[String(caseId)] = caseMap;
+	await writeLocalJson(FINDING_FEEDBACK_STORE, store);
+	return { key, ...entry };
+}
+
+/**
  * Admin read-side for the owner console. Dropped unless asked for by caller.
  */
 export async function listCaseFeedback() {

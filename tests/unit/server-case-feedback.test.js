@@ -10,8 +10,15 @@ import { jest } from "@jest/globals";
 //   - the note is sanitised and capped at MAX_FEEDBACK_NOTE
 //   - a missing case has no feedback, not an error
 
-const { FEEDBACK_RATINGS, MAX_FEEDBACK_NOTE, getCaseFeedback, listCaseFeedback, setCaseFeedback } =
-	await import("../../server/services/caseService.js");
+const {
+	FEEDBACK_RATINGS,
+	MAX_FEEDBACK_NOTE,
+	getCaseFeedback,
+	listCaseFeedback,
+	setCaseFeedback,
+	getCaseFindingFeedback,
+	setFindingFeedback,
+} = await import("../../server/services/caseService.js");
 
 beforeEach(() => {
 	process.env.NODE_ENV = "test";
@@ -54,5 +61,41 @@ describe("setCaseFeedback", () => {
 describe("FEEDBACK_RATINGS", () => {
 	it("names exactly the two allowed ratings", () => {
 		expect([...FEEDBACK_RATINGS].sort()).toEqual(["down", "up"]);
+	});
+});
+
+describe("per-finding feedback", () => {
+	it("stores an up rating keyed by the finding detail", async () => {
+		const entry = await setFindingFeedback("case-f1", {
+			detail: "The checkout handler returns a constant",
+			rating: "up",
+		});
+		expect(entry.rating).toBe("up");
+		expect(entry.key).toMatch(/^f/u);
+		const stored = await getCaseFindingFeedback("case-f1");
+		expect(stored[entry.key]).toMatchObject({ rating: "up" });
+	});
+
+	it("a second rating on the same finding overwrites, a different finding adds", async () => {
+		const a = await setFindingFeedback("case-f2", { detail: "finding A", rating: "up" });
+		const a2 = await setFindingFeedback("case-f2", { detail: "finding A", rating: "down" });
+		const b = await setFindingFeedback("case-f2", { detail: "finding B", rating: "up" });
+		expect(a2.key).toBe(a.key);
+		expect(b.key).not.toBe(a.key);
+		const stored = await getCaseFindingFeedback("case-f2");
+		expect(stored[a.key].rating).toBe("down");
+		expect(stored[b.key].rating).toBe("up");
+	});
+
+	it("rejects an invalid rating", async () => {
+		await expect(
+			setFindingFeedback("case-f3", { detail: "x", rating: "meh" }),
+		).rejects.toMatchObject({
+			status: 400,
+		});
+	});
+
+	it("a case with no finding feedback reads as null", async () => {
+		expect(await getCaseFindingFeedback("case-never")).toBeNull();
 	});
 });

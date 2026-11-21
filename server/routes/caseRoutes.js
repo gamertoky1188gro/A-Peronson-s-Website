@@ -1,14 +1,18 @@
 import { Router } from "express";
 import {
+	cancelCaseController,
 	confirmCaseController,
 	createCaseController,
 	deleteCaseController,
+	discussCaseController,
+	discussStateController,
 	followUpCaseController,
 	getCaseController,
 	listCasesController,
 	postCaseMessageController,
 	streamCaseController,
 	submitCaseFeedbackController,
+	submitFindingFeedbackController,
 } from "../controllers/caseController.js";
 import {
 	getCaseModelController,
@@ -77,6 +81,21 @@ router.put(
 	putCaseModelController,
 );
 router.get("/:caseId", requireAuthOrSupportToken, caseLimiter, getCaseController);
+// The interactive discussion state + turns. Registered before the bare
+// `/:caseId` route so the more specific nested paths match first.
+router.get(
+	"/:caseId/discuss/state",
+	requireAuthOrSupportToken,
+	caseLimiter,
+	discussStateController,
+);
+router.post(
+	"/:caseId/discuss",
+	requireAuthOrSupportToken,
+	caseLimiter,
+	caseWriteLimiter,
+	discussCaseController,
+);
 router.post(
 	"/:caseId/messages",
 	requireAuthOrSupportToken,
@@ -90,6 +109,13 @@ router.post(
 	caseLimiter,
 	caseWriteLimiter,
 	confirmCaseController,
+);
+router.post(
+	"/:caseId/cancel",
+	requireAuthOrSupportToken,
+	caseLimiter,
+	caseWriteLimiter,
+	cancelCaseController,
 );
 // The buyer's answer to a delivered report: re-opens the case for another
 // investigation attempt. Sends no mail of its own.
@@ -106,6 +132,13 @@ router.post(
 	caseLimiter,
 	caseWriteLimiter,
 	submitCaseFeedbackController,
+);
+router.post(
+	"/:caseId/finding-feedback",
+	requireAuthOrSupportToken,
+	caseLimiter,
+	caseWriteLimiter,
+	submitFindingFeedbackController,
 );
 router.delete(
 	"/:caseId",

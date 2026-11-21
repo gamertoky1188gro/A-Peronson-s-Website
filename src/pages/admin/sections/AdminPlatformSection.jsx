@@ -591,6 +591,28 @@ export function AdminPlatformSection({
 		[buildAdminHeaders, openSupportCase, refreshSupportCases, setError],
 	);
 
+	// Staff marks an individual finding useful (up) or wrong (down). This
+	// records a signal for severity triage; it does not change the case status
+	// or the report, and a failure is non-blocking.
+	const submitFindingFeedback = useCallback(
+		async (caseId, detail, rating) => {
+			const token = getToken();
+			if (!(token && caseId)) {
+				return;
+			}
+			try {
+				await apiRequest(`/support/cases/${encodeURIComponent(caseId)}/finding-feedback`, {
+					method: "POST",
+					token,
+					body: { detail, rating },
+				});
+			} catch (err) {
+				setError(err.message || "Could not record finding feedback");
+			}
+		},
+		[setError],
+	);
+
 	// The case list loads once, when the platform section is first shown.
 	// The guard keeps it to one request: a re-render must not ask again.
 	useEffect(() => {
@@ -2754,6 +2776,9 @@ export function AdminPlatformSection({
 									timeline={supportCaseTimeline}
 									report={supportCaseReport}
 									busy={supportCaseBusy}
+									onFindingFeedback={(detail, rating) =>
+										submitFindingFeedback(supportCaseDetail.case?.id, detail, rating)
+									}
 									onResendReport={() =>
 										runSupportCaseAction(supportCaseDetail.case?.id, "rerun", {})
 									}

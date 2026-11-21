@@ -5,7 +5,7 @@
 // Escalate / Re-run stay in the header above this tab bar on purpose: they
 // are the existing action contract, not part of the read-only panels.
 
-import { FileText } from "lucide-react";
+import { FileText, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { EvidenceViewerModal } from "../../../components/support/EvidenceViewerModal.jsx";
 import { StageRail } from "../../../components/support/StageRail.jsx";
@@ -26,6 +26,8 @@ const TABS = [
 	{ id: "conversation", label: "Conversation" },
 	{ id: "evidence", label: "Evidence" },
 	{ id: "findings", label: "Code findings" },
+	{ id: "usage", label: "Usage" },
+	{ id: "compare", label: "Compare attempts" },
 	{ id: "activity", label: "Activity" },
 	{ id: "email", label: "Email report" },
 ];
@@ -260,7 +262,7 @@ function EvidencePanel({ attachments = EMPTY }) {
 }
 
 /** Code findings: one card per investigation role, findings with file:line evidence. */
-function FindingsPanel({ investigations = EMPTY }) {
+function FindingsPanel({ investigations = EMPTY, onFindingFeedback }) {
 	const list = Array.isArray(investigations) ? investigations : EMPTY;
 	return (
 		<div class={panelClasses}>
@@ -295,7 +297,29 @@ function FindingsPanel({ investigations = EMPTY }) {
 									key={`${investigation.id}-${finding.confidence}-${finding.detail}`}
 									class="mt-2 border-t border-white/5 pt-2"
 								>
-									<ConfidenceChip confidence={finding.confidence} />
+									<div class="flex flex-wrap items-center justify-between gap-2">
+										<ConfidenceChip confidence={finding.confidence} />
+										{typeof onFindingFeedback === "function" ? (
+											<span class="flex items-center gap-1" title="Was this finding useful?">
+												<button
+													type="button"
+													onClick={() => onFindingFeedback(finding.detail, "up")}
+													aria-label="Mark finding useful"
+													class="rounded-md border border-emerald-400/20 bg-emerald-500/5 p-1 text-emerald-300 transition hover:bg-emerald-500/15"
+												>
+													<ThumbsUp class="h-3 w-3" aria-hidden="true" />
+												</button>
+												<button
+													type="button"
+													onClick={() => onFindingFeedback(finding.detail, "down")}
+													aria-label="Mark finding wrong"
+													class="rounded-md border border-rose-400/20 bg-rose-500/5 p-1 text-rose-300 transition hover:bg-rose-500/15"
+												>
+													<ThumbsDown class="h-3 w-3" aria-hidden="true" />
+												</button>
+											</span>
+										) : null}
+									</div>
 									<p class="mt-1 text-xs text-slate-100">{finding.detail}</p>
 									{Array.isArray(finding.evidence) && finding.evidence.length > 0 ? (
 										<ul class="mt-1.5 space-y-1">
@@ -449,6 +473,126 @@ function EmailReportPanel({ caseRow, report, busy, onResendReport }) {
 	);
 }
 
+/** Per-case token ledger, written to the verify row's evidence.usage by the queue. */
+function UsagePanel({ investigations = EMPTY }) {
+	const list = Array.isArray(investigations) ? investigations : EMPTY;
+	const verify = list.find((investigation) => investigation?.role === "verify");
+	const raw = verify?.evidence?.usage;
+	const byRole =
+		raw && typeof raw === "object" && raw.byRole && typeof raw.byRole === "object"
+			? raw.byRole
+			: null;
+	const total = raw?.total;
+	const fmt = (n) => (Number.isFinite(Number(n)) ? Number(n).toLocaleString() : "--");
+	return (
+		<div class={panelClasses}>
+			<h3 class="text-sm font-semibold text-slate-100">Token usage</h3>
+			<p class="mt-1 text-[11px] text-slate-400">
+				Measured from the model's own usage pings during the last completed run.
+			</p>
+			{byRole && total ? (
+				<>
+					<div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+						{[
+							["Prompt tokens", total.used],
+							["Output tokens", total.output],
+							["Reasoning tokens", total.reasoning],
+							["Cache read", total.cacheRead],
+							["Cache write", total.cacheWrite],
+						].map(([label, value]) => (
+							<div key={label} class="rounded-xl border border-white/10 bg-white/5 p-2.5">
+								<p class="text-[10px] uppercase tracking-wider text-slate-400">{label}</p>
+								<p class="mt-0.5 text-sm font-semibold tabular-nums text-slate-100">{fmt(value)}</p>
+							</div>
+						))}
+					</div>
+					{raw.recordedAt ? (
+						<p class="mt-2 text-[10px] text-slate-500">Recorded {formatStamp(raw.recordedAt)}</p>
+					) : null}
+					<ul class="mt-3 space-y-1.5">
+						{Object.entries(byRole).map(([role, point]) => (
+							<li
+								key={role}
+								class="flex items-center justify-between gap-2 rounded-lg border border-white/5 bg-white/[0.03] px-2.5 py-1.5 text-xs"
+							>
+								<span class="font-mono text-cyan-300">{role}</span>
+								<span class="tabular-nums text-slate-300">
+									{fmt(point?.used)} in · {fmt(point?.output)} out
+									{point?.reasoning ? ` · ${fmt(point.reasoning)} reasoning` : ""}
+								</span>
+							</li>
+						))}
+					</ul>
+				</>
+			) : (
+				<Empty>No usage was recorded for this case.</Empty>
+			)}
+		</div>
+	);
+}
+
+/** What changed between investigation attempts: one column per attempt's report. */
+function CompareAttemptsPanel({ investigations = EMPTY }) {
+	const list = Array.isArray(investigations) ? investigations : EMPTY;
+	// The report lives on each attempt's verify row. Group by attempt number.
+	const reports = list
+		.filter((row) => row?.role === "verify" && String(row?.report || "").trim())
+		.slice()
+		.sort((a, b) => (Number(a?.attempt) || 0) - (Number(b?.attempt) || 0));
+	if (reports.length === 0) {
+		return (
+			<div class={panelClasses}>
+				<Empty>No completed reports to compare yet.</Empty>
+			</div>
+		);
+	}
+	// For short reports, a word-level diff highlight is overkill; show the
+	// two most recent attempts side by side with a shared-line count so the
+	// owner can see how much actually changed.
+	const recent = reports.slice(-2);
+	const sharedLines = (() => {
+		if (recent.length < 2) return 0;
+		const a = new Set(
+			String(recent[0].report)
+				.split("\n")
+				.map((l) => l.trim())
+				.filter(Boolean),
+		);
+		return String(recent[1].report)
+			.split("\n")
+			.map((l) => l.trim())
+			.filter((l) => l && a.has(l)).length;
+	})();
+	return (
+		<div class={panelClasses}>
+			<div class="flex flex-wrap items-center justify-between gap-3">
+				<div>
+					<p class="uppercase tracking-[0.18em] text-slate-400">Attempt comparison</p>
+					<p class="mt-1 text-[11px] text-slate-400">
+						{reports.length} report{reports.length === 1 ? "" : "s"} on record
+						{recent.length === 2 ? ` · ${sharedLines} shared lines between the last two` : ""}
+					</p>
+				</div>
+			</div>
+			<div class={`mt-4 grid gap-3 ${recent.length === 2 ? "lg:grid-cols-2" : ""}`}>
+				{recent.map((row) => (
+					<div key={row.id} class="rounded-xl border border-white/10 bg-white/5 p-3">
+						<div class="mb-2 flex items-center gap-2">
+							<span class="rounded-md border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-cyan-300">
+								Attempt {row.attempt || "--"}
+							</span>
+							<span class={subtleText}>{formatStamp(row.completed_at || row.created_at)}</span>
+						</div>
+						<pre class="max-h-[28rem] overflow-auto whitespace-pre-wrap border-t border-white/5 pt-3 font-sans text-[11px] leading-relaxed text-slate-200">
+							{row.report}
+						</pre>
+					</div>
+				))}
+			</div>
+		</div>
+	);
+}
+
 /**
  * The tabbed detail region. Everything above this (subject header, escalate /
  * re-run actions, escalation note) stays in the parent section.
@@ -474,6 +618,7 @@ export function CaseDetailTabs({
 	report = "",
 	busy = false,
 	onResendReport,
+	onFindingFeedback,
 	feedback = null,
 }) {
 	const [activeTab, setActiveTab] = useState("overview");
@@ -500,7 +645,11 @@ export function CaseDetailTabs({
 		),
 		conversation: <ConversationPanel messages={messages} />,
 		evidence: <EvidencePanel attachments={attachments} />,
-		findings: <FindingsPanel investigations={investigations} />,
+		findings: (
+			<FindingsPanel investigations={investigations} onFindingFeedback={onFindingFeedback} />
+		),
+		usage: <UsagePanel investigations={investigations} />,
+		compare: <CompareAttemptsPanel investigations={investigations} />,
 		activity: <ActivityPanel timeline={timeline} />,
 		email: (
 			<EmailReportPanel

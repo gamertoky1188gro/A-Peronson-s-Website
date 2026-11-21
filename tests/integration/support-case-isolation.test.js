@@ -837,6 +837,7 @@ describe("a client cannot reach another client's report", () => {
 			expect(Object.keys(investigation).sort()).toEqual([
 				"completed_at",
 				"role",
+				"started_at",
 				"status",
 				"tool_log",
 			]);

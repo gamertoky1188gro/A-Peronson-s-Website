@@ -42,7 +42,9 @@ const realCaseRealtime = await import("../../src/lib/caseRealtime.js");
 
 jest.unstable_mockModule("../../src/lib/caseRealtime.js", () => ({ subscribeToCase }));
 
-const { useSupportCase } = await import("../../src/hooks/useSupportCase.js");
+const { useSupportCase, seedActivityFromInvestigations } = await import(
+	"../../src/hooks/useSupportCase.js"
+);
 
 const CASE_ID = "case-1";
 
@@ -757,5 +759,50 @@ describe("useSupportCase activity seeds (fix round 2)", () => {
 			expect.arrayContaining([expect.stringMatching(/^persist:lead:0:/u), "live-1"]),
 		);
 		expect(result.current.activity).toHaveLength(2);
+	});
+});
+
+describe("seedActivityFromInvestigations — reload keeps the timeline readable", () => {
+	it("spreads tool calls across the role window so duration survives a reload", () => {
+		const rows = seedActivityFromInvestigations([
+			{
+				role: "code",
+				status: "complete",
+				started_at: "2026-11-17T06:00:00.000Z",
+				completed_at: "2026-11-17T06:01:30.000Z",
+				tool_log: [
+					{ tool: "read", kind: "read", label: "Reading a.js", status: "complete" },
+					{ tool: "grep", kind: "search", label: "Searching code", status: "complete" },
+					{ tool: "read", kind: "read", label: "Reading b.js", status: "complete" },
+				],
+			},
+		]);
+		expect(rows).toHaveLength(3);
+		const times = rows.map((r) => Date.parse(r.at)).filter(Number.isFinite);
+		expect(times).toHaveLength(3);
+		// Distinct, increasing timestamps — not all equal to completed_at.
+		expect(new Set(times).size).toBe(3);
+		expect(times[0]).toBeLessThan(times[2]);
+		expect(times[2] - times[0]).toBeGreaterThanOrEqual(60_000);
+	});
+
+	it("prefers a real per-tool timestamp when the server recorded one", () => {
+		const rows = seedActivityFromInvestigations([
+			{
+				role: "lead",
+				status: "complete",
+				completed_at: "2026-11-17T06:01:30.000Z",
+				tool_log: [
+					{
+						tool: "read",
+						kind: "read",
+						label: "Reading a.js",
+						status: "complete",
+						at: "2026-11-17T06:00:12.000Z",
+					},
+				],
+			},
+		]);
+		expect(rows[0].at).toBe("2026-11-17T06:00:12.000Z");
 	});
 });

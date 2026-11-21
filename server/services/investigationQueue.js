@@ -172,6 +172,40 @@ const QUEUE = [];
 let runningCount = 0;
 
 /**
+ * Per-case token ledger, filled by `emitUsage` during a run and drained into
+ * the verify row's `evidence` JSON when the run finalizes. This is a per-run
+ * accumulator keyed by caseId; a process restart drops it (the usage pings it
+ * holds were never persisted anywhere), which is honest — see AGENTS.md.
+ */
+const usageLedgerByCase = new Map();
+
+/**
+ * Cases whose client asked to stop the run. The queue checks this between
+ * role passes — it cannot interrupt a tool call already in flight without
+ * threading an AbortSignal into `waitForAssistantTurn`, so "stop" means "do
+ * not start verify, do not email, mark the case failed" once the current
+ * specialist pass settles. An entry is removed when the job leaves the queue.
+ */
+const CANCELLED_CASES = new Set();
+
+/** Ask the queue to stop an in-flight investigation for a case. */
+export function cancelInvestigation(caseId) {
+	const id = String(caseId || "");
+	if (id) {
+		CANCELLED_CASES.add(id);
+	}
+}
+
+function isCancelled(caseId) {
+	return CANCELLED_CASES.has(String(caseId));
+}
+
+/** Is an investigation for this case currently running? */
+export function isInvestigationRunning(caseId) {
+	return QUEUE.some((job) => String(job.caseId) === String(caseId) && job.started);
+}
+
+/**
  * The number of investigations that have been enqueued and have not finished
  * yet: waiting plus running.
  *
@@ -483,6 +517,16 @@ async function runInvestigation(job) {
 			}
 		}
 
+		// A client "stop" cannot interrupt a tool call already running, but it
+		// can prevent the rest of the pipeline. Do not verify, report, escalate
+		// or email a run the client asked to stop.
+		if (isCancelled(caseId)) {
+			logInfo("investigation cancelled by the client", { caseId });
+			await failRows(rows, finished, "Investigation stopped by the client.");
+			await setTerminalStatus(caseId, "failed");
+			return;
+		}
+
 		await runVerification({
 			runtime,
 			models,
@@ -501,6 +545,14 @@ async function runInvestigation(job) {
 			toolBudget,
 		});
 
+		// A stop can also arrive while verify is running.
+		if (isCancelled(caseId)) {
+			logInfo("investigation cancelled by the client after verification", { caseId });
+			await failRows(rows, finished, "Investigation stopped by the client.");
+			await setTerminalStatus(caseId, "failed");
+			return;
+		}
+
 		// The investigation is over: the case waits for its report now. The
 		// update only moves a case that is still `investigating`, so the queue
 		// can never undo a state the case has already left.
@@ -515,6 +567,7 @@ async function runInvestigation(job) {
 		await failRows(rows, finished, error?.message || String(error));
 		await setTerminalStatus(caseId, "failed");
 	} finally {
+		CANCELLED_CASES.delete(String(caseId));
 		await removeSessions(runtime, sessionIDs);
 		await stopRuntime(runtime);
 	}
@@ -718,6 +771,10 @@ async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionI
 	await emitProgress(caseId, role, "running");
 
 	let toolCalls = [];
+	// Real settle times, in the same order `runAgentPrompt` collects tool
+	// parts. Persisted into tool_log so the activity tree can show per-step
+	// timing after a reload, not just one shared completed_at.
+	const settledAt = [];
 
 	try {
 		const sessionID = await createInvestigationSession({
@@ -739,6 +796,7 @@ async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionI
 			text: prompt,
 			timeoutMs: agentTimeoutMs(),
 			onToolSettled: (part, status) => {
+				settledAt.push(new Date().toISOString());
 				try {
 					emitActivity(caseId, role, part, status);
 				} catch {
@@ -757,7 +815,7 @@ async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionI
 				}
 			},
 		});
-		toolCalls = normalizeToolCalls(result?.toolCalls);
+		toolCalls = normalizeToolCalls(result?.toolCalls, settledAt);
 		const rawText = typeof result?.text === "string" ? result.text : "";
 
 		if (result?.error) {
@@ -1148,11 +1206,11 @@ function buildEvidence(findings, toolCalls) {
  * `kind`/`label` come from `activityLabelFor` (basename-only, sanitized there);
  * they are optional so rows written before labels existed still normalize.
  */
-function normalizeToolCalls(toolCalls) {
+function normalizeToolCalls(toolCalls, settledAt = []) {
 	if (!Array.isArray(toolCalls)) {
 		return [];
 	}
-	return toolCalls.map((call) => {
+	return toolCalls.map((call, index) => {
 		const entry = {
 			tool: typeof call?.tool === "string" ? call.tool : "unknown",
 			status: typeof call?.status === "string" ? call.status : "unknown",
@@ -1165,6 +1223,16 @@ function normalizeToolCalls(toolCalls) {
 		}
 		if (typeof call?.label === "string" && call.label) {
 			entry.label = call.label.slice(0, 80);
+		}
+		// Persist the real settle time so the activity tree can recompute the
+		// per-step duration after a reload instead of collapsing every tool
+		// call onto the row's single completed_at timestamp.
+		if (typeof settledAt[index] === "string") {
+			entry.at = settledAt[index];
+		} else if (call?.at instanceof Date) {
+			entry.at = call.at.toISOString();
+		} else if (typeof call?.at === "string" && call.at) {
+			entry.at = call.at;
 		}
 		return entry;
 	});
@@ -1350,6 +1418,7 @@ async function finalizeInvestigation({ caseId, rows }) {
 	// into the owner's inbox and the client's browser.
 	const safeReport = redactReportSecrets(report);
 	await persistReport(rows, safeReport);
+	await persistUsageLedger(caseId, rows);
 
 	await escalate(caseId, finalFindings(investigations));
 	// Filing confirmed security/data-loss findings as GitHub issues is
@@ -1442,6 +1511,61 @@ async function persistReport(rows, report) {
 	} catch (error) {
 		logWarn("investigation queue could not persist the report", {
 			role: verify.role,
+			error: error?.message || String(error),
+		});
+		return false;
+	}
+}
+
+/**
+ * Persist the per-case token ledger to the verify row's `evidence` JSON.
+ *
+ * The report renderer reads `{files, commits, queries, failures}` from
+ * `evidence` and ignores unknown keys, so `usage` rides alongside without
+ * changing the report or the schema. Owners can ask "what did this case cost?"
+ * and get an answer that was actually measured, not invented.
+ */
+async function persistUsageLedger(caseId, rows) {
+	const id = String(caseId);
+	const ledger = usageLedgerByCase.get(id);
+	usageLedgerByCase.delete(id); // drain even if the write fails
+	if (!ledger || Object.keys(ledger).length === 0) {
+		return false;
+	}
+	const verify = findRow(rows, VERIFY_ROLE);
+	if (!verify?.id) {
+		return false;
+	}
+	const total = Object.values(ledger).reduce(
+		(sum, point) => ({
+			used: sum.used + (Number(point?.used) || 0),
+			output: sum.output + (Number(point?.output) || 0),
+			reasoning: sum.reasoning + (Number(point?.reasoning) || 0),
+			cacheRead: sum.cacheRead + (Number(point?.cacheRead) || 0),
+			cacheWrite: sum.cacheWrite + (Number(point?.cacheWrite) || 0),
+		}),
+		{ used: 0, output: 0, reasoning: 0, cacheRead: 0, cacheWrite: 0 },
+	);
+	const usage = { byRole: ledger, total, recordedAt: new Date().toISOString() };
+	try {
+		const existing = await prisma.supportInvestigation.findUnique({
+			where: { id: verify.id },
+			select: { evidence: true },
+		});
+		const evidence =
+			existing?.evidence &&
+			typeof existing.evidence === "object" &&
+			!Array.isArray(existing.evidence)
+				? { ...existing.evidence }
+				: { files: [], commits: [], queries: [], failures: [] };
+		await prisma.supportInvestigation.update({
+			where: { id: verify.id },
+			data: { evidence: { ...evidence, usage } },
+		});
+		return true;
+	} catch (error) {
+		logWarn("investigation queue could not persist the usage ledger", {
+			caseId,
 			error: error?.message || String(error),
 		});
 		return false;
@@ -1690,16 +1814,18 @@ function emitProgress(caseId, role, status, detail, label) {
  * the meter divides by the model's context limit.
  */
 function emitUsage(caseId, role, usage) {
-	const used = Number(usage?.used) || 0;
-	return emitCaseEvent("support.case.usage", {
-		caseId,
-		role,
-		used,
+	const point = {
+		used: Number(usage?.used) || 0,
 		output: Number(usage?.output) || 0,
 		reasoning: Number(usage?.reasoning) || 0,
 		cacheRead: Number(usage?.cacheRead) || 0,
 		cacheWrite: Number(usage?.cacheWrite) || 0,
-	});
+	};
+	// Keep the latest ping per role for the persisted per-case ledger.
+	const ledger = usageLedgerByCase.get(String(caseId)) || {};
+	ledger[String(role)] = point;
+	usageLedgerByCase.set(String(caseId), ledger);
+	return emitCaseEvent("support.case.usage", { caseId, role, ...point });
 }
 
 function emitFinding(caseId, role, finding) {
@@ -1750,10 +1876,26 @@ function normalizeDetail(value) {
  * Safe to call multiple times; a case with no orphaned rows is a no-op.
  */
 async function recoverOrphanedInvestigations() {
-	const orphaned = await prisma.supportInvestigation.findMany({
-		where: {
-			status: { in: ["queued", "running"] },
-		},
+	// First find the CASES that have a row left queued/running by a dead server.
+	const orphanedCases = await prisma.supportInvestigation.findMany({
+		where: { status: { in: ["queued", "running"] } },
+		select: { case_id: true },
+	});
+	const caseIds = [
+		...new Set(
+			(Array.isArray(orphanedCases) ? orphanedCases : []).map((r) => r.case_id).filter(Boolean),
+		),
+	];
+	if (caseIds.length === 0) {
+		return;
+	}
+
+	// Then fetch EVERY row of those cases — completed ones included. The old
+	// code only fetched queued/running rows, so `completedRoles` was always
+	// empty and every role was re-run, which is why the `runRole` skip guard
+	// never fired. Carry `status` + `findings` into the job rows so it does.
+	const allExisting = await prisma.supportInvestigation.findMany({
+		where: { case_id: { in: caseIds } },
 		select: {
 			id: true,
 			case_id: true,
@@ -1762,58 +1904,59 @@ async function recoverOrphanedInvestigations() {
 			attempt: true,
 			findings: true,
 		},
-		orderBy: { case_id: true, started_at: true },
+		orderBy: { started_at: "asc" },
 	});
 
-	// Group orphaned rows by case.
 	const byCase = new Map();
-	for (const row of orphaned) {
+	for (const row of Array.isArray(allExisting) ? allExisting : []) {
 		const rows = byCase.get(row.case_id) || [];
 		rows.push(row);
 		byCase.set(row.case_id, rows);
 	}
 
-	for (const [caseId, rows] of byCase) {
-		const completedRoles = new Set();
-		const incompleteRows = [];
-
-		for (const row of rows) {
-			if (row.status === "complete") {
-				completedRoles.add(row.role);
-			} else {
-				incompleteRows.push(row);
+	// A Prisma Json column arrives parsed in production but may be a string in
+	// a fixture. runRole's guard needs an object, so normalise it here.
+	const parsedFindings = (value) => {
+		if (value && typeof value === "object" && !Array.isArray(value)) {
+			return value;
+		}
+		if (typeof value === "string") {
+			try {
+				const parsed = JSON.parse(value);
+				return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : null;
+			} catch {
+				return null;
 			}
 		}
+		return null;
+	};
+	const toJobRow = (r) => ({
+		role: r.role,
+		id: r.id,
+		attempt: r.attempt,
+		status: r.status,
+		findings: parsedFindings(r.findings),
+	});
 
-		// Determine which roles still need to run.
+	for (const caseId of caseIds) {
+		const rows = byCase.get(caseId) || [];
+		const completedRoles = new Set(
+			rows.filter((r) => r.status === "complete" && parsedFindings(r.findings)).map((r) => r.role),
+		);
 		const rolesToRun = AGENT_ROLES.filter((role) => !completedRoles.has(role));
 
 		if (rolesToRun.length === 0) {
 			// Every role finished but the case never reached a terminal
 			// status (server died before finalizeInvestigation ran).
 			// Rebuild the report from the stored rows.
-			const allExisting = await prisma.supportInvestigation.findMany({
-				where: { case_id: caseId },
-				select: { id: true, role: true, status: true, attempt: true },
-			});
-			const jobRows = allExisting.map((r) => ({
-				role: r.role,
-				id: r.id,
-				attempt: r.attempt,
-			}));
-			await finalizeInvestigation({ caseId, rows: jobRows });
+			await finalizeInvestigation({ caseId, rows: rows.map(toJobRow) });
 			logInfo("investigation recovered on boot (finalized)", { caseId });
 			continue;
 		}
 
-		// Re-queue only the roles that still need to run. Include every
-		// existing row for the case (completed ones too) so that
-		// readRunRows/finalizeInvestigation can read completed specialists'
-		// findings when the verify role runs.
-		const allExisting = await prisma.supportInvestigation.findMany({
-			where: { case_id: caseId },
-			select: { id: true, role: true, status: true, attempt: true },
-		});
+		// Re-queue only the roles that still need to run. Keep a new attempt
+		// for each; the completed rows are carried with status + findings so
+		// runRole returns their stored result instead of re-running them.
 		const attempts = await readPreviousAttempts(caseId);
 		const newRows = [];
 
@@ -1830,7 +1973,7 @@ async function recoverOrphanedInvestigations() {
 						attempt,
 					},
 				});
-				newRows.push({ role, id, attempt });
+				newRows.push({ role, id, attempt, status: "queued", findings: null });
 			} catch (error) {
 				logWarn("recovery could not re-queue investigation", {
 					caseId,
@@ -1840,10 +1983,10 @@ async function recoverOrphanedInvestigations() {
 			}
 		}
 
-		const jobRows = [
-			...allExisting.map((r) => ({ role: r.role, id: r.id, attempt: r.attempt })),
-			...newRows,
-		];
+		// One row per role: completed rows first (so findRow returns them for
+		// roles that must not re-run), then the freshly queued rows.
+		const keptCompleted = rows.filter((r) => completedRoles.has(r.role)).map(toJobRow);
+		const jobRows = [...keptCompleted, ...newRows];
 
 		QUEUE.push({ caseId, rows: jobRows, started: false });
 		logInfo("investigation recovered on boot", {

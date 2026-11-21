@@ -193,7 +193,7 @@ const CLARIFICATION_BASE_RULES = [
 	"  Check: Auth middleware | OK",
 	"  Check: Webhook handler | FAIL",
 	"- Never quote these hint words or explain this format; the client app parses them silently.",
-	"- Every task you do gets the best tools available: use github tools for repo history, render tools for runtime/deploy status, parallel-search for external knowledge, and context7 for library docs. Never mention tools by name.",
+	"- You have no external research tools connected. If a question needs information you cannot verify from the conversation, ask the client for it rather than claiming to have looked it up.",
 ];
 
 const CLARIFICATION_TITLE_RULES = [

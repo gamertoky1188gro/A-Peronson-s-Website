@@ -26,6 +26,7 @@ const INITIAL_CASE_STATE = {
 	streaming: null,
 	loading: false,
 	feedback: null,
+	discussion: null,
 };
 
 function compareBySequence(a, b) {
@@ -142,11 +143,12 @@ function seedActivityFromInvestigations(investigations) {
 	const rows = [];
 	for (const investigation of Array.isArray(investigations) ? investigations : []) {
 		const role = investigation?.role ?? null;
+		const startedAt = investigation?.started_at;
 		const completedAt = investigation?.completed_at;
-		const date = completedAt ? new Date(completedAt) : null;
-		const at = date && !Number.isNaN(date.getTime()) ? date.toISOString() : "";
-		const seedTag = Date.parse(at) || "x";
+		const startMs = startedAt ? Date.parse(startedAt) : Number.NaN;
+		const endMs = completedAt ? Date.parse(completedAt) : Number.NaN;
 		const entries = Array.isArray(investigation?.tool_log) ? investigation.tool_log : [];
+		const seedTag = (Number.isFinite(endMs) ? endMs : Date.now()) || "x";
 		entries.forEach((entry, index) => {
 			const kind = typeof entry?.kind === "string" ? entry.kind : "other";
 			const label =
@@ -154,6 +156,21 @@ function seedActivityFromInvestigations(investigations) {
 					? entry.label.trim()
 					: `Using ${String(entry?.tool ?? "tool").slice(0, 32)}`;
 			const failed = entry?.status === "failed" || entry?.status === "error";
+			// Prefer the real per-tool settle time. Fall back to spreading the
+			// calls across the role's started→completed window so duration is
+			// still computable after a reload (never all share one timestamp).
+			let at = typeof entry?.at === "string" && entry.at ? entry.at : "";
+			if (
+				!at &&
+				Number.isFinite(startMs) &&
+				Number.isFinite(endMs) &&
+				endMs >= startMs &&
+				entries.length > 1
+			) {
+				at = new Date(startMs + ((endMs - startMs) * (index + 1)) / entries.length).toISOString();
+			} else if (!at && Number.isFinite(endMs)) {
+				at = new Date(endMs).toISOString();
+			}
 			rows.push({
 				id: `persist:${role}:${index}:${seedTag}`,
 				role,
@@ -411,6 +428,44 @@ function caseReducer(state, action) {
 				caseRow: action.caseRow,
 				status: action.caseRow?.status ?? "investigating",
 			};
+		case "discuss:result":
+			return {
+				...state,
+				discussion: {
+					...state.discussion,
+					lastAction: action.result?.action,
+					lastReply: action.result?.reply,
+					lastSummary: action.result?.summary,
+					lastReads: action.result?.reads,
+					rounds: action.result?.rounds ?? state.discussion?.rounds ?? 0,
+				},
+			};
+		case "discuss:state": {
+			// Re-seed the activity tree from the persisted discussion state so a
+			// reload keeps the thinking/read steps, like the investigation rows do.
+			const persistedActivity = Array.isArray(action.discussion?.activity)
+				? action.discussion.activity
+				: [];
+			// Keep the persisted usage ping for the context meter if no live
+			// usage has arrived since mount (the SSE stash is in-memory only).
+			const persistedUsage = action.discussion?.lastUsage;
+			return {
+				...state,
+				discussion: action.discussion ?? null,
+				activity: mergeActivity(state.activity, persistedActivity),
+				usage:
+					state.usage ??
+					(persistedUsage && Number.isFinite(Number(persistedUsage.used))
+						? {
+								used: Math.max(0, Math.floor(Number(persistedUsage.used))),
+								output: Math.max(0, Math.floor(Number(persistedUsage.output) || 0)),
+								reasoning: Math.max(0, Math.floor(Number(persistedUsage.reasoning) || 0)),
+								cacheRead: Math.max(0, Math.floor(Number(persistedUsage.cacheRead) || 0)),
+								cacheWrite: Math.max(0, Math.floor(Number(persistedUsage.cacheWrite) || 0)),
+							}
+						: state.usage),
+			};
+		}
 		default:
 			return state;
 	}
@@ -595,6 +650,86 @@ async function followUpAction(caseId, dispatch, content, supportToken = "") {
 	}
 }
 
+// POST /support/cases/:caseId/cancel — ask the queue to stop the investigation.
+async function cancelAction(caseId, dispatch, supportToken = "") {
+	if (!caseId) {
+		dispatch({ type: "error:set", error: "No support case is open." });
+		return null;
+	}
+	try {
+		const data = await apiRequest(`/support/cases/${encodeURIComponent(caseId)}/cancel`, {
+			method: "POST",
+			token: getToken(),
+			headers: supportTokenHeaders(supportToken),
+			skipSessionClear: Boolean(supportToken),
+		});
+		dispatch({ type: "confirmed", caseRow: data?.case ?? null });
+		return data ?? null;
+	} catch (err) {
+		dispatch({
+			type: "error:set",
+			error: err?.message || "Unable to stop the investigation.",
+			status: err?.status ?? null,
+		});
+		return null;
+	}
+}
+
+// A discussion turn waits on a real model turn that can read several files —
+// measured at ~9 minutes on a free model. Every layer must allow that long:
+// the browser fetch, the API request logger, and the provider itself.
+const DISCUSSION_TIMEOUT_MS = 15 * 60_000;
+
+// POST /support/cases/:caseId/discuss — the interactive discussion loop.
+// Body: { content, action?: "discuss" | "confirm" | "deny" }.
+//   - "discuss": the assistant asks a question, reads a file, or proposes a summary.
+//   - "confirm": the client confirmed the proposed summary → investigation starts.
+//   - "deny": the client rejected the proposed summary → discussion continues.
+async function discussAction(caseId, dispatch, content, action = "discuss", supportToken = "") {
+	if (!caseId) {
+		dispatch({ type: "error:set", error: "No support case is open." });
+		return null;
+	}
+	try {
+		const data = await apiRequest(`/support/cases/${encodeURIComponent(caseId)}/discuss`, {
+			method: "POST",
+			token: getToken(),
+			headers: supportTokenHeaders(supportToken),
+			skipSessionClear: Boolean(supportToken),
+			timeoutMs: DISCUSSION_TIMEOUT_MS,
+			body: { content, action },
+		});
+		dispatch({ type: "discuss:result", result: data });
+		return data ?? null;
+	} catch (err) {
+		dispatch({
+			type: "error:set",
+			error: err?.message || "Unable to continue the discussion.",
+			status: err?.status ?? null,
+		});
+		return null;
+	}
+}
+
+// GET /support/cases/:caseId/discuss/state — the current discussion state.
+async function loadDiscussionStateAction(caseId, dispatch, supportToken = "") {
+	if (!caseId) {
+		return null;
+	}
+	try {
+		const data = await apiRequest(`/support/cases/${encodeURIComponent(caseId)}/discuss/state`, {
+			token: getToken(),
+			headers: supportTokenHeaders(supportToken),
+			skipSessionClear: Boolean(supportToken),
+		});
+		dispatch({ type: "discuss:state", discussion: data?.discussion ?? null });
+		return data?.discussion ?? null;
+	} catch (err) {
+		dispatch({ type: "discuss:state", discussion: null });
+		return null;
+	}
+}
+
 // POST /support/cases/:caseId/feedback
 async function submitFeedbackAction(caseId, dispatch, payload, supportToken = "") {
 	if (!caseId) {
@@ -686,6 +821,11 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 		[caseId, supportToken],
 	);
 
+	const cancel = useCallback(
+		() => cancelAction(caseId, dispatch, supportToken),
+		[caseId, supportToken],
+	);
+
 	const submitFeedback = useCallback(
 		(feedback) => submitFeedbackAction(caseId, dispatch, feedback, supportToken),
 		[caseId, supportToken],
@@ -693,6 +833,26 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 
 	const followUp = useCallback(
 		(content) => followUpAction(caseId, dispatch, content, supportToken),
+		[caseId, supportToken],
+	);
+
+	const discuss = useCallback(
+		(content, action = "discuss") => discussAction(caseId, dispatch, content, action, supportToken),
+		[caseId, supportToken],
+	);
+
+	const confirmDiscussion = useCallback(
+		() => discussAction(caseId, dispatch, "", "confirm", supportToken),
+		[caseId, supportToken],
+	);
+
+	const denyDiscussion = useCallback(
+		() => discussAction(caseId, dispatch, "", "deny", supportToken),
+		[caseId, supportToken],
+	);
+
+	const loadDiscussionState = useCallback(
+		() => loadDiscussionStateAction(caseId, dispatch, supportToken),
 		[caseId, supportToken],
 	);
 
@@ -728,11 +888,17 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 		streaming: state.streaming,
 		loading: state.loading,
 		feedback: state.feedback,
+		discussion: state.discussion,
 		send,
 		attach,
 		confirm,
+		cancel,
 		submitFeedback,
 		followUp,
+		discuss,
+		confirmDiscussion,
+		denyDiscussion,
+		loadDiscussionState,
 		refresh,
 		clearError,
 	};

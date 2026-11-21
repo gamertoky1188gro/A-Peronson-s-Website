@@ -19,6 +19,7 @@ const TIMEOUT_MS = 60_000;
 export function makeClarificationProvider({
 	modelId,
 	caseId,
+	agent = "assistant",
 	timeoutMs = TIMEOUT_MS,
 	onChunk = null,
 	onUsage = null,
@@ -54,6 +55,7 @@ export function makeClarificationProvider({
 			const created = await client.session.create({
 				title: `support-clarification-${caseId}`,
 				model: { id: modelId, providerID: "opencode" },
+				agent,
 				location: { directory: REPOSITORY_ROOT },
 			});
 			sessionId = created?.data?.id || created?.id;

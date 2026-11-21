@@ -12,7 +12,16 @@ const SENSITIVE_KEYS = new Set(["password", "token", "authorization", "secret", 
 // really does reach the model, the 45-second default cuts the answer off and
 // the client gets a 504 for a turn that was about to succeed.
 const AI_ROUTE_PREFIXES = ["/api/assistant/", "/api/ai/"];
+// The support discussion turn also waits on a model turn (and can read repo
+// files), so it needs the same long budget — but only that path, not every
+// case route.
+const AI_ROUTE_EXACT = /\/api\/support\/cases\/[^/]+\/discuss$/u;
 const DEFAULT_AI_TIMEOUT_MS = 180_000;
+// The support discussion turn reads and reasons over the repo and was
+// measured at ~9 minutes — longer than the shared AI budget. Give that path
+// alone a generous outer ceiling; the per-turn provider timeout is the real
+// budget.
+const DEFAULT_DISCUSSION_TIMEOUT_MS = 15 * 60_000;
 
 /**
  * How long this request is allowed to run.
@@ -22,14 +31,15 @@ const DEFAULT_AI_TIMEOUT_MS = 180_000;
  * REQUEST_TIMEOUT_MS is still honoured. Override with AI_REQUEST_TIMEOUT_MS.
  */
 export function resolveRequestTimeoutMs(originalUrl, defaultMs) {
-	const isAiRoute = AI_ROUTE_PREFIXES.some((prefix) =>
-		String(originalUrl || "").startsWith(prefix),
-	);
+	const url = String(originalUrl || "");
+	const isAiRoute =
+		AI_ROUTE_PREFIXES.some((prefix) => url.startsWith(prefix)) || AI_ROUTE_EXACT.test(url);
 	if (!isAiRoute) {
 		return defaultMs;
 	}
 	const raw = Number(process.env.AI_REQUEST_TIMEOUT_MS);
-	const configured = Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_AI_TIMEOUT_MS;
+	const fallback = AI_ROUTE_EXACT.test(url) ? DEFAULT_DISCUSSION_TIMEOUT_MS : DEFAULT_AI_TIMEOUT_MS;
+	const configured = Number.isFinite(raw) && raw > 0 ? raw : fallback;
 	return Math.max(defaultMs, configured);
 }
 
@@ -244,7 +254,9 @@ export function requestLogger({ timeoutMs = 45_000 } = {}) {
 		const requestContext = {
 			request_id: requestId,
 			method: req.method,
-			path: String(req.originalUrl || req.url || "").split("#")[0].split("?")[0],
+			path: String(req.originalUrl || req.url || "")
+				.split("#")[0]
+				.split("?")[0],
 			user_id: authInfo.user_id || "",
 			role: authInfo.role || "",
 			ip: req.ip,

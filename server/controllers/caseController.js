@@ -372,6 +372,26 @@ async function loadInvestigationQueue() {
 }
 
 /**
+ * The interactive discussion service, loaded on demand.
+ *
+ * It pulls the clarification provider (and with it the assistant runtime)
+ * and the model catalog, so it is lazy like the queue: a case route that
+ * does not discuss must not pay for them at import time.
+ *
+ * @returns {Promise<Object|null>}
+ */
+async function loadDiscussionService() {
+	try {
+		return await import("../services/caseDiscussionService.js");
+	} catch (error) {
+		logWarn("discussion service module is not available", {
+			reason: error?.message || String(error),
+		});
+		return null;
+	}
+}
+
+/**
  * Refuse the work when the queue is already full.
  *
  * The check runs BEFORE the case is moved to `investigating`, so a refused
@@ -748,6 +768,7 @@ export async function getCaseController(req, res) {
 				select: {
 					role: true,
 					status: true,
+					started_at: true,
 					completed_at: true,
 					tool_log: true,
 					findings: true,
@@ -774,13 +795,14 @@ export async function getCaseController(req, res) {
 			const scrubbed = {
 				role: typeof investigation?.role === "string" ? investigation.role : null,
 				status: typeof investigation?.status === "string" ? investigation.status : null,
+				started_at: investigation?.started_at ?? null,
 				completed_at: investigation?.completed_at ?? null,
 				tool_log: Array.isArray(investigation?.tool_log)
 					? investigation.tool_log
 							.filter((entry) => entry && typeof entry === "object")
 							.map((entry) => {
 								const s = {};
-								for (const key of ["tool", "status", "kind", "label"]) {
+								for (const key of ["tool", "status", "kind", "label", "at"]) {
 									if (typeof entry[key] === "string") {
 										s[key] = entry[key];
 									}
@@ -1076,6 +1098,249 @@ export async function followUpCaseController(req, res) {
 }
 
 /**
+ * Start the investigation using a discussion-proposed summary instead of
+ * building one from the transcript. Same contract as startInvestigation:
+ * assert queue room, move to `investigating`, emit, enqueue.
+ *
+ * @param {Object} caseRow
+ * @param {string} summary The discussion-proposed summary.
+ * @returns {Promise<Object>} The updated case row.
+ */
+async function startInvestigationWithDiscussionSummary(caseRow, summary) {
+	await assertQueueHasRoom();
+	const updated = await prisma.supportCase.update({
+		where: { id: caseRow.id },
+		data: { status: "investigating", summary, updated_at: new Date() },
+	});
+	realtime.emitCaseEvent?.(caseRow.id, CASE_STATUS_EVENT, {
+		caseId: caseRow.id,
+		status: "investigating",
+		summary,
+	});
+	try {
+		await enqueueInvestigation(caseRow.id);
+	} catch (error) {
+		if (Number(error?.status) === 429) {
+			await prisma.supportCase
+				.update({
+					where: { id: caseRow.id },
+					data: { status: "collecting", updated_at: new Date() },
+				})
+				.catch((restoreError) =>
+					logWarn("case could not be put back to collecting", {
+						caseId: caseRow.id,
+						reason: restoreError?.message || String(restoreError),
+					}),
+				);
+		}
+		throw error;
+	}
+	logInfo("case investigation started from discussion summary", { caseId: caseRow.id, summary });
+	return updated;
+}
+
+/**
+ * POST /api/support/cases/:caseId/cancel — ask the queue to stop an in-flight
+ * investigation. The queue checks the flag between role passes: it will not
+ * verify, report, escalate or email a run the client stopped. The case is
+ * moved to `failed` here so the buyer sees the stop immediately; the queue's
+ * own `setTerminalStatus` is a no-op once the case is in a terminal state.
+ */
+export async function cancelCaseController(req, res) {
+	try {
+		const caseId = sanitizeString(String(req.params.caseId || ""), 120);
+		if (!caseId) {
+			return res.status(400).json({ error: "caseId is required" });
+		}
+		const found = await caseService.getCaseWithMessages(caseId);
+		if (!found) {
+			return res.status(404).json({ error: "Case not found" });
+		}
+		if (!caseService.canReadCase(req.user, found)) {
+			return res.status(403).json({ error: "Forbidden" });
+		}
+		const status = String(found.status || "");
+		if (!["investigating", "verifying", "reporting"].includes(status)) {
+			return res.status(409).json({ error: "This case is not being investigated." });
+		}
+
+		const queue = await loadInvestigationQueue();
+		if (typeof queue?.cancelInvestigation === "function") {
+			queue.cancelInvestigation(caseId);
+		}
+		const updated = await prisma.supportCase.update({
+			where: { id: caseId },
+			data: { status: "failed", updated_at: new Date() },
+		});
+		realtime.emitCaseEvent?.(caseId, CASE_STATUS_EVENT, { caseId, status: "failed" });
+		logInfo("case investigation cancelled by client", { caseId });
+		return res.json({ case: updated });
+	} catch (error) {
+		return handleControllerError(res, error);
+	}
+}
+
+/**
+ * POST /api/support/cases/:caseId/discuss — one discussion turn.
+ *
+ * Body: { content, action?: "discuss" | "confirm" | "deny" }
+ *
+ * - "discuss" (default): run the discussion loop — the assistant asks a
+ *   question, requests a file read, or proposes a summary.
+ * - "confirm": the client confirmed the proposed summary → start the
+ *   investigation with it, then the report is emailed and the case completes.
+ * - "deny": the client rejected the proposed summary → discussion continues.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ */
+export async function discussCaseController(req, res) {
+	try {
+		const caseId = sanitizeString(String(req.params.caseId || ""), 120);
+		if (!caseId) {
+			return res.status(400).json({ error: "caseId is required" });
+		}
+
+		const found = await caseService.getCaseWithMessages(caseId);
+		if (!found) {
+			return res.status(404).json({ error: "Case not found" });
+		}
+		if (!caseService.canReadCase(req.user, found)) {
+			return res.status(403).json({ error: "Forbidden" });
+		}
+
+		const action = String(req.body?.action || "discuss").toLowerCase();
+		const discussion = await loadDiscussionService();
+		if (!discussion) {
+			return res.status(503).json({ error: "The discussion service is unavailable." });
+		}
+
+		if (action === "confirm") {
+			const confirmed = await discussion.confirmDiscussionSummary({ caseId });
+			if (!confirmed.ok) {
+				return res.status(400).json({ error: confirmed.error || "Nothing to confirm" });
+			}
+			const updated = await startInvestigationWithDiscussionSummary(
+				found,
+				confirmed.summary || found.summary || "",
+			);
+			return res.json({ case: updated, action: "investigating" });
+		}
+
+		if (action === "deny") {
+			const denied = await discussion.denyDiscussionSummary({ caseId });
+			if (!denied.ok) {
+				return res.status(400).json({ error: denied.error || "Nothing to deny" });
+			}
+			return res.json({ case: found, action: "discussing" });
+		}
+
+		// Default: a discussion turn. The client's message goes to the
+		// discussion assistant, which may ask a question, read a file, or
+		// propose a summary.
+		const content = sanitizeString(String(req.body?.content || ""), 4000);
+		if (!content) {
+			return res.status(400).json({ error: "content is required" });
+		}
+
+		const message = await caseService.appendCaseMessage({
+			caseId,
+			role: "client",
+			kind: "answer",
+			content,
+			agent: null,
+		});
+
+		// The opencode runtime warms lazily. The intake path warms it on the
+		// first message so the NEXT turn reaches a real model; the discussion
+		// path must do the same, or it will always answer with the offline
+		// fallback and never emit the usage pings the context meter reads.
+		try {
+			const { getRunningOpencodeClient, warmOpencodeServer } = await import(
+				"../services/assistantService.js"
+			);
+			if (!getRunningOpencodeClient?.()) {
+				warmOpencodeServer?.().catch(() => {});
+			}
+		} catch {
+			// no runtime available — the discussion degrades to the fallback
+		}
+
+		const result = await discussion.discuss({
+			caseId,
+			caseRow: found,
+			history: found.messages || [],
+			clientMessage: content,
+		});
+
+		if (result.state === "summary_proposed") {
+			// The assistant proposed a summary. The client must confirm or deny.
+			return res.status(200).json({
+				message,
+				action: "summary_proposed",
+				summary: result.summary,
+				rounds: result.rounds,
+				reads: result.reads,
+			});
+		}
+
+		// A question for the client: append the assistant's reply.
+		if (result.reply) {
+			await caseService.appendCaseMessage({
+				caseId,
+				role: "assistant",
+				kind: "question",
+				content: result.reply,
+				agent: null,
+			});
+		}
+
+		return res.status(200).json({
+			message,
+			action: "question",
+			reply: result.reply || "",
+			rounds: result.rounds,
+			reads: result.reads,
+		});
+	} catch (error) {
+		return handleControllerError(res, error);
+	}
+}
+
+/**
+ * GET /api/support/cases/:caseId/discuss/state — the discussion state for
+ * the admin console and the client UI (proposed summary, round count, files read).
+ *
+ * @param {Object} req
+ * @param {Object} res
+ */
+export async function discussStateController(req, res) {
+	try {
+		const caseId = sanitizeString(String(req.params.caseId || ""), 120);
+		if (!caseId) {
+			return res.status(400).json({ error: "caseId is required" });
+		}
+
+		const found = await caseService.getCaseWithMessages(caseId);
+		if (!found) {
+			return res.status(404).json({ error: "Case not found" });
+		}
+		if (!caseService.canReadCase(req.user, found)) {
+			return res.status(403).json({ error: "Forbidden" });
+		}
+
+		const discussion = await loadDiscussionService();
+		if (!discussion) {
+			return res.json({ discussion: null });
+		}
+		const state = await discussion.getDiscussionState(caseId);
+		return res.json({ discussion: state || null });
+	} catch (error) {
+		return handleControllerError(res, error);
+	}
+}
+
+/**
  * GET /api/support/cases/:caseId/stream — the case's live event stream.
  *
  * Server-Sent Events. The client subscribes with a plain `fetch`, not an
@@ -1234,6 +1499,8 @@ export async function deleteCaseController(req, res) {
 
 		const attachments = await caseService.deleteCase(caseId);
 		await removeEvidence(attachments);
+		const discussion = await loadDiscussionService();
+		await discussion?.clearDiscussion?.(caseId);
 		logInfo("support case deleted", { caseId, userId: req.user.id });
 
 		return res.json({ ok: true });
@@ -1273,6 +1540,42 @@ export async function submitCaseFeedbackController(req, res) {
 		const note = req.body?.note;
 		const entry = await caseService.setCaseFeedback(caseId, { rating, note });
 		logInfo("support case feedback", { caseId, rating });
+		return res.json({ feedback: entry });
+	} catch (error) {
+		return handleControllerError(res, error);
+	}
+}
+
+/**
+ * POST /api/support/cases/:caseId/finding-feedback — staff marks one finding
+ * useful (up) or wrong (down). Keyed by the finding's detail string.
+ */
+export async function submitFindingFeedbackController(req, res) {
+	try {
+		const caseId = sanitizeString(String(req.params.caseId || ""), 120);
+		if (!caseId) {
+			return res.status(400).json({ error: "caseId is required" });
+		}
+		const found = await caseService.getCaseWithMessages(caseId);
+		if (!found) {
+			return res.status(404).json({ error: "Case not found" });
+		}
+		if (!caseService.canReadCase(req.user, found)) {
+			return res.status(403).json({ error: "Forbidden" });
+		}
+		const detail = sanitizeString(String(req.body?.detail || ""), 500);
+		const rating = String(req.body?.rating || "")
+			.toLowerCase()
+			.trim();
+		if (!detail) {
+			return res.status(400).json({ error: "detail is required" });
+		}
+		const entry = await caseService.setFindingFeedback(caseId, {
+			detail,
+			rating,
+			note: req.body?.note,
+		});
+		logInfo("support finding feedback", { caseId, rating, key: entry.key });
 		return res.json({ feedback: entry });
 	} catch (error) {
 		return handleControllerError(res, error);

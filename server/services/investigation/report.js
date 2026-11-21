@@ -405,7 +405,7 @@ function renderFindingBlock(finding, entry) {
 	const note = finding.demoted
 		? " (demoted to speculative: no evidence reference)"
 		: finding.unverifiedReferences.length > 0
-			? ` (demoted to speculative: cite evidence that does not resolve in this repo)`
+			? " (demoted to speculative: cite evidence that does not resolve in this repo)"
 			: "";
 	const lines = [];
 	lines.push(`**${finding.confidence}${tag}${note}**`);
@@ -580,7 +580,7 @@ function collectLimitations(runs) {
 			if (value.length < 8) {
 				continue;
 			}
-			const key = value.toLowerCase().replace(/\s+/g, " ").trim();
+			const key = value.toLowerCase().replace(/\s+/gu, " ").trim();
 			if (seen.has(key)) {
 				continue;
 			}
@@ -660,7 +660,7 @@ function renderSourcesSection(runs) {
 			"",
 			[...files]
 				.sort()
-				.map((f) => `\`${f}`)
+				.map((f) => `\`${f}\``)
 				.join(" · "),
 			"",
 		);
@@ -824,8 +824,8 @@ const TOKEN_MERGE = 0.5;
 function tokenKey(text) {
 	const words = String(text)
 		.toLowerCase()
-		.replace(/[^a-z0-9 ]/g, " ")
-		.split(/\s+/)
+		.replace(/[^a-z0-9 ]/gu, " ")
+		.split(/\s+/u)
 		.filter((w) => w.length > 2 && !STOP_WORDS.has(w));
 	return new Set(words);
 }
@@ -848,13 +848,13 @@ function evidenceRanges(finding) {
 		if (file === "") {
 			continue;
 		}
-		const match = String(entry.lines ?? "").match(/(\d+)[^0-9]{0,4}(\d+)/);
+		const match = String(entry.lines ?? "").match(/(\d+)[^0-9]{0,4}(\d+)/u);
 		out.push({
 			file,
 			start: match ? Number(match[1]) : null,
 			end: match ? Number(match[2]) : null,
 			key: String(entry.lines ?? "")
-				.replace(/\s+/g, " ")
+				.replace(/\s+/gu, " ")
 				.trim(),
 		});
 	}

@@ -428,6 +428,7 @@ describe("support case API (real router, real controller)", () => {
 			"completed_at",
 			"findings",
 			"role",
+			"started_at",
 			"status",
 			"tool_log",
 		]);

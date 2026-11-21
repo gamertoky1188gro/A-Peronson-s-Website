@@ -1,5 +1,3 @@
-import { jest } from "@jest/globals";
-
 import { resolveRequestTimeoutMs } from "../../server/middleware/requestLogger.js";
 
 // The assistant route now reaches the model, and a model turn can take longer
@@ -27,6 +25,10 @@ describe("the per-request timeout", () => {
 
 	test("the ai routes get it too", () => {
 		expect(resolveRequestTimeoutMs("/api/ai/something", 45_000)).toBe(180_000);
+	});
+
+	test("the support discussion route gets the longer 15-minute budget", () => {
+		expect(resolveRequestTimeoutMs("/api/support/cases/abc/discuss", 45_000)).toBe(900_000);
 	});
 
 	test("a route that merely starts with the same letters is not an AI route", () => {

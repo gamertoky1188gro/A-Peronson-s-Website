@@ -233,7 +233,7 @@ function caseTypeGuidance(caseType) {
 const READ_ONLY_RULES = [
 	"READ-ONLY RULES:",
 	"You are READ-ONLY. You must not modify, create, write, move, rename or delete any file, you must not run any command that writes, and you must not delegate to another agent. You may run a narrow set of read-only shell commands (git log, git show, git diff, git rev-parse, rg, grep, head, tail, wc, ls) — nothing else. Nothing you produce is written back to the repository, and no attempt to write will succeed.",
-	"Use the best tools available to you for each task, in order: github tools first (github_get_file_contents for source, github_list_commits/github_get_commit for history, github_search_code/github_search_issues/github_list_pull_requests for open work, github_search_commits for history), render tools when the question involves runtime, deploys, services, metrics, logs or databases, parallel-search_web_search/web_fetch for current external information, context7 for library and framework documentation. Never mention tools by name.",
+	"Work from the repository with the read, glob and grep tools and the narrow read-only git shell commands allowed above. No MCP or external-research tools are connected in this investigation, so do not claim to have used one: if the answer needs something you cannot open, put it in `limitations` instead.",
 ].join("\n");
 
 /**

@@ -29,7 +29,7 @@ function loadUserFromStorage() {
 function decodeTokenPayload(token) {
 	try {
 		const base64 = token.split(".")[1];
-		const padded = base64.replace(/-/g, "+").replace(/_/g, "/");
+		const padded = base64.replace(/-/gu, "+").replace(/_/gu, "/");
 		return JSON.parse(atob(padded));
 	} catch {
 		return null;
@@ -40,7 +40,7 @@ function decodeTokenPayload(token) {
 function isTokenExpiringSoon(token) {
 	if (!token) return false;
 	const payload = decodeTokenPayload(token);
-	if (!payload || !payload.exp) return false;
+	if (!(payload && payload.exp)) return false;
 	const expiryMs = payload.exp * 1000;
 	return Date.now() >= expiryMs - REFRESH_THRESHOLD_MS;
 }
@@ -401,7 +401,15 @@ async function readJson(res, method, path) {
 
 async function performApiRequest(
 	path,
-	{ method = "GET", token = "", body, signal, headers = {}, skipSessionClear = false } = {},
+	{
+		method = "GET",
+		token = "",
+		body,
+		signal,
+		headers = {},
+		skipSessionClear = false,
+		timeoutMs: requestedTimeoutMs,
+	} = {},
 ) {
 	const debugRequests = import.meta.env.DEV;
 	const startedAt = debugRequests ? performance.now() : 0;
@@ -422,7 +430,14 @@ async function performApiRequest(
 		...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
 		...headers,
 	});
-	const timeoutMs = isFormData ? UPLOAD_TIMEOUT_MS : DEFAULT_TIMEOUT_MS;
+	// A caller waiting on a model turn (the support discussion) can opt into a
+	// longer budget. Everything else keeps the 30 s default.
+	const timeoutMs =
+		Number.isFinite(requestedTimeoutMs) && requestedTimeoutMs > 0
+			? requestedTimeoutMs
+			: isFormData
+				? UPLOAD_TIMEOUT_MS
+				: DEFAULT_TIMEOUT_MS;
 	const idempotent = method === "GET" || method === "HEAD";
 	const url = `${API_BASE}${path}`;
 
