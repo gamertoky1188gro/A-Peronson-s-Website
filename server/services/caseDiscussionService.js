@@ -826,7 +826,12 @@ export async function classifyFollowUp({ caseId, caseRow, message } = {}) {
 	try {
 		const modelId = await getEffectiveModelId(caseRow);
 		if (modelId) {
-			provider = makeClarificationProvider({ modelId, caseId: id, timeoutMs: READ_TIMEOUT_MS });
+			provider = makeClarificationProvider({
+				modelId,
+				caseId: id,
+				timeoutMs: READ_TIMEOUT_MS,
+				oneShot: true,
+			});
 		}
 	} catch {
 		provider = null;

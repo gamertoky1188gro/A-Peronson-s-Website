@@ -174,3 +174,36 @@ describe("assistant agent mirrors the same read-only rules", () => {
 		expect(assistant).not.toMatch(/github_|render_|context7_|parallel-search_/u);
 	});
 });
+
+describe("guarded support plugin (.opencode/plugins/)", () => {
+	// V2 auto-loads local plugins from .opencode/plugins/ for EVERY opencode in
+	// this repo, including the operator's own session (docs: /build/plugins).
+	// It must therefore be completely inert unless our spawned runtime opts in.
+	const plugin = fs.readFileSync(
+		path.join(ROOT, ".opencode", "plugins", "gartexhub-support", "index.mjs"),
+		"utf8",
+	);
+
+	it("is inert unless GHT_PLUGIN_ACTIVE=1 is set by our runtime", () => {
+		expect(plugin).toMatch(/GHT_PLUGIN_ACTIVE === "1"/u);
+		// setup returns before registering anything when the guard is off.
+		expect(plugin).toMatch(/if \(!ACTIVE\) \{\s*return;\s*\}/mu);
+	});
+
+	it("uses the V2 promise-based Plugin.define({ id, setup(ctx) }) API", () => {
+		expect(plugin).toMatch(/Plugin\.define\(\{/u);
+		expect(plugin).toMatch(/id:\s*"gartexhub\.support"/u);
+		expect(plugin).toMatch(/async setup\(ctx\)/u);
+	});
+
+	it("registers authoritative tool lifecycle, retry and reference hooks", () => {
+		expect(plugin).toMatch(/ctx\.tool\.hook\("execute\.before"/u);
+		expect(plugin).toMatch(/ctx\.tool\.hook\("execute\.after"/u);
+		expect(plugin).toMatch(/ctx\.session\.hook\("retry"/u);
+		expect(plugin).toMatch(/ctx\.reference\.transform/u);
+	});
+
+	it("never sends telemetry unless every sink setting is present", () => {
+		expect(plugin).toMatch(/ACTIVE && CASE_ID && ACTIVITY_URL && ACTIVITY_TOKEN/u);
+	});
+});

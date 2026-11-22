@@ -11,7 +11,7 @@
 import { CASE_EVENTS, emitCaseEvent } from "../realtime/realtimeBus.js";
 import { logInfo, logWarn } from "../utils/logger.js";
 import { getRunningOpencodeClient } from "./assistantService.js";
-import { REPOSITORY_ROOT } from "./investigation/opencodeRuntime.js";
+import { generateOnce, REPOSITORY_ROOT } from "./investigation/opencodeRuntime.js";
 import { waitForAssistantTurn } from "./opencodeTurns.js";
 
 const TIMEOUT_MS = 60_000;
@@ -23,6 +23,7 @@ export function makeClarificationProvider({
 	timeoutMs = TIMEOUT_MS,
 	onChunk = null,
 	onUsage = null,
+	oneShot = false,
 } = {}) {
 	if (!modelId) return null;
 	// The buyer's meter should tick for the clarifying chat too, not only
@@ -60,6 +61,18 @@ export function makeClarificationProvider({
 			});
 			sessionId = created?.data?.id || created?.id;
 			if (!sessionId) return null;
+			// One-shot classification (follow-up separation) needs a decision,
+			// not a streamed conversation turn: no tool loop, no message polling.
+			// Falls back to the full turn when the runtime lacks session.generate.
+			if (oneShot && client.session.generate) {
+				const generated = await generateOnce({
+					client,
+					sessionID: sessionId,
+					prompt: `${systemPrompt}\n\n${prompt}`,
+				});
+				logInfo("clarification_model_used", { case_id: caseId, model: modelId, one_shot: true });
+				return generated;
+			}
 			const turn = await waitForAssistantTurn({
 				client,
 				sessionID: sessionId,

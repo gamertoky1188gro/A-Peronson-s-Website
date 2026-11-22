@@ -269,10 +269,27 @@ export async function startInvestigationRuntime({
 	config,
 	password,
 	port,
+	caseId,
 	readyTimeoutMs = 180_000,
 }) {
 	// The working directory is the repository, and only the repository.
 	const workingDirectory = assertRepositoryRoot(cwd);
+
+	// The guarded plugin is inert unless these are set, so the operator's own
+	// opencode in this repo never sees our hooks. The token is short-lived and
+	// in-memory; a restart invalidates it along with the child that held it.
+	let pluginToken = null;
+	let pluginBaseUrl = "";
+	if (caseId) {
+		try {
+			const { mintPluginToken } = await import("../pluginActivityService.js");
+			pluginToken = mintPluginToken(caseId);
+			const configured = String(process.env.GHT_PLUGIN_SINK_URL || "").trim();
+			pluginBaseUrl = configured || `http://127.0.0.1:${process.env.PORT || 4000}`;
+		} catch {
+			pluginToken = null;
+		}
+	}
 
 	const chosenPort = port || (await findFreeRuntimePort());
 	if (!chosenPort) {
@@ -280,6 +297,13 @@ export async function startInvestigationRuntime({
 	}
 
 	const binary = resolveBinary();
+	const baseEnv = buildRuntimeEnv({ password });
+	if (pluginToken) {
+		baseEnv.GHT_PLUGIN_ACTIVE = "1";
+		baseEnv.GHT_CASE_ID = String(caseId);
+		baseEnv.GHT_ACTIVITY_URL = `${pluginBaseUrl}/api/support/plugin-activity`;
+		baseEnv.GHT_ACTIVITY_TOKEN = pluginToken;
+	}
 	const child = spawn(
 		binary.command,
 		["serve", "--port", String(chosenPort), "--hostname", "127.0.0.1"],
@@ -288,7 +312,7 @@ export async function startInvestigationRuntime({
 			stdio: ["ignore", "pipe", "pipe"],
 			shell: binary.shell,
 			windowsHide: true,
-			env: buildRuntimeEnv({ password }),
+			env: baseEnv,
 		},
 	);
 
@@ -354,6 +378,7 @@ export async function startInvestigationRuntime({
 		baseUrl,
 		port: chosenPort,
 		client,
+		pluginToken,
 		stop: async () => {
 			try {
 				child.kill();
@@ -364,6 +389,85 @@ export async function startInvestigationRuntime({
 	};
 }
 
+/**
+ * Session-layer deny-first rules. The agent frontmatter is the primary trust
+ * boundary; these rules are a second, auditable layer at the session level so
+ * a misconfigured agent cannot widen what an investigation may do. Any `ask`
+ * rule would stall an unattended run, so every rule is a hard `deny`, and a
+ * narrow read allowlist keeps the investigator able to inspect the repo.
+ */
+export const INVESTIGATION_SESSION_PERMISSIONS = Object.freeze([
+	{ action: "write", resource: "**", effect: "deny" },
+	{ action: "edit", resource: "**", effect: "deny" },
+	{ action: "patch", resource: "**", effect: "deny" },
+	// `bash` is deliberately NOT denied here: item 33 restored a narrow
+	// read-only shell allowlist (git log/show/diff, rg, grep, head, tail).
+	// The agent frontmatter, not this session layer, gates those verbs.
+	{ action: "task", resource: "**", effect: "deny" },
+	// Session rules are evaluated AFTER the agent's and last-match-wins, so we
+	// mirror only its .env denies here. We deliberately do NOT add **/.env.*:
+	// that would override the agent's explicit *.env.example re-allow.
+	{ action: "read", resource: "*.env", effect: "deny" },
+	{ action: "read", resource: "**/.env", effect: "deny" },
+]);
+
+/**
+ * One-shot generation without a conversation turn: no tool loop, no message
+ * history, no polling. Used for the small classification decisions (quality
+ * verdict, problem separation) that do not deserve a full agent turn.
+ *
+ * @returns {Promise<string|null>} The model text, or null on any failure.
+ */
+export async function generateOnce({ client, sessionID, prompt }) {
+	if (!(client?.session?.generate && sessionID && prompt)) {
+		return null;
+	}
+	try {
+		const result = await client.session.generate({ sessionID, prompt });
+		const text = String(result?.text ?? "").trim();
+		return text || null;
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Put the structured problem brief into a session as a keyed <context> block.
+ *
+ * Unlike a prompt, an instruction entry updates at the next step boundary
+ * without queuing a message turn — the buyer's brief is available to every
+ * model request without manufacturing a fake "assistant already said this"
+ * message in the transcript. Failure is non-fatal: the brief is also part of
+ * the prompt text, so an SDK without this API still investigates.
+ *
+ * @returns {Promise<boolean>} Whether the entry was written.
+ */
+export async function putProblemBrief({ client, sessionID, brief }) {
+	if (!(client?.session?.instructions?.entry?.put && sessionID && brief)) {
+		return false;
+	}
+	const fields = brief?.fields && typeof brief.fields === "object" ? brief.fields : null;
+	const parts = fields
+		? Object.entries(fields).map(
+				([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`,
+			)
+		: [];
+	const value = parts.join("\n") || String(brief?.summary || brief?.problemBrief || "");
+	if (!value) {
+		return false;
+	}
+	try {
+		await client.session.instructions.entry.put({
+			sessionID,
+			key: "problem-brief",
+			value: value.slice(0, 4000),
+		});
+		return true;
+	} catch {
+		return false;
+	}
+}
+
 export async function createInvestigationSession({ client, title, model, directory }) {
 	// The session may only ever point at the repository.
 	const location = assertRepositoryRoot(directory);
@@ -372,6 +476,7 @@ export async function createInvestigationSession({ client, title, model, directo
 		model: { id: model.id, providerID: model.providerID },
 		agent: "investigator",
 		location: { directory: location },
+		permissions: INVESTIGATION_SESSION_PERMISSIONS,
 	});
 	const id = created?.data?.id || created?.id;
 	if (!id) throw new Error("Could not create an investigation session");

@@ -115,6 +115,24 @@ const listAvailableModels = jest.fn(async () => [
 	{ id: "deepseek-v4.1-flash-free", providerID: "opencode" },
 ]);
 const runAgentPrompt = jest.fn(async ({ text }) => ({ text, toolCalls: [], error: undefined }));
+const putProblemBrief = jest.fn(async () => true);
+// The quality gate uses a one-shot generate; make it return a ready verdict so
+// the pipeline reaches finalization (the gate's own logic is tested elsewhere).
+const generateOnce = jest.fn(async () =>
+	JSON.stringify({
+		status: "ready",
+		reasons: [],
+		checks: {
+			problem_clarity: "ok",
+			discussion_completeness: "ok",
+			investigation_completeness: "ok",
+			evidence_quality: "ok",
+			unresolved_questions: "ok",
+			report_quality: "ok",
+			email_readiness: "ok",
+		},
+	}),
+);
 
 jest.unstable_mockModule("../../server/services/investigation/opencodeRuntime.js", () => ({
 	// The REAL repository root: the pipeline verifies that a finding's cited
@@ -125,6 +143,8 @@ jest.unstable_mockModule("../../server/services/investigation/opencodeRuntime.js
 	createInvestigationSession,
 	listAvailableModels,
 	runAgentPrompt,
+	putProblemBrief,
+	generateOnce,
 }));
 
 const { enqueueInvestigation, queueCapacity, queueDepth } = await import(

@@ -70,7 +70,9 @@ import {
 import { getInvestigationModelConfig } from "./investigation/investigationModelConfigService.js";
 import {
 	createInvestigationSession,
+	generateOnce,
 	listAvailableModels,
+	putProblemBrief,
 	REPOSITORY_ROOT,
 	runAgentPrompt,
 	startInvestigationRuntime,
@@ -472,6 +474,7 @@ async function runInvestigation(job) {
 		runtime = await startInvestigationRuntime({
 			cwd: REPOSITORY_ROOT,
 			password: mintRuntimePassword(),
+			caseId,
 		});
 
 		const { models, roleModels, routing, description } = await pickCaseModels(
@@ -845,6 +848,10 @@ async function runRoleOnce({ runtime, model, role, prompt, row, caseId, sessionI
 			directory: REPOSITORY_ROOT,
 		});
 		sessionIDs.push(sessionID);
+		// Feed the confirmed problem brief as a keyed instruction entry — it
+		// updates at step boundaries without a fake conversation turn.
+		const caseForBrief = await getCaseWithMessages(caseId).catch(() => null);
+		await putProblemBrief({ client: runtime.client, sessionID, brief: caseForBrief?.brief });
 
 		// The meter is per role: a fresh session starts at zero, so a role
 		// that begins after another ran does not inherit a full bar. The
@@ -1492,6 +1499,7 @@ async function runQualityCheck({ runtime, models, caseId, context, findings, lim
 			model: models[0],
 			directory: REPOSITORY_ROOT,
 		});
+		await putProblemBrief({ client: runtime.client, sessionID, brief: found?.brief });
 		const prompt = buildQualityPrompt({
 			subject: context?.caseRow?.subject,
 			summary: context?.caseRow?.summary,
@@ -1503,14 +1511,15 @@ async function runQualityCheck({ runtime, models, caseId, context, findings, lim
 			findings,
 			limitations,
 		});
-		const result = await runAgentPrompt({
+		// A one-shot generate is enough for a verdict: no tools, no turn loop,
+		// no persisted assistant message in the case transcript.
+		const generated = await generateOnce({
 			client: runtime.client,
 			sessionID,
-			text: prompt,
-			timeoutMs: agentTimeoutMs(),
+			prompt,
 		});
-		if (!result?.error) {
-			verdict = normalizeQualityVerdict(result.text, attempts);
+		if (generated) {
+			verdict = normalizeQualityVerdict(generated, attempts);
 		}
 	} catch (error) {
 		logWarn("case quality evaluator failed", {
@@ -1913,6 +1922,14 @@ async function removeSessions(runtime, sessionIDs) {
 async function stopRuntime(runtime) {
 	if (!runtime) {
 		return;
+	}
+	if (runtime.pluginToken) {
+		try {
+			const { revokePluginToken } = await import("../services/pluginActivityService.js");
+			revokePluginToken(runtime.pluginToken);
+		} catch {
+			// token expiry is a backstop
+		}
 	}
 	try {
 		await runtime.stop();
