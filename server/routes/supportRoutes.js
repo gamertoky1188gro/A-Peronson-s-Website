@@ -6,6 +6,7 @@ import {
 	getSupportCategories,
 	listMySupportTicketsController,
 	listSupportTicketMessagesController,
+	opencodeModelsHandler,
 	postSupportTicketMessageController,
 } from "../controllers/supportController.js";
 import { requireAuth, requireAuthOrSupportToken } from "../middleware/auth.js";
@@ -13,6 +14,8 @@ import { requireAuth, requireAuthOrSupportToken } from "../middleware/auth.js";
 const router = Router();
 
 router.get("/capabilities", requireAuthOrSupportToken, capabilitiesHandler);
+// Live OpenCode model catalog, proxied to avoid browser CORS.
+router.get("/opencode-models", requireAuthOrSupportToken, opencodeModelsHandler);
 router.get("/categories", requireAuth, getSupportCategories);
 router.post("/reports", requireAuth, createSupportReport);
 router.get("/tickets", requireAuth, listMySupportTicketsController);

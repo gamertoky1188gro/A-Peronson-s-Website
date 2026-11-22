@@ -24,6 +24,52 @@ export function capabilitiesHandler(_req, res) {
 	});
 }
 
+/**
+ * GET /api/support/opencode-models — proxy OpenCode's live inference model
+ * catalog. The browser cannot call the upstream directly (CORS), and the
+ * explorer needs complete, unmodified metadata, so the server fetches it.
+ *
+ * Cached for 5 minutes to stay inside polite request limits; a failed fetch
+ * never returns stale data as fresh. The upstream response is passed through
+ * verbatim — the viewer deliberately invents no fields.
+ */
+const OPENCODE_MODELS_URL = "https://opencode.ai/inference/v1/models";
+const MODELS_TTL_MS = 5 * 60_000;
+const MODELS_TIMEOUT_MS = 15_000;
+let modelsCache = { at: 0, data: null };
+
+/** Reset the catalog cache (used by tests; harmless in production). */
+export function resetModelCatalogCache() {
+	modelsCache = { at: 0, data: null };
+}
+
+export async function opencodeModelsHandler(_req, res) {
+	const fresh = modelsCache.data && Date.now() - modelsCache.at < MODELS_TTL_MS;
+	if (fresh) {
+		return res.json({ ...modelsCache.data, cached: true });
+	}
+	try {
+		const response = await fetch(OPENCODE_MODELS_URL, {
+			headers: { Accept: "application/json" },
+			signal: AbortSignal.timeout(MODELS_TIMEOUT_MS),
+		});
+		if (!response.ok) {
+			throw new Error(`Upstream returned HTTP ${response.status}`);
+		}
+		const data = await response.json();
+		if (!(data && Array.isArray(data.data))) {
+			throw new Error("Unexpected upstream response: expected a data array");
+		}
+		modelsCache = { at: Date.now(), data };
+		return res.json({ ...data, cached: false });
+	} catch (error) {
+		return res.status(502).json({
+			error: "Unable to load the OpenCode model catalog",
+			detail: error?.message || String(error),
+		});
+	}
+}
+
 export async function getSupportCategories(req, res) {
 	return res.json({
 		categories: [

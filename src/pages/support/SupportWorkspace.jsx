@@ -32,6 +32,7 @@ import {
 	LogOut,
 	PanelLeft,
 	PanelRight,
+	Search,
 	ShieldCheck,
 	Sparkles,
 	Trash2,
@@ -50,6 +51,7 @@ import { ContextMeter } from "../../components/support/ContextMeter.jsx";
 import { EvidenceViewerModal } from "../../components/support/EvidenceViewerModal.jsx";
 import InvestigationModelPicker from "../../components/support/InvestigationModelPicker.jsx";
 import { MermaidBlock } from "../../components/support/MermaidBlock.jsx";
+import ModelExplorer from "../../components/support/ModelExplorer.jsx";
 import { StageRail } from "../../components/support/StageRail.jsx";
 import {
 	CheckTable,
@@ -1713,6 +1715,7 @@ export default function SupportWorkspace() {
 	const [handoffOpen, setHandoffOpen] = useState(false);
 	const [handoffReason, setHandoffReason] = useState("");
 	const [handoffSending, setHandoffSending] = useState(false);
+	const [modelExplorerOpen, setModelExplorerOpen] = useState(false);
 	const [language, setLanguage] = useState(() => getSupportLanguage());
 	const tr = useCallback((key) => t(language, key), [language]);
 	function changeLanguage(code) {
@@ -2205,6 +2208,16 @@ export default function SupportWorkspace() {
 							onEffectiveModel={setEffectiveModel}
 						/>
 					</div>
+					<button
+						type="button"
+						onClick={() => setModelExplorerOpen(true)}
+						title="Explore the live OpenCode model catalog"
+						aria-label="Explore models"
+						class="hidden h-10 items-center gap-2 rounded-xl border border-cyan-400/25 bg-cyan-500/10 px-3 text-xs font-semibold text-cyan-300 transition hover:border-cyan-400/50 hover:bg-cyan-500/20 sm:inline-flex"
+					>
+						<Search class="h-4 w-4" aria-hidden="true" />
+						Explore models
+					</button>
 					<button
 						type="button"
 						onClick={endSession}
@@ -2824,6 +2837,9 @@ export default function SupportWorkspace() {
 
 			{/* Click-to-inspect activity details */}
 			<ActivityInspector node={inspectedNode} onClose={() => setInspectedNode(null)} />
+
+			{/* Live OpenCode model catalog */}
+			{modelExplorerOpen ? <ModelExplorer onClose={() => setModelExplorerOpen(false)} /> : null}
 
 			{/* Human handoff request */}
 			{handoffOpen ? (
