@@ -1255,7 +1255,19 @@ export default function SupportWorkspace() {
 	}, [messages]);
 	const failure = problem || supportCase.error || "";
 	const isInvestigating = caseStatus === "investigating";
-	const statusLabel = isInvestigating ? "Investigating" : "Ready";
+	// Every case state gets an honest label — including collecting, reporting,
+	// failed and completed — so the accessibility status announcement never
+	// mislabels a case as merely "Ready".
+	const STATUS_LABELS = {
+		collecting: "Understanding your issue",
+		investigating: "Investigating",
+		verifying: "Verifying",
+		reporting: "Report ready",
+		completed: "Completed",
+		failed: "Needs attention",
+		human_support: "Human support",
+	};
+	const statusLabel = STATUS_LABELS[String(caseStatus).toLowerCase()] || "Ready";
 	const activeStep = STEP_INDEX_BY_STATUS[String(caseStatus).toLowerCase()] ?? 0;
 
 	// A 401 from any case request means the token was revoked, expired or

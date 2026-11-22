@@ -145,10 +145,12 @@ describe("email.test_send response envelope (server)", () => {
 		expect(sendMail).not.toHaveBeenCalled();
 	});
 
-	test("a log-only delivery never queues a real outbox message", async () => {
+	test("a log-only delivery records a failed outbox item for later retry", async () => {
 		await runEmailTestSend();
 
-		expect(emailOutboxCreate).not.toHaveBeenCalled();
+		// The durable outbox is written before delivery, even when the provider
+		// is disabled, so the per-case retry endpoint can find and retry it.
+		expect(emailOutboxCreate).toHaveBeenCalledTimes(1);
 		expect(emailLogCreate).toHaveBeenCalledTimes(1);
 	});
 

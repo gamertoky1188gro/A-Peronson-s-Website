@@ -178,7 +178,19 @@ function defaultAnswer({ text }) {
 	// Let it pass by default so the pipeline reaches finalization.
 	if (String(text || "").startsWith("Evaluate the quality of this support investigation case")) {
 		return {
-			text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+			text: JSON.stringify({
+				status: "ready",
+				reasons: [],
+				checks: {
+					problem_clarity: "ok",
+					discussion_completeness: "ok",
+					investigation_completeness: "ok",
+					evidence_quality: "ok",
+					unresolved_questions: "ok",
+					report_quality: "ok",
+					email_readiness: "ok",
+				},
+			}),
 			toolCalls: [],
 		};
 	}
@@ -467,7 +479,19 @@ describe("the investigation queue", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}
@@ -516,7 +540,19 @@ describe("the investigation queue", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}
@@ -542,7 +578,19 @@ describe("the investigation queue", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}
@@ -591,7 +639,19 @@ describe("the investigation queue", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}
@@ -622,7 +682,19 @@ describe("the investigation queue", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}
@@ -675,7 +747,19 @@ describe("the investigation queue", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}
@@ -802,7 +886,19 @@ describe("the end of the investigation", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}
@@ -943,7 +1039,19 @@ describe("the findings are redacted before they are stored and emitted", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}
@@ -994,7 +1102,19 @@ describe("the findings are redacted before they are stored and emitted", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}
@@ -1044,7 +1164,19 @@ describe("the findings are redacted before they are stored and emitted", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}
@@ -1090,7 +1222,19 @@ describe("the evidence resolver", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}
@@ -1126,7 +1270,19 @@ describe("the evidence resolver", () => {
 				String(text || "").startsWith("Evaluate the quality of this support investigation case")
 			) {
 				return {
-					text: JSON.stringify({ status: "ready", reasons: [], checks: {} }),
+					text: JSON.stringify({
+						status: "ready",
+						reasons: [],
+						checks: {
+							problem_clarity: "ok",
+							discussion_completeness: "ok",
+							investigation_completeness: "ok",
+							evidence_quality: "ok",
+							unresolved_questions: "ok",
+							report_quality: "ok",
+							email_readiness: "ok",
+						},
+					}),
 					toolCalls: [],
 				};
 			}

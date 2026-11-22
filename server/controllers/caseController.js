@@ -1154,6 +1154,27 @@ export async function followUpCaseController(req, res) {
 			return res.status(400).json({ error: "content is required" });
 		}
 
+		// One problem per case: a follow-up may correct or extend the ORIGINAL
+		// problem, but a different problem must get a new case id. Enforced
+		// here, server-side, not just in the buyer UI.
+		const discussion = await loadDiscussionService();
+		if (discussion?.classifyFollowUp) {
+			const classification = await discussion.classifyFollowUp({
+				caseId,
+				caseRow: found,
+				message: content,
+			});
+			if (classification.ok && classification.classified && !classification.sameProblem) {
+				return res.status(409).json({
+					error:
+						classification.reason ||
+						"This looks like a different problem. Please open a new case for it.",
+					code: "NEW_PROBLEM_DETECTED",
+					newCaseReason: classification.reason || "",
+				});
+			}
+		}
+
 		const message = await caseService.appendCaseMessage({
 			caseId,
 			role: "client",
@@ -1374,6 +1395,29 @@ export async function discussCaseController(req, res) {
 				message,
 				action: "summary_proposed",
 				summary: result.summary,
+				rounds: result.rounds,
+				reads: result.reads,
+			});
+		}
+
+		if (result.state === "new_problem") {
+			// The assistant believes the client raised a different problem.
+			// It must NOT split the case silently: return the reason so the
+			// buyer can choose a new case or continue discussing this one.
+			if (result.reply) {
+				await caseService.appendCaseMessage({
+					caseId,
+					role: "assistant",
+					kind: "question",
+					content: result.reply,
+					agent: null,
+				});
+			}
+			return res.status(200).json({
+				message,
+				action: "new_problem",
+				newCaseReason: result.newCaseReason || "",
+				reply: result.reply || "",
 				rounds: result.rounds,
 				reads: result.reads,
 			});

@@ -193,6 +193,8 @@ export function AdminPlatformSection({
 	const [supportCaseNotice, setSupportCaseNotice] = useState("");
 	const [supportCaseNote, setSupportCaseNote] = useState("");
 	const [supportCaseBusy, setSupportCaseBusy] = useState(false);
+	// Per-case email delivery history + retry, and finding outcome stages.
+	const [supportCaseEmails, setSupportCaseEmails] = useState([]);
 	const [supportCaseFilters, setSupportCaseFilters] = useState({ status: "all", priority: "all" });
 	const [supportCaseSearch, setSupportCaseSearch] = useState("");
 	const supportCasesLoadedRef = useRef(false);
@@ -527,6 +529,26 @@ export function AdminPlatformSection({
 		}
 	}, [buildAdminHeaders, setError]);
 
+	// Load the per-case email delivery history for the admin Email tab.
+	const loadCaseEmails = useCallback(
+		async (caseId) => {
+			const token = getToken();
+			if (!(token && caseId)) {
+				return;
+			}
+			try {
+				const data = await apiRequest(`/admin/support/cases/${encodeURIComponent(caseId)}/emails`, {
+					token,
+					headers: buildAdminHeaders(),
+				});
+				setSupportCaseEmails(Array.isArray(data?.emails) ? data.emails : []);
+			} catch {
+				setSupportCaseEmails([]);
+			}
+		},
+		[buildAdminHeaders],
+	);
+
 	const openSupportCase = useCallback(
 		async (caseId) => {
 			const token = getToken();
@@ -554,8 +576,10 @@ export function AdminPlatformSection({
 			} finally {
 				setSupportCaseDetailLoading(false);
 			}
+			// Email history is a separate endpoint; load it alongside the case.
+			await loadCaseEmails(caseId);
 		},
-		[buildAdminHeaders, setError],
+		[buildAdminHeaders, loadCaseEmails, setError],
 	);
 
 	const runSupportCaseAction = useCallback(
@@ -589,6 +613,55 @@ export function AdminPlatformSection({
 			}
 		},
 		[buildAdminHeaders, openSupportCase, refreshSupportCases, setError],
+	);
+
+	// Staff sets a finding's outcome stage. The AI can only reach
+	// identified/proposed; implemented/verified/production-confirmed are set
+	// here, by a person — never auto-promoted by the pipeline.
+	const setFindingOutcome = useCallback(
+		async (caseId, detail, outcome) => {
+			const token = getToken();
+			if (!(token && caseId)) {
+				return;
+			}
+			try {
+				await apiRequest(`/admin/support/cases/${encodeURIComponent(caseId)}/finding-outcome`, {
+					method: "POST",
+					token,
+					headers: buildAdminHeaders({ stepUp: true }),
+					body: { detail, outcome },
+				});
+				setSupportCaseNotice(`Finding marked ${outcome.replaceAll("-", " ")}.`);
+				await openSupportCase(caseId);
+			} catch (err) {
+				setError(err.message || "Could not set the finding outcome");
+			}
+		},
+		[buildAdminHeaders, openSupportCase, setError],
+	);
+
+	// Retry a case's failed report emails from the admin Email tab.
+	const retryCaseEmails = useCallback(
+		async (caseId) => {
+			const token = getToken();
+			if (!(token && caseId)) {
+				return;
+			}
+			setSupportCaseBusy(true);
+			try {
+				const data = await apiRequest(
+					`/admin/support/cases/${encodeURIComponent(caseId)}/emails/retry`,
+					{ method: "POST", token, headers: buildAdminHeaders({ stepUp: true }) },
+				);
+				setSupportCaseNotice(`Retried ${Number(data?.ok) || 0} email(s). Check the history below.`);
+				await loadCaseEmails(caseId);
+			} catch (err) {
+				setError(err.message || "Could not retry the case emails");
+			} finally {
+				setSupportCaseBusy(false);
+			}
+		},
+		[buildAdminHeaders, loadCaseEmails, setError],
 	);
 
 	// Staff marks an individual finding useful (up) or wrong (down). This
@@ -2779,6 +2852,11 @@ export function AdminPlatformSection({
 									onFindingFeedback={(detail, rating) =>
 										submitFindingFeedback(supportCaseDetail.case?.id, detail, rating)
 									}
+									onFindingOutcome={(detail, outcome) =>
+										setFindingOutcome(supportCaseDetail.case?.id, detail, outcome)
+									}
+									emailHistory={supportCaseEmails}
+									onRetryEmails={() => retryCaseEmails(supportCaseDetail.case?.id)}
 									onResendReport={() =>
 										runSupportCaseAction(supportCaseDetail.case?.id, "rerun", {})
 									}

@@ -463,7 +463,12 @@ function caseReducer(state, action) {
 							: action.result?.action === "update_brief"
 								? "draft"
 								: state.discussion?.briefStatus,
-					newCaseReason: action.result?.newCaseReason ?? state.discussion?.newCaseReason ?? null,
+					// An explicit null in the result means "clear the panel";
+					// a missing key means "keep the persisted reason".
+					newCaseReason:
+						action.result && "newCaseReason" in action.result
+							? action.result.newCaseReason
+							: (state.discussion?.newCaseReason ?? null),
 					suggestHuman: action.result?.suggestHuman ?? state.discussion?.suggestHuman ?? false,
 				},
 			};
@@ -668,6 +673,22 @@ async function followUpAction(caseId, dispatch, content, supportToken = "") {
 		});
 		return data ?? null;
 	} catch (err) {
+		// The server enforces one-problem-per-case on follow-ups too. When a
+		// different problem is detected, surface the reason in the buyer's
+		// new-case panel instead of only showing a generic error.
+		// apiRequest exposes the response body on `err.details`.
+		const details = err?.details && typeof err.details === "object" ? err.details : {};
+		if (details.code === "NEW_PROBLEM_DETECTED") {
+			dispatch({
+				type: "discuss:result",
+				result: {
+					action: "new_problem",
+					newCaseReason: details.newCaseReason || err?.message || "",
+					reply: "",
+				},
+			});
+			return null;
+		}
 		dispatch({
 			type: "error:set",
 			error: err?.message || "Unable to send the follow-up.",

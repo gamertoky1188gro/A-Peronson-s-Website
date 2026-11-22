@@ -88,7 +88,7 @@ beforeEach(() => {
 });
 
 describe("emailService delivery status", () => {
-	test("does not report success when email is disabled", async () => {
+	it("does not report success when email is disabled", async () => {
 		enabled = false;
 		const res = await sendEmail({ to: ["a@b.co"], subject: "s", text: "t" });
 		expect(res).toEqual({ ok: false, status: "logged_disabled" });
@@ -98,7 +98,7 @@ describe("emailService delivery status", () => {
 		);
 	});
 
-	test("does not report success when smtp is unconfigured", async () => {
+	it("does not report success when smtp is unconfigured", async () => {
 		enabled = true;
 		provider = "smtp";
 		const res = await sendEmail({ to: ["a@b.co"], subject: "s", text: "t" });
@@ -109,7 +109,7 @@ describe("emailService delivery status", () => {
 		);
 	});
 
-	test("does not report success when the gmail provider is unconfigured", async () => {
+	it("does not report success when the gmail provider is unconfigured", async () => {
 		enabled = true;
 		provider = "gmail_api";
 		const res = await sendEmail({ to: ["a@b.co"], subject: "s", text: "t" });
@@ -120,7 +120,7 @@ describe("emailService delivery status", () => {
 		);
 	});
 
-	test("does not report success for an unsupported provider", async () => {
+	it("does not report success for an unsupported provider", async () => {
 		enabled = true;
 		provider = "carrier-pigeon";
 		const res = await sendEmail({ to: ["a@b.co"], subject: "s", text: "t" });
@@ -131,15 +131,22 @@ describe("emailService delivery status", () => {
 		);
 	});
 
-	test("still refuses to send with no recipients", async () => {
+	it("still refuses to send with no recipients", async () => {
 		const res = await sendEmail({ to: [], subject: "s", text: "t" });
 		expect(res).toEqual({ ok: false, status: "no_recipients" });
 	});
 
-	test("a log-only delivery never queues a real outbox message", async () => {
+	it("a log-only delivery records a failed outbox item so retry can see it", async () => {
 		enabled = false;
 		await sendEmail({ to: ["a@b.co"], subject: "s", text: "t" });
-		expect(emailOutboxCreate).not.toHaveBeenCalled();
+		// The durable outbox is written before delivery, even for a disabled
+		// provider, so the per-case retry endpoint can find and retry it.
+		expect(emailOutboxCreate).toHaveBeenCalledTimes(1);
+		expect(emailOutboxCreate).toHaveBeenCalledWith(
+			expect.objectContaining({
+				data: expect.objectContaining({ status: "queued", attempts: 1 }),
+			}),
+		);
 		expect(emailLogCreate).toHaveBeenCalledTimes(1);
 	});
 });

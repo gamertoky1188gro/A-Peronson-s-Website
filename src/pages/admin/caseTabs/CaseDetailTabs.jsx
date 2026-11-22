@@ -261,8 +261,50 @@ function EvidencePanel({ attachments = EMPTY }) {
 	);
 }
 
+const OUTCOME_OPTIONS = [
+	"identified",
+	"proposed",
+	"implemented",
+	"verified",
+	"production-confirmed",
+];
+
+/** Staff-only outcome stage for one finding. Never auto-promoted. */
+function OutcomeSelect({ finding, onOutcome }) {
+	const [value, setValue] = useState(String(finding?.outcome || ""));
+	useEffect(() => {
+		setValue(String(finding?.outcome || ""));
+	}, [finding?.outcome]);
+	if (typeof onOutcome !== "function") {
+		return null;
+	}
+	return (
+		<label class="flex items-center gap-1.5 text-[10px] text-slate-400">
+			Outcome
+			<select
+				value={value}
+				onChange={(event) => {
+					const next = event.target.value;
+					setValue(next);
+					if (next) {
+						onOutcome(finding.detail, next);
+					}
+				}}
+				class="rounded-md border border-white/10 bg-white/5 px-1.5 py-1 text-[10px] text-slate-100 focus:border-cyan-400/40 focus:outline-none"
+			>
+				<option value="">Set outcome…</option>
+				{OUTCOME_OPTIONS.map((option) => (
+					<option key={option} value={option}>
+						{option.replaceAll("-", " ")}
+					</option>
+				))}
+			</select>
+		</label>
+	);
+}
+
 /** Code findings: one card per investigation role, findings with file:line evidence. */
-function FindingsPanel({ investigations = EMPTY, onFindingFeedback }) {
+function FindingsPanel({ investigations = EMPTY, onFindingFeedback, onFindingOutcome }) {
 	const list = Array.isArray(investigations) ? investigations : EMPTY;
 	return (
 		<div class={panelClasses}>
@@ -299,6 +341,7 @@ function FindingsPanel({ investigations = EMPTY, onFindingFeedback }) {
 								>
 									<div class="flex flex-wrap items-center justify-between gap-2">
 										<ConfidenceChip confidence={finding.confidence} />
+										<OutcomeSelect finding={finding} onOutcome={onFindingOutcome} />
 										{typeof onFindingFeedback === "function" ? (
 											<span class="flex items-center gap-1" title="Was this finding useful?">
 												<button
@@ -437,7 +480,14 @@ function ActivityPanel({ timeline = EMPTY }) {
 }
 
 /** Email report: delivery pill + resend via the existing rerun action. */
-function EmailReportPanel({ caseRow, report, busy, onResendReport }) {
+function EmailReportPanel({
+	caseRow,
+	report,
+	busy,
+	onResendReport,
+	emailHistory = EMPTY,
+	onRetryEmails,
+}) {
 	const deliveredAt = caseRow?.report_delivered_at;
 	return (
 		<div class={panelClasses}>
@@ -459,6 +509,36 @@ function EmailReportPanel({ caseRow, report, busy, onResendReport }) {
 				>
 					Resend report
 				</button>
+			</div>
+			{/* Delivery history: every attempt, with a retry for failed mails. */}
+			<div class="mt-4 border-t border-white/5 pt-4">
+				<div class="flex flex-wrap items-center justify-between gap-2">
+					<p class="uppercase tracking-[0.14em] text-slate-400">Delivery history</p>
+					{typeof onRetryEmails === "function" ? (
+						<button
+							type="button"
+							onClick={onRetryEmails}
+							disabled={busy}
+							class="rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1.5 text-[11px] font-semibold text-amber-300 transition hover:bg-amber-500/20 disabled:opacity-50"
+						>
+							Retry failed emails
+						</button>
+					) : null}
+				</div>
+				{emailHistory.length === 0 ? (
+					<p class="mt-2 text-[11px] text-slate-400">No delivery attempts recorded.</p>
+				) : (
+					<ul class="mt-2 space-y-1">
+						{emailHistory.map((entry) => (
+							<li key={entry.id} class="flex flex-wrap items-center gap-2 text-[11px]">
+								<span class="font-mono text-slate-300">{formatStamp(entry.at)}</span>
+								<span class="text-slate-400">{entry.status}</span>
+								<span class="text-slate-500">{entry.to}</span>
+								{entry.error ? <span class="text-rose-400">{entry.error}</span> : null}
+							</li>
+						))}
+					</ul>
+				)}
 			</div>
 			{report ? (
 				<pre class="mt-4 max-h-96 overflow-auto whitespace-pre-wrap border-t border-white/5 pt-4 font-sans text-[11px] leading-relaxed text-slate-200">
@@ -619,6 +699,9 @@ export function CaseDetailTabs({
 	busy = false,
 	onResendReport,
 	onFindingFeedback,
+	onFindingOutcome,
+	emailHistory = EMPTY,
+	onRetryEmails,
 	feedback = null,
 }) {
 	const [activeTab, setActiveTab] = useState("overview");
@@ -646,7 +729,11 @@ export function CaseDetailTabs({
 		conversation: <ConversationPanel messages={messages} />,
 		evidence: <EvidencePanel attachments={attachments} />,
 		findings: (
-			<FindingsPanel investigations={investigations} onFindingFeedback={onFindingFeedback} />
+			<FindingsPanel
+				investigations={investigations}
+				onFindingFeedback={onFindingFeedback}
+				onFindingOutcome={onFindingOutcome}
+			/>
 		),
 		usage: <UsagePanel investigations={investigations} />,
 		compare: <CompareAttemptsPanel investigations={investigations} />,
@@ -657,6 +744,8 @@ export function CaseDetailTabs({
 				report={report}
 				busy={busy}
 				onResendReport={onResendReport}
+				emailHistory={emailHistory}
+				onRetryEmails={onRetryEmails}
 			/>
 		),
 	};

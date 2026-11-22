@@ -494,3 +494,58 @@ describe("buildReport — sources and audit events", () => {
 		expect(md).toMatch(/Reruns requested/iu);
 	});
 });
+
+describe("buildReport — quality verdict and new finding fields", () => {
+	it("renders the case quality assessment when the evaluator ran", () => {
+		const caseRow = {
+			...CASE_ROW,
+			quality: {
+				status: "needs_attention",
+				attempts: 3,
+				checks: { problem_clarity: "ok", evidence_quality: "needs_work" },
+				reasons: ["evidence quality unresolved"],
+			},
+		};
+		const md = buildReport({ caseRow, messages: MESSAGES, investigations: INVESTIGATIONS });
+		expect(md).toContain("Case quality assessment");
+		expect(md).toContain("needs attention");
+		expect(md).toContain("Evaluator attempts");
+		expect(md).toContain("evidence_quality");
+		expect(md).toContain("Finalized despite unresolved quality concerns");
+		expect(md).toContain("evidence quality unresolved");
+	});
+
+	it("preserves verified, verifiedAt, nextStep and outcome on findings", () => {
+		const verifyRun = {
+			...INVESTIGATIONS[1],
+			id: "inv-verify-fields",
+			role: "verify",
+			findings: {
+				summary: "the final set of findings",
+				findings: [
+					{
+						confidence: "confirmed",
+						detail: "A distinct verified finding with an outcome.",
+						evidence: [{ file: "server/checkout.js", lines: "88-104" }],
+						verified: true,
+						verifiedAt: "2026-11-22T10:00:00.000Z",
+						nextStep: "Add a timeout to the gateway call.",
+						outcome: "identified",
+					},
+				],
+				limitations: [],
+			},
+		};
+		const md = buildReport({
+			caseRow: CASE_ROW,
+			messages: MESSAGES,
+			investigations: [...INVESTIGATIONS, verifyRun],
+		});
+		expect(md).toContain("Independently verified");
+		expect(md).toContain("2026-11-22T10:00:00.000Z");
+		expect(md).toContain("Recommended next step");
+		expect(md).toContain("Add a timeout to the gateway call.");
+		expect(md).toContain("Outcome");
+		expect(md).toContain("identified");
+	});
+});

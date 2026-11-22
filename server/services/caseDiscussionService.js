@@ -564,16 +564,20 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 					"It sounds like this might be a different problem from the one this case is about.",
 				2000,
 			);
+			const reason = safeProse(parsed.newCase, 500);
+			// Persist the reason so the buyer's "different problem" panel
+			// survives a page reload (discussion state is rehydrated from here).
 			const nextState = {
 				...state,
 				rounds,
+				newCaseReason: reason,
 				filesRead: [...state.filesRead, ...filesReadThisTurn],
 			};
 			await writeDiscussionState(id, nextState);
 			return {
 				state: "new_problem",
 				reply: replyText,
-				newCaseReason: safeProse(parsed.newCase, 500),
+				newCaseReason: reason,
 				rounds,
 				reads: filesReadThisTurn,
 			};
@@ -602,6 +606,7 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 				state: "summary_proposed",
 				reply: summary,
 				summary,
+				newCaseReason: null,
 				problemBrief: summary,
 				briefStatus: "draft",
 				brief: currentBrief,
@@ -668,6 +673,7 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 		rounds,
 		reads: filesReadThisTurn,
 		brief: currentBrief,
+		newCaseReason: null,
 		suggestHuman: offeredFallback.suggestHuman,
 	};
 }
@@ -778,6 +784,72 @@ export async function getDiscussionState(caseId) {
 		return null;
 	}
 	return readDiscussionState(id);
+}
+
+/**
+ * Decide whether a buyer's follow-up is about the SAME problem as the case.
+ *
+ * This is the server-side half of one-problem-per-case. A follow-up on a
+ * finished case may correct or extend the original problem, but a genuinely
+ * different problem must get a new case id. The buyer is told why and chooses;
+ * the AI never splits silently.
+ *
+ * When no provider is available the classification fails OPEN (same problem),
+ * so a legitimate correction is never blocked by an infrastructure failure.
+ *
+ * @param {Object} params
+ * @returns {Promise<{ok: boolean, sameProblem: boolean, reason: string|null, classified: boolean}>}
+ */
+export async function classifyFollowUp({ caseId, caseRow, message } = {}) {
+	const id = String(caseId || "");
+	const text = String(message || "").trim();
+	if (!(id && text)) {
+		return { ok: false, sameProblem: true, reason: null, classified: false };
+	}
+
+	const briefFields = caseRow?.brief?.fields
+		? Object.entries(caseRow.brief.fields)
+				.map(([key, value]) => `- ${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
+				.join("\n")
+		: "(none recorded)";
+	const prompt = [
+		"You are checking whether a buyer's follow-up message is about the SAME problem as an existing support case, or a DIFFERENT new problem.",
+		`CASE SUBJECT: ${String(caseRow?.subject || "")}`,
+		`CONFIRMED SUMMARY: ${String(caseRow?.summary || "")}`,
+		`STRUCTURED PROBLEM BRIEF:\n${briefFields}`,
+		`BUYER'S NEW MESSAGE: ${text}`,
+		'Reply with ONLY a JSON object: {"sameProblem": true|false, "reason": "one short sentence"}.',
+		"sameProblem is true only when the message is a correction, extra detail, or a follow-up about the SAME problem. It is false when the buyer describes a new, unrelated problem (for example a payment refund when the case is about a file upload).",
+	].join("\n\n");
+
+	let provider = null;
+	try {
+		const modelId = await getEffectiveModelId(caseRow);
+		if (modelId) {
+			provider = makeClarificationProvider({ modelId, caseId: id, timeoutMs: READ_TIMEOUT_MS });
+		}
+	} catch {
+		provider = null;
+	}
+	if (!provider) {
+		return { ok: true, sameProblem: true, reason: null, classified: false };
+	}
+
+	try {
+		const reply = await provider(prompt, "");
+		const cleaned = String(reply || "")
+			.replace(/^```(?:json)?\s*/iu, "")
+			.replace(/\s*```$/u, "");
+		const parsed = JSON.parse(cleaned);
+		return {
+			ok: true,
+			sameProblem: parsed?.sameProblem !== false,
+			reason: safeProse(parsed?.reason, 300) || null,
+			classified: true,
+		};
+	} catch {
+		return { ok: true, sameProblem: true, reason: null, classified: false };
+	}
 }
 
 /**

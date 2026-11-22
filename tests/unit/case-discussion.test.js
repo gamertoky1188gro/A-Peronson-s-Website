@@ -43,6 +43,7 @@ const {
 	confirmDiscussionSummary,
 	denyDiscussionSummary,
 	updateProblemBrief,
+	classifyFollowUp,
 	getDiscussionState,
 	clearDiscussion,
 } = await import("../../server/services/caseDiscussionService.js");
@@ -310,6 +311,35 @@ describe("caseDiscussionService", () => {
 		expect(result.state).toBe("new_problem");
 		expect(result.newCaseReason).toContain("payment refund");
 		expect(result.reply).toContain("unrelated");
+		// The reason is persisted so the buyer panel survives a page reload.
+		const state = await getDiscussionState(CASE_ID);
+		expect(state.newCaseReason).toContain("payment refund");
+	});
+
+	it("classifies a follow-up as a different problem when the model says so", async () => {
+		providerMock.mockResolvedValueOnce(
+			JSON.stringify({ sameProblem: false, reason: "a refund request, not the upload problem" }),
+		);
+		const result = await classifyFollowUp({
+			caseId: CASE_ID,
+			caseRow: { subject: "Upload broken", summary: "The upload fails" },
+			message: "I need a refund for my last payment",
+		});
+		expect(result.ok).toBe(true);
+		expect(result.classified).toBe(true);
+		expect(result.sameProblem).toBe(false);
+		expect(result.reason).toContain("refund");
+	});
+
+	it("fails open (same problem) when the classifier cannot answer", async () => {
+		providerMock.mockResolvedValueOnce("I cannot decide");
+		const result = await classifyFollowUp({
+			caseId: CASE_ID,
+			caseRow: { subject: "Upload broken" },
+			message: "still broken",
+		});
+		expect(result.sameProblem).toBe(true);
+		expect(result.classified).toBe(false);
 	});
 
 	it("caps the discussion at the round limit and forces a summary", async () => {

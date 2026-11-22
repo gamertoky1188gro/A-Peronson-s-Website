@@ -1646,6 +1646,9 @@ model EmailOutbox {
   // Retry tracking: how many send attempts were made, and the last failure.
   attempts   Int      @default(0)
   last_error String?
+  // Provider message id where available (nodemailer messageId / Gmail id).
+  // Lets a retry detect a possible duplicate after a stale "sending" row.
+  message_id String?
 
   @@index([status, created_at])
   @@index([case_id])

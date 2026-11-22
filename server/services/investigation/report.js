@@ -220,7 +220,7 @@ function normalizeFinding(raw) {
 	const unverifiedReferences = asArray(raw.unverified_references)
 		.map((value) => singleLine(value))
 		.filter(Boolean);
-	return {
+	const finding = {
 		confidence,
 		recordedConfidence: recorded,
 		demoted: evidence.length === 0 && recorded !== DEFAULT_CONFIDENCE,
@@ -228,6 +228,26 @@ function normalizeFinding(raw) {
 		detail,
 		evidence,
 	};
+	// The independent report normalizer must not drop the fields the pipeline
+	// now preserves. Otherwise the buyer UI can show them but the Markdown
+	// report (and its Gmail copy) silently loses them.
+	if (raw.verified === true) {
+		finding.verified = true;
+	}
+	if (typeof raw.verifiedAt === "string" && raw.verifiedAt) {
+		finding.verifiedAt = raw.verifiedAt;
+	}
+	const nextStep = text(raw.nextStep);
+	if (nextStep) {
+		finding.nextStep = nextStep;
+	}
+	const outcome = String(raw.outcome || "").toLowerCase();
+	if (
+		["identified", "proposed", "implemented", "verified", "production-confirmed"].includes(outcome)
+	) {
+		finding.outcome = outcome;
+	}
+	return finding;
 }
 
 /** The `{ summary, findings, limitations }` payload of an investigation. */
@@ -412,6 +432,16 @@ function renderFindingBlock(finding, entry) {
 	lines.push(
 		`- **Severity:** ${severityOf({ confidence: finding.confidence, detail: finding.detail })}`,
 	);
+	if (finding.outcome) {
+		lines.push(`- **Outcome:** ${finding.outcome.replaceAll("-", " ")}`);
+	}
+	if (finding.verified === true) {
+		const when = finding.verifiedAt ? ` (${singleLine(finding.verifiedAt)})` : "";
+		lines.push(`- **Independently verified:** yes${when}`);
+	}
+	if (finding.nextStep) {
+		lines.push(`- **Recommended next step:** ${singleLine(finding.nextStep)}`);
+	}
 	if (finding.evidence.length === 0) {
 		lines.push("**Evidence:** none recorded - an unevidenced claim cannot be confirmed", "");
 	} else {
@@ -686,6 +716,43 @@ function renderSourcesSection(runs) {
 		}
 		lines.push("");
 	}
+	return lines;
+}
+
+/**
+ * The case-quality assessment, for the developer reading the Gmail report.
+ *
+ * The evaluator can finalize a case with `needs_attention` (e.g. after three
+ * unsuccessful attempts or an evaluator outage). The owner must see that the
+ * report was delivered despite unresolved quality concerns — otherwise a
+ * warning in the database is invisible in the primary deliverable.
+ */
+function renderQualitySection(row) {
+	const quality = row?.quality;
+	if (!quality || typeof quality !== "object") {
+		return [];
+	}
+	const lines = ["## Case quality assessment", ""];
+	lines.push(`- **Final verdict:** ${String(quality.status || "unknown").replaceAll("_", " ")}`);
+	lines.push(`- **Evaluator attempts:** ${Number(quality.attempts) || 0}`);
+	const failedChecks = Object.entries(quality.checks || {})
+		.filter(([, value]) => value !== "ok")
+		.map(([key]) => key);
+	if (failedChecks.length > 0) {
+		lines.push(`- **Checks needing work:** ${failedChecks.join(", ")}`);
+	}
+	if (String(quality.status || "") !== "ready") {
+		lines.push(
+			"- **Finalized despite unresolved quality concerns:** yes — the report was delivered and the case can be completed by the buyer.",
+		);
+	}
+	if (Array.isArray(quality.reasons) && quality.reasons.length > 0) {
+		lines.push("", "**Reasons:**");
+		for (const reason of quality.reasons) {
+			lines.push(`- ${singleLine(reason)}`);
+		}
+	}
+	lines.push("");
 	return lines;
 }
 
@@ -1044,6 +1111,7 @@ export function buildReport({ caseRow, messages, investigations, generatedAt } =
 	}
 	lines.push("");
 
+	lines.push(...renderQualitySection(row));
 	lines.push(...renderMetadataSection(row));
 	lines.push(...renderComplaintSection(messageRows));
 	lines.push(...renderConversationSection(messageRows));

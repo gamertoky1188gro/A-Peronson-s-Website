@@ -23,6 +23,25 @@ describe("case-quality evaluator", () => {
 		expect(verdict.attempts).toBe(1);
 	});
 
+	it("rejects a ready verdict with contradictory or missing checks", () => {
+		const contradictory = normalizeQualityVerdict(
+			{
+				status: "ready",
+				reasons: [],
+				checks: { problem_clarity: "ok", evidence_quality: "needs_work" },
+			},
+			1,
+		);
+		expect(contradictory.status).toBe("needs_more_investigation");
+		expect(contradictory.reasons.join(" ")).toContain("all seven");
+
+		const missing = normalizeQualityVerdict(
+			{ status: "ready", reasons: [], checks: { problem_clarity: "ok" } },
+			1,
+		);
+		expect(missing.status).toBe("needs_more_investigation");
+	});
+
 	it("keeps reasons when the case needs more investigation", () => {
 		const verdict = normalizeQualityVerdict(
 			{

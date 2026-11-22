@@ -117,9 +117,25 @@ export function normalizeQualityVerdict(raw, attempts = 1) {
 			}
 		}
 	}
+
+	// `ready` is earned, never asserted. A verdict that says "ready" but
+	// leaves any of the seven checks missing or `needs_work` is contradictory
+	// and must be rejected — otherwise a partial check can finalize a case.
+	const allChecksPass = QUALITY_CHECKS.every((key) => checks[key] === "ok");
+	let finalStatus = status;
+	let finalReasons = reasons;
+	if (status === "ready" && !allChecksPass) {
+		finalStatus = "needs_more_investigation";
+		finalReasons = [
+			...reasons,
+			"The evaluator said ready but did not mark all seven required checks as ok.",
+		];
+	}
+
 	return {
-		status,
-		reasons: status === "ready" ? [] : reasons.length > 0 ? reasons : fallback.reasons,
+		status: finalStatus,
+		reasons:
+			finalStatus === "ready" ? [] : finalReasons.length > 0 ? finalReasons : fallback.reasons,
 		checks,
 		checkedAt,
 		attempts,

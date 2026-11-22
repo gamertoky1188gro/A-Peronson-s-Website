@@ -105,6 +105,10 @@ async function queueEmail(entry) {
 // without it: the log is readable by admins and anyone with database access.
 const REDACTED_BODY_SOURCES = new Set(["password_reset"]);
 
+// A "sending" row older than this is assumed to belong to a crashed process.
+// The recovery flags it as outcome-unknown rather than retrying it blindly.
+const STALE_SENDING_MS = 15 * 60_000;
+
 async function logEmailToDb({ to, subject, text, html, status, source, error, caseId }) {
 	if (REDACTED_BODY_SOURCES.has(source)) {
 		text = "[redacted: contains a one-time password reset link]";
@@ -158,14 +162,16 @@ async function deliverViaProvider({
 		const user = isGmail ? process.env.GMAIL_USER || "" : process.env.SMTP_USER;
 		const pass = isGmail ? process.env.GMAIL_APP_PASSWORD || "" : process.env.SMTP_PASS || "";
 		const transport = nodemailer.createTransport({ host, port, secure, auth: { user, pass } });
-		await transport.sendMail({
+		const sent = await transport.sendMail({
 			from: `${fromName} <${fromEmail}>`,
 			to: recipients.join(","),
 			subject,
 			text,
 			html: html || undefined,
 		});
-		return;
+		// nodemailer returns messageId — persist it so a later retry can detect
+		// a possible duplicate after a stale "sending" row.
+		return String(sent?.messageId || "");
 	}
 	if (provider === "gmail_api") {
 		const { google } = await import("googleapis");
@@ -190,11 +196,13 @@ async function deliverViaProvider({
 			.replace(/\+/gu, "-")
 			.replace(/\//gu, "_")
 			.replace(/[=]+$/u, "");
-		await gmail.users.messages.send({
+		const sent = await gmail.users.messages.send({
 			userId: process.env.GMAIL_SENDER,
 			requestBody: { raw: encodedMessage },
 		});
+		return String(sent?.data?.id || "");
 	}
+	return "";
 }
 
 function resolveFromAddress(emailConfig, provider) {
@@ -250,7 +258,27 @@ export async function sendEmail({
 			caseId,
 		});
 
+	// Durable outbox: persist the delivery record BEFORE any external call, so
+	// a crash can never leave an email with no record of its intended delivery.
+	// State machine: queued → sending → sent | failed. An unconfigured or
+	// disabled provider is recorded as failed so the retry endpoint can see it.
+	const outbox = await queueEmail({ ...payload }).catch(() => null);
+	const outboxId = outbox?.id;
+	const updateOutbox = async (patch) => {
+		if (!outboxId) {
+			return;
+		}
+		try {
+			await prisma.emailOutbox.update({ where: { id: outboxId }, data: patch });
+		} catch {
+			// the log below is the authoritative record if this write fails
+		}
+	};
+	const failOutbox = (reason) =>
+		updateOutbox({ status: "failed", error: reason, last_error: reason });
+
 	if (!emailConfig.enabled) {
+		await failOutbox("logged_disabled");
 		await log("logged_disabled");
 		logWarn("email_logged_disabled", { to: recipients, subject: payload.subject });
 		return { ok: false, status: "logged_disabled" };
@@ -261,6 +289,7 @@ export async function sendEmail({
 		const configured = provider === "gmail" ? isGmailAppPasswordConfigured() : isSmtpConfigured();
 		if (!configured) {
 			const status = provider === "gmail" ? "logged_no_gmail" : "logged_no_smtp";
+			await failOutbox(status);
 			await log(status);
 			logWarn(provider === "gmail" ? "email_logged_no_gmail" : "email_logged_no_smtp", {
 				to: recipients,
@@ -270,18 +299,24 @@ export async function sendEmail({
 		}
 	} else if (provider === "gmail_api") {
 		if (!isGmailConfigured()) {
+			await failOutbox("logged_no_gmail");
 			await log("logged_no_gmail");
 			logWarn("email_logged_no_gmail", { to: recipients, subject: payload.subject });
 			return { ok: false, status: "logged_no_gmail" };
 		}
 	} else {
+		await failOutbox("logged_unsupported");
 		await log("logged_unsupported");
 		logWarn("email_logged_unsupported", { to: recipients, subject: payload.subject });
 		return { ok: false, status: "logged_unsupported" };
 	}
 
 	try {
-		await deliverViaProvider({
+		// Mark "sending" before the external call. If the process dies here the
+		// row is stale and recovery can flag it as "outcome unknown" instead of
+		// silently losing it.
+		await updateOutbox({ status: "sending" });
+		const messageId = await deliverViaProvider({
 			provider,
 			fromName: emailConfig.from_name || "GarTexHub",
 			fromEmail: resolveFromAddress(emailConfig, provider),
@@ -290,23 +325,13 @@ export async function sendEmail({
 			text: payload.text,
 			html: payload.html,
 		});
-		await queueEmail({ ...payload, status: "sent" });
+		await updateOutbox({ status: "sent", message_id: messageId || null, error: "" });
 		await log("sent");
 		logInfo("email_sent", { to: recipients });
 		return { ok: true, status: "sent" };
 	} catch (error) {
 		const message = error?.message || "smtp_error";
-		const row = await queueEmail({
-			...payload,
-			status: "failed",
-			error: message,
-			last_error: message,
-		});
-		if (row?.id) {
-			await prisma.emailOutbox
-				.update({ where: { id: row.id }, data: { attempts: 1, last_error: message } })
-				.catch(() => {});
-		}
+		await updateOutbox({ status: "failed", last_error: message, error: message });
 		await log("failed", message);
 		logError("email_send_failed", error);
 		return { ok: false, status: "failed", error: message };
@@ -314,11 +339,45 @@ export async function sendEmail({
 }
 
 /**
+ * Recover outbox rows stuck in "sending" from a crashed process.
+ *
+ * A "sending" row means the external call was attempted but its outcome was
+ * never recorded. We can't know whether the provider delivered it, so we do
+ * NOT silently retry it here — we mark it failed with an explicit warning that
+ * a retry MAY duplicate. That makes the ambiguity visible in the history.
+ *
+ * @returns {Promise<number>} The number of rows recovered.
+ */
+export async function recoverStaleSending() {
+	const staleAfter = new Date(Date.now() - STALE_SENDING_MS);
+	const stale = await prisma.emailOutbox
+		.findMany({ where: { status: "sending", created_at: { lt: staleAfter } } })
+		.catch(() => []);
+	let recovered = 0;
+	for (const row of Array.isArray(stale) ? stale : []) {
+		const note = "Delivery outcome unknown: sending row was stale; a retry may duplicate.";
+		await prisma.emailOutbox
+			.update({
+				where: { id: row.id },
+				data: { status: "failed", error: "stale_sending", last_error: note },
+			})
+			.catch(() => {});
+		recovered += 1;
+	}
+	if (recovered > 0) {
+		logWarn("stale_sending_recovered", { recovered });
+	}
+	return recovered;
+}
+
+/**
  * Retry every failed outbox message for one case.
  *
  * The message id and the attempt count are durable: a retry increments
  * `attempts` and records the newest failure, so the delivery history shows the
- * whole story rather than only the last try.
+ * whole story rather than only the last try. Exactly-once delivery cannot be
+ * guaranteed for every SMTP failure window; a recovered "sending" row carries
+ * an explicit duplicate warning so the retry decision is informed.
  *
  * @param {string} caseId
  * @returns {Promise<{ok: number, results: Array}>}
@@ -328,8 +387,10 @@ export async function retryCaseEmails(caseId) {
 	if (!id) {
 		return { ok: 0, results: [] };
 	}
+	// Recover rows whose outcome was lost in a crash before retrying.
+	await recoverStaleSending();
 	const failed = await prisma.emailOutbox.findMany({
-		where: { case_id: id, status: "failed" },
+		where: { case_id: id, status: { in: ["failed", "queued"] } },
 		orderBy: { created_at: "asc" },
 	});
 	const emailConfig = await getEmailConfig();
