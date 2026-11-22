@@ -339,6 +339,7 @@ async function sendReportMail({ caseRow, text, html }) {
 			text,
 			html,
 			source: EMAIL_SOURCE,
+			caseId: String(caseRow?.id || ""),
 			// The investigation report is PINNED to Gmail (SMTP with an App
 			// Password). The other three email sources - ticket notifications,
 			// lead reminders, admin actions - keep whatever transport the admin
@@ -599,6 +600,65 @@ export async function deliverReport({ caseRow, report } = {}) {
 		body_length: text.length,
 	});
 	return { ok: true, status: STATUS_SENT };
+}
+
+/**
+ * Escalates a case whose investigation FAILED.
+ *
+ * A failed run produced no findings, so `escalateIfNeeded` (which needs a
+ * confirmed finding) cannot fire - and a case that silently fails is the one
+ * the owner most needs to know about. This flags the case and notifies staff
+ * with the failure reason. Repeated failures are the escalation trigger; a
+ * single failure is still recorded, because the owner asked for a report.
+ *
+ * @param {string} caseId
+ * @param {string} reason
+ * @returns {Promise<boolean>}
+ */
+export async function escalateOnFailure(caseId, reason) {
+	const id = String(caseId || "");
+	if (!id) {
+		return false;
+	}
+	const existing = await readCase(id);
+	if (!existing) {
+		return false;
+	}
+	if (existing.escalated === true) {
+		return true;
+	}
+	try {
+		await prisma.supportCase.update({
+			where: { id },
+			data: { escalated: true, updated_at: new Date() },
+		});
+	} catch (error) {
+		logError("support_case_failure_escalation_persist_failed", error);
+		return false;
+	}
+	const staff = await resolveStaffUsers();
+	await Promise.all(
+		staff.map((user) =>
+			createNotification(user.id, {
+				type: "support_case_failed",
+				entity_type: "support_case",
+				entity_id: id,
+				message: `Investigation failed for case ${id}`,
+				meta: {
+					case_id: id,
+					reason: sanitizeString(reason, DETAIL_MAX_CHARS),
+					subject: String(existing.subject || ""),
+				},
+			}).catch((error) => {
+				logError("support_case_failure_notification_failed", error);
+			}),
+		),
+	);
+	logInfo("support_case_failure_escalated", {
+		case_id: id,
+		reason: String(reason || "").slice(0, 200),
+	});
+	return true;
 }
 
 /**

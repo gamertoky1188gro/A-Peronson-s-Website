@@ -35,10 +35,10 @@ const DEFAULT_CONFIDENCE = "speculative";
 const EVIDENCE_KEYS = ["file", "lines", "commit", "url"];
 
 /** A bare-string evidence entry that is a URL rather than a file path. */
-const URL_PATTERN = /^https?:\/\//i;
+const URL_PATTERN = /^https?:\/\//iu;
 
 /** The language marker of a fenced code block, e.g. the `json` of ```json. */
-const FENCE_LANGUAGE_PATTERN = /^[A-Za-z0-9_+#.-]+[ \t]*\r?\n/;
+const FENCE_LANGUAGE_PATTERN = /^[A-Za-z0-9_+#.-]+[ \t]*\r?\n/u;
 
 /** Is this a plain object (and not null, and not an array)? */
 function isPlainObject(value) {
@@ -155,6 +155,18 @@ function normalizeFinding(entry) {
 	if (category) {
 		finding.category = category;
 	}
+	// `nextStep` and `outcome` are OPTIONAL and survive normalisation so the
+	// report and the buyer UI can show a recommended action and the stage the
+	// finding actually reached (identified / proposed). They are never promoted
+	// to implemented / verified / production-confirmed by the pipeline.
+	const nextStep = coerceDetail(entry.nextStep);
+	if (nextStep) {
+		finding.nextStep = nextStep;
+	}
+	const outcome = coerceDetail(entry.outcome).toLowerCase();
+	if (outcome === "identified" || outcome === "proposed") {
+		finding.outcome = outcome;
+	}
 	return finding;
 }
 
@@ -204,7 +216,7 @@ function stripFenceLanguage(body) {
  */
 function collectFencedCandidates(text) {
 	const candidates = [];
-	const fencePattern = /```([\s\S]*?)```/g;
+	const fencePattern = /```([\s\S]*?)```/gu;
 	let match = fencePattern.exec(text);
 	while (match !== null) {
 		for (const candidate of stripFenceLanguage(match[1])) {

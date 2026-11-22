@@ -39,7 +39,7 @@ export const AGENT_ROLES = ["lead", "code", "repo", "research", "verify"];
  * every prompt ends with it, character for character.
  */
 export const JSON_CONTRACT =
-	"Reply with a single JSON object and nothing else: {summary, findings:[{confidence, detail, evidence:[{file, lines, commit, url}]}], limitations}. confidence is one of confirmed, probable, speculative.";
+	"Reply with a single JSON object and nothing else: {summary, findings:[{confidence, detail, evidence:[{file, lines, commit, url}], nextStep, outcome}], limitations}. confidence is one of confirmed, probable, speculative. nextStep is an optional one-sentence recommended next step for the buyer or the team. outcome is optional and one of identified, proposed - it is what the investigation established, never a claim that a fix was implemented.";
 
 const CONFIDENCE_VALUES = ["confirmed", "probable", "speculative"];
 
@@ -336,6 +336,10 @@ export function buildVerifyPrompt(context = {}) {
 export function applyVerification(candidateFindings, verification) {
 	const candidates = Array.isArray(candidateFindings) ? candidateFindings : [];
 	const refutedDetails = new Set(toStringList(verification?.refuted));
+	// A verification only happened when the verifier produced a verdict object.
+	// Without one (the verify run failed) nothing is verified.
+	const hasVerdict = Boolean(verification && typeof verification === "object");
+	const verifiedAt = new Date().toISOString();
 	const refuted = [];
 	const seenRefuted = new Set();
 
@@ -349,9 +353,18 @@ export function applyVerification(candidateFindings, verification) {
 		}
 		const confidence =
 			isRefuted || evidence.length === 0 ? "speculative" : coerceConfidence(candidate?.confidence);
+		const finding = { ...candidate, confidence, detail, evidence };
+		// "Independently verified" is earned, not asserted: the verify pass ran,
+		// examined the finding, did not refute it, and it still cites evidence
+		// and holds `confirmed` confidence. A probable/speculative finding is a
+		// hypothesis and never carries the verified flag.
+		if (hasVerdict && !isRefuted && evidence.length > 0 && confidence === "confirmed") {
+			finding.verified = true;
+			finding.verifiedAt = verifiedAt;
+		}
 		// Only `confidence` is rewritten. Every other key the agent sent survives -
 		// in particular the OPTIONAL `category` that escalation classifies on.
-		return { ...candidate, confidence, detail, evidence };
+		return finding;
 	});
 
 	return { findings, refuted };

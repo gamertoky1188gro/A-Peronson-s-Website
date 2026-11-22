@@ -273,6 +273,45 @@ describe("caseDiscussionService", () => {
 		expect(thinking[0].payload.id).toBe(thinking.at(-1).payload.id);
 	});
 
+	it("records structured BRIEF fields and never re-asks answered ones", async () => {
+		tmpFileWith("export function upload() {}");
+		providerMock
+			.mockResolvedValueOnce(
+				'Sure.\nBRIEF: {"description":"Upload fails","page":"verification","expected":"file accepted"}\nREAD: __discussion_test_fixture.txt',
+			)
+			.mockResolvedValueOnce("Which file type is it?");
+		await discuss({
+			caseId: CASE_ID,
+			caseRow: { subject: "Upload broken", brief: null },
+			history: [],
+			clientMessage: "Upload fails",
+		});
+		const state = await getDiscussionState(CASE_ID);
+		expect(state.brief.fields.description).toBe("Upload fails");
+		expect(state.brief.fields.page).toBe("verification");
+		expect(state.brief.answered).toContain("description");
+		expect(state.brief.answered).not.toContain("impact");
+		// The second prompt lists the already-answered fields.
+		const secondPrompt = providerMock.mock.calls[1][0];
+		expect(secondPrompt).toContain("PROBLEM BRIEF ANSWERED SO FAR");
+		expect(secondPrompt).toContain("Upload fails");
+	});
+
+	it("flags a different problem for the buyer instead of splitting silently", async () => {
+		providerMock.mockResolvedValueOnce(
+			"That sounds unrelated to the upload issue.\nNEW_CASE: the buyer is describing a payment refund, not the upload failure.",
+		);
+		const result = await discuss({
+			caseId: CASE_ID,
+			caseRow: { subject: "Upload broken" },
+			history: [],
+			clientMessage: "Actually I need a refund",
+		});
+		expect(result.state).toBe("new_problem");
+		expect(result.newCaseReason).toContain("payment refund");
+		expect(result.reply).toContain("unrelated");
+	});
+
 	it("caps the discussion at the round limit and forces a summary", async () => {
 		providerMock.mockResolvedValue("Tell me more.");
 		let last;

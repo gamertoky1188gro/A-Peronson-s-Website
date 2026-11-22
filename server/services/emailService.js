@@ -98,14 +98,14 @@ function normalizeRecipients(to) {
 }
 
 async function queueEmail(entry) {
-	await prisma.emailOutbox.create({ data: entry });
+	return prisma.emailOutbox.create({ data: entry });
 }
 
 // Emails whose body is a credential (a one-time reset link) are logged
 // without it: the log is readable by admins and anyone with database access.
 const REDACTED_BODY_SOURCES = new Set(["password_reset"]);
 
-async function logEmailToDb({ to, subject, text, html, status, source, error }) {
+async function logEmailToDb({ to, subject, text, html, status, source, error, caseId }) {
 	if (REDACTED_BODY_SOURCES.has(source)) {
 		text = "[redacted: contains a one-time password reset link]";
 		html = null;
@@ -120,6 +120,7 @@ async function logEmailToDb({ to, subject, text, html, status, source, error }) 
 				status: status || "logged",
 				source: source || "email_service",
 				error: error || null,
+				case_id: caseId ? String(caseId) : null,
 			},
 		});
 	} catch (dbError) {
@@ -127,7 +128,96 @@ async function logEmailToDb({ to, subject, text, html, status, source, error }) 
 	}
 }
 
-export async function sendEmail({ to, subject, text, html, source, provider: pinnedProvider }) {
+/**
+ * Send through the resolved provider. Extracted so a retry reuses the exact
+ * same transport code instead of duplicating it.
+ */
+async function deliverViaProvider({
+	provider,
+	fromName,
+	fromEmail,
+	recipients,
+	subject,
+	text,
+	html,
+}) {
+	if (provider === "smtp" || provider === "gmail") {
+		const nodemailer = await import("nodemailer");
+		const isGmail = provider === "gmail";
+		// The Gmail transport has its OWN settings and credentials. It must not
+		// fall back to SMTP_HOST or SMTP_USER: those belong to the other
+		// transport, and a fallback would send "Gmail" mail through a different
+		// provider and call it a day.
+		const host = isGmail ? process.env.GMAIL_SMTP_HOST || "smtp.gmail.com" : process.env.SMTP_HOST;
+		const port = Number(
+			isGmail ? process.env.GMAIL_SMTP_PORT || 465 : process.env.SMTP_PORT || 587,
+		);
+		const secure = isGmail
+			? String(process.env.GMAIL_SMTP_SECURE || "").toLowerCase() === "true" || port === 465
+			: String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465;
+		const user = isGmail ? process.env.GMAIL_USER || "" : process.env.SMTP_USER;
+		const pass = isGmail ? process.env.GMAIL_APP_PASSWORD || "" : process.env.SMTP_PASS || "";
+		const transport = nodemailer.createTransport({ host, port, secure, auth: { user, pass } });
+		await transport.sendMail({
+			from: `${fromName} <${fromEmail}>`,
+			to: recipients.join(","),
+			subject,
+			text,
+			html: html || undefined,
+		});
+		return;
+	}
+	if (provider === "gmail_api") {
+		const { google } = await import("googleapis");
+		const oauth2Client = new google.auth.OAuth2(
+			process.env.GMAIL_CLIENT_ID,
+			process.env.GMAIL_CLIENT_SECRET,
+		);
+		oauth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
+		const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+		const messageLines = [
+			`From: ${fromName} <${fromEmail}>`,
+			`To: ${recipients.join(",")}`,
+			`Subject: ${subject}`,
+			"MIME-Version: 1.0",
+			html ? "Content-Type: text/html; charset=UTF-8" : "Content-Type: text/plain; charset=UTF-8",
+			"",
+			html ? html : text,
+		];
+		const message = messageLines.join("\r\n");
+		const encodedMessage = Buffer.from(message)
+			.toString("base64")
+			.replace(/\+/gu, "-")
+			.replace(/\//gu, "_")
+			.replace(/[=]+$/u, "");
+		await gmail.users.messages.send({
+			userId: process.env.GMAIL_SENDER,
+			requestBody: { raw: encodedMessage },
+		});
+	}
+}
+
+function resolveFromAddress(emailConfig, provider) {
+	const isGmail = provider === "gmail";
+	return (
+		emailConfig.from_email ||
+		(isGmail
+			? process.env.GMAIL_SENDER || process.env.GMAIL_USER
+			: process.env.SMTP_FROM || process.env.SMTP_USER) ||
+		process.env.GMAIL_SENDER ||
+		"noreply@gartexhub.local"
+	);
+}
+
+export async function sendEmail({
+	to,
+	subject,
+	text,
+	html,
+	source,
+	provider: pinnedProvider,
+	caseId,
+}) {
 	const recipients = normalizeRecipients(to);
 	if (recipients.length === 0) {
 		return { ok: false, status: "no_recipients" };
@@ -144,17 +234,24 @@ export async function sendEmail({ to, subject, text, html, source, provider: pin
 		created_at: new Date().toISOString(),
 		status: "queued",
 		error: "",
+		case_id: caseId ? String(caseId) : null,
+		attempts: 1,
 	};
 
-	if (!emailConfig.enabled) {
-		await logEmailToDb({
+	const log = (status, error) =>
+		logEmailToDb({
 			to: recipients,
 			subject: payload.subject,
 			text: payload.text,
 			html: payload.html,
-			status: "logged_disabled",
+			status,
 			source,
+			error,
+			caseId,
 		});
+
+	if (!emailConfig.enabled) {
+		await log("logged_disabled");
 		logWarn("email_logged_disabled", { to: recipients, subject: payload.subject });
 		return { ok: false, status: "logged_disabled" };
 	}
@@ -163,150 +260,144 @@ export async function sendEmail({ to, subject, text, html, source, provider: pin
 	if (provider === "smtp" || provider === "gmail") {
 		const configured = provider === "gmail" ? isGmailAppPasswordConfigured() : isSmtpConfigured();
 		if (!configured) {
-			await logEmailToDb({
-				to: recipients,
-				subject: payload.subject,
-				text: payload.text,
-				html: payload.html,
-				status: provider === "gmail" ? "logged_no_gmail" : "logged_no_smtp",
-				source,
-			});
+			const status = provider === "gmail" ? "logged_no_gmail" : "logged_no_smtp";
+			await log(status);
 			logWarn(provider === "gmail" ? "email_logged_no_gmail" : "email_logged_no_smtp", {
 				to: recipients,
 				subject: payload.subject,
 			});
-			return { ok: false, status: provider === "gmail" ? "logged_no_gmail" : "logged_no_smtp" };
+			return { ok: false, status };
 		}
 	} else if (provider === "gmail_api") {
 		if (!isGmailConfigured()) {
-			await logEmailToDb({
-				to: recipients,
-				subject: payload.subject,
-				text: payload.text,
-				html: payload.html,
-				status: "logged_no_gmail",
-				source,
-			});
+			await log("logged_no_gmail");
 			logWarn("email_logged_no_gmail", { to: recipients, subject: payload.subject });
 			return { ok: false, status: "logged_no_gmail" };
 		}
 	} else {
-		await logEmailToDb({
-			to: recipients,
-			subject: payload.subject,
-			text: payload.text,
-			html: payload.html,
-			status: "logged_unsupported",
-			source,
-		});
+		await log("logged_unsupported");
 		logWarn("email_logged_unsupported", { to: recipients, subject: payload.subject });
 		return { ok: false, status: "logged_unsupported" };
 	}
 
 	try {
-		const fromName = emailConfig.from_name || "GarTexHub";
-		const isGmail = provider === "gmail";
-		const fromEmail =
-			emailConfig.from_email ||
-			(isGmail
-				? process.env.GMAIL_SENDER || process.env.GMAIL_USER
-				: process.env.SMTP_FROM || process.env.SMTP_USER) ||
-			process.env.GMAIL_SENDER ||
-			"noreply@gartexhub.local";
-
-		if (provider === "smtp" || provider === "gmail") {
-			const nodemailer = await import("nodemailer");
-			// The Gmail transport has its OWN settings and its OWN credentials.
-			// It must not fall back to SMTP_HOST or SMTP_USER: those belong to
-			// the other transport, and a fallback would send "Gmail" mail
-			// through a different provider and call it a day.
-			const host = isGmail
-				? process.env.GMAIL_SMTP_HOST || "smtp.gmail.com"
-				: process.env.SMTP_HOST;
-			const port = Number(
-				isGmail ? process.env.GMAIL_SMTP_PORT || 465 : process.env.SMTP_PORT || 587,
-			);
-			const secure = isGmail
-				? String(process.env.GMAIL_SMTP_SECURE || "").toLowerCase() === "true" || port === 465
-				: String(process.env.SMTP_SECURE || "").toLowerCase() === "true" || port === 465;
-			const user = isGmail ? process.env.GMAIL_USER || "" : process.env.SMTP_USER;
-			const pass = isGmail ? process.env.GMAIL_APP_PASSWORD || "" : process.env.SMTP_PASS || "";
-			const transport = nodemailer.createTransport({
-				host,
-				port,
-				secure,
-				auth: {
-					user,
-					pass,
-				},
-			});
-
-			await transport.sendMail({
-				from: `${fromName} <${fromEmail}>`,
-				to: recipients.join(","),
-				subject: payload.subject,
-				text: payload.text,
-				html: payload.html || undefined,
-			});
-		}
-
-		if (provider === "gmail_api") {
-			const { google } = await import("googleapis");
-			const oauth2Client = new google.auth.OAuth2(
-				process.env.GMAIL_CLIENT_ID,
-				process.env.GMAIL_CLIENT_SECRET,
-			);
-			oauth2Client.setCredentials({
-				refresh_token: process.env.GMAIL_REFRESH_TOKEN,
-			});
-			const gmail = google.gmail({ version: "v1", auth: oauth2Client });
-			const messageLines = [
-				`From: ${fromName} <${fromEmail}>`,
-				`To: ${recipients.join(",")}`,
-				`Subject: ${payload.subject}`,
-				"MIME-Version: 1.0",
-				payload.html
-					? "Content-Type: text/html; charset=UTF-8"
-					: "Content-Type: text/plain; charset=UTF-8",
-				"",
-				payload.html ? payload.html : payload.text,
-			];
-			const message = messageLines.join("\r\n");
-			const encodedMessage = Buffer.from(message)
-				.toString("base64")
-				.replace(/\+/g, "-")
-				.replace(/\//g, "_")
-				.replace(/[=]+$/, "");
-			await gmail.users.messages.send({
-				userId: process.env.GMAIL_SENDER,
-				requestBody: { raw: encodedMessage },
-			});
-		}
-
-		await queueEmail({ ...payload, status: "sent" });
-		await logEmailToDb({
-			to: recipients,
+		await deliverViaProvider({
+			provider,
+			fromName: emailConfig.from_name || "GarTexHub",
+			fromEmail: resolveFromAddress(emailConfig, provider),
+			recipients,
 			subject: payload.subject,
 			text: payload.text,
 			html: payload.html,
-			status: "sent",
-			source,
 		});
+		await queueEmail({ ...payload, status: "sent" });
+		await log("sent");
 		logInfo("email_sent", { to: recipients });
 		return { ok: true, status: "sent" };
 	} catch (error) {
 		const message = error?.message || "smtp_error";
-		await queueEmail({ ...payload, status: "failed", error: message });
-		await logEmailToDb({
-			to: recipients,
-			subject: payload.subject,
-			text: payload.text,
-			html: payload.html,
+		const row = await queueEmail({
+			...payload,
 			status: "failed",
-			source,
 			error: message,
+			last_error: message,
 		});
+		if (row?.id) {
+			await prisma.emailOutbox
+				.update({ where: { id: row.id }, data: { attempts: 1, last_error: message } })
+				.catch(() => {});
+		}
+		await log("failed", message);
 		logError("email_send_failed", error);
 		return { ok: false, status: "failed", error: message };
 	}
+}
+
+/**
+ * Retry every failed outbox message for one case.
+ *
+ * The message id and the attempt count are durable: a retry increments
+ * `attempts` and records the newest failure, so the delivery history shows the
+ * whole story rather than only the last try.
+ *
+ * @param {string} caseId
+ * @returns {Promise<{ok: number, results: Array}>}
+ */
+export async function retryCaseEmails(caseId) {
+	const id = String(caseId || "");
+	if (!id) {
+		return { ok: 0, results: [] };
+	}
+	const failed = await prisma.emailOutbox.findMany({
+		where: { case_id: id, status: "failed" },
+		orderBy: { created_at: "asc" },
+	});
+	const emailConfig = await getEmailConfig();
+	// Retry uses the admin-configured transport. The report mail itself is
+	// pinned to Gmail at send time; a retry goes through whichever transport
+	// the owner has configured, which is the recovery path.
+	const provider = resolveProvider(emailConfig, null);
+	let ok = 0;
+	const results = [];
+	for (const row of failed) {
+		const recipients = Array.isArray(row.to) ? row.to : [];
+		const attempt = Number(row.attempts || 0) + 1;
+		try {
+			await deliverViaProvider({
+				provider,
+				fromName: emailConfig.from_name || "GarTexHub",
+				fromEmail: resolveFromAddress(emailConfig, provider),
+				recipients,
+				subject: row.subject,
+				text: row.text || "",
+				html: row.html || "",
+			});
+			await prisma.emailOutbox.update({
+				where: { id: row.id },
+				data: { status: "sent", attempts: attempt, last_error: null, error: "" },
+			});
+			await logEmailToDb({
+				to: recipients,
+				subject: row.subject,
+				text: row.text || "",
+				html: row.html,
+				status: "sent",
+				source: "email_retry",
+				caseId: id,
+			});
+			ok += 1;
+			results.push({ id: row.id, ok: true });
+		} catch (error) {
+			const message = error?.message || "smtp_error";
+			await prisma.emailOutbox.update({
+				where: { id: row.id },
+				data: { status: "failed", attempts: attempt, last_error: message, error: message },
+			});
+			results.push({ id: row.id, ok: false, error: message });
+		}
+	}
+	logInfo("case_emails_retried", { case_id: id, ok, attempted: failed.length });
+	return { ok, results };
+}
+
+/** Per-case email delivery history, newest first. */
+export async function getCaseEmailHistory(caseId) {
+	const id = String(caseId || "");
+	if (!id) {
+		return [];
+	}
+	const rows = await prisma.emailLog.findMany({
+		where: { case_id: id },
+		orderBy: { created_at: "desc" },
+		take: 50,
+	});
+	return rows.map((row) => ({
+		id: row.id,
+		to: row.to,
+		subject: row.subject,
+		status: row.status,
+		source: row.source,
+		error: row.error,
+		at: row.created_at,
+	}));
 }

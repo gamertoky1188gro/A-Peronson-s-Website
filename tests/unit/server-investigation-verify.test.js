@@ -70,7 +70,15 @@ describe("investigation verification (server/services/investigation/agents.js)",
 			{ refuted: [], unsupported: [] },
 		);
 		expect(Object.keys(result).sort()).toEqual(["findings", "refuted"]);
-		expect(Object.keys(result.findings[0]).sort()).toEqual(["confidence", "detail", "evidence"]);
+		// A finding that survived an actual verification pass carries the
+		// earned verified flag and timestamp alongside the base shape.
+		expect(Object.keys(result.findings[0]).sort()).toEqual([
+			"confidence",
+			"detail",
+			"evidence",
+			"verified",
+			"verifiedAt",
+		]);
 		expect(Array.isArray(result.findings[0].evidence)).toBe(true);
 	});
 

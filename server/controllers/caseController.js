@@ -1310,14 +1310,16 @@ export async function discussCaseController(req, res) {
 
 		if (action === "update_brief") {
 			const brief = typeof req.body?.brief === "string" ? req.body.brief.trim() : "";
-			if (!brief) {
-				return res.status(400).json({ error: "brief is required" });
+			const fields =
+				req.body?.fields && typeof req.body.fields === "object" ? req.body.fields : null;
+			if (!(brief || fields)) {
+				return res.status(400).json({ error: "brief or fields is required" });
 			}
-			const updated = await discussion.updateProblemBrief({ caseId, brief });
+			const updated = await discussion.updateProblemBrief({ caseId, brief, fields });
 			if (!updated.ok) {
 				return res.status(400).json({ error: updated.error || "Unable to update the brief." });
 			}
-			return res.json({ case: found, action: "brief_updated", brief });
+			return res.json({ case: found, action: "brief_updated", brief: updated.brief ?? brief });
 		}
 
 		if (action === "deny") {

@@ -449,13 +449,22 @@ function caseReducer(state, action) {
 					rounds: action.result?.rounds ?? state.discussion?.rounds ?? 0,
 					problemBrief:
 						action.result?.problemBrief ??
-						(action.result?.brief ? action.result.brief : state.discussion?.problemBrief),
+						(typeof action.result?.brief === "string"
+							? action.result.brief
+							: state.discussion?.problemBrief),
+					// The structured brief is an object; keep the newest one.
+					brief:
+						action.result?.brief && typeof action.result.brief === "object"
+							? action.result.brief
+							: state.discussion?.brief,
 					briefStatus:
 						action.result?.action === "confirm"
 							? "confirmed"
 							: action.result?.action === "update_brief"
 								? "draft"
 								: state.discussion?.briefStatus,
+					newCaseReason: action.result?.newCaseReason ?? state.discussion?.newCaseReason ?? null,
+					suggestHuman: action.result?.suggestHuman ?? state.discussion?.suggestHuman ?? false,
 				},
 			};
 		case "discuss:state": {
@@ -912,25 +921,29 @@ function useSupportCase(caseIdInput = null, supportToken = "") {
 	);
 
 	const updateProblemBrief = useCallback(
-		(brief) => {
+		(payload) => {
 			if (!caseId) {
 				dispatch({ type: "error:set", error: "No support case is open." });
 				return null;
 			}
+			const body =
+				payload && typeof payload === "object"
+					? { action: "update_brief", ...payload }
+					: { action: "update_brief", brief: payload };
 			return apiRequest(`/support/cases/${encodeURIComponent(caseId)}/discuss`, {
 				method: "POST",
 				token: getToken(),
 				headers: supportTokenHeaders(supportToken),
 				skipSessionClear: Boolean(supportToken),
 				timeoutMs: DISCUSSION_TIMEOUT_MS,
-				body: { action: "update_brief", brief },
+				body,
 			})
 				.then((data) => {
 					dispatch({
 						type: "discuss:result",
 						result: {
 							action: data?.action,
-							brief,
+							brief: data?.brief,
 						},
 					});
 					return data ?? null;

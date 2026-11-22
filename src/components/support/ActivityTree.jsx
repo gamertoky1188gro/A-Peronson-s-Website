@@ -320,11 +320,17 @@ export function ActivityTree({
 	const doneCount = scoped.filter(
 		(row) => !["running", "queued", "waiting", "failed"].includes(row?.status),
 	).length;
-	const pct = scoped.length > 0 ? Math.round((doneCount / scoped.length) * 100) : 0;
 	const failedCount = scoped.filter((row) => row?.status === "failed").length;
 	const runningCount = scoped.filter((row) => row?.status === "running").length;
+	// No percentage: `done / observed` is not task completion (the investigation
+	// can have many more steps to run), so a bar would lie. Counts are honest.
+	const countsLabel = `${doneCount} of ${scoped.length} done`;
+	const currentActionRow = scoped.find((row) => row?.status === "running");
+	const currentAction = currentActionRow ? displayLabel(currentActionRow, simple) : null;
 	const heading = running
-		? "Working…"
+		? currentAction
+			? `Working: ${currentAction}`
+			: "Working…"
 		: `How this was investigated · ${scoped.length} steps${duration ? ` · ${duration}` : ""}`;
 
 	const filters = [
@@ -409,23 +415,24 @@ export function ActivityTree({
 
 				{open ? (
 					<div class="border-t border-white/5">
-						{/* Progress */}
+						{/* Progress: counts and the current action, never a percentage. */}
+						{/* A percentage of observed steps is not investigation completion */}
+						{/* and would mislead the buyer. */}
 						<div class="px-3.5 py-2.5">
-							<div class="mb-1.5 flex justify-between text-[10px] text-[#9c8fb4]">
-								<span>Task progress</span>
-								<strong class="font-semibold text-[#e9dffa]">
-									{pct}%{" "}
-									<span class="font-normal text-[#6f647d]">
-										· {doneCount} of {rows.length} done
-									</span>
-								</strong>
+							<div class="flex flex-wrap items-center justify-between gap-2 text-[10px] text-[#9c8fb4]">
+								<span>
+									<strong class="font-semibold text-[#e9dffa]">{countsLabel}</strong>
+									{runningCount > 0 ? ` · ${runningCount} running` : ""}
+									{failedCount > 0 ? ` · ${failedCount} failed` : ""}
+								</span>
+								{duration ? <span class="tabular-nums">{duration}</span> : null}
 							</div>
-							<div class="h-1 w-full overflow-hidden rounded-full bg-white/10">
-								<div
-									class="h-full rounded-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-400 transition-[width] duration-500"
-									style={{ width: `${pct}%` }}
-								/>
-							</div>
+							{currentAction ? (
+								<p class="mt-1.5 text-[11px] text-cyan-200">
+									<span class="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-400 motion-reduce:animate-none" />
+									{currentAction}
+								</p>
+							) : null}
 						</div>
 
 						{/* Toolbar */}

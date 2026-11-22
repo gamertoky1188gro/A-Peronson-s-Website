@@ -75,6 +75,7 @@ import {
 	runAgentPrompt,
 	startInvestigationRuntime,
 } from "./investigation/opencodeRuntime.js";
+import { buildQualityPrompt, normalizeQualityVerdict } from "./investigation/quality.js";
 import { redactFindingsSecrets, redactReportSecrets } from "./investigation/redaction.js";
 import { buildReport } from "./investigation/report.js";
 
@@ -101,6 +102,14 @@ const DEFAULT_AGENT_TIMEOUT_MS = 600_000;
 const MIN_AGENT_TIMEOUT_MS = 60_000;
 
 const MIN_TOOL_BUDGET = 4;
+
+/**
+ * Maximum quality-gate attempts before the case is finalized regardless. The
+ * gate is hard, but a model that keeps returning "needs more" cannot hold a
+ * case open forever; after this many passes the verdict is recorded as
+ * `needs_attention` and the report says so.
+ */
+const MAX_QUALITY_ATTEMPTS = 3;
 
 /** The timeout one agent turn gets, in milliseconds. */
 export function agentTimeoutMs() {
@@ -471,7 +480,9 @@ async function runInvestigation(job) {
 			context.description,
 		);
 		if (!models.length) {
-			await failRows(rows, finished, "No free investigation model is available on the runtime.");
+			const message = "No free investigation model is available on the runtime.";
+			await failRows(rows, finished, message);
+			await escalateFailure(caseId, message);
 			await setTerminalStatus(caseId, "failed");
 			return;
 		}
@@ -553,6 +564,47 @@ async function runInvestigation(job) {
 			return;
 		}
 
+		// Case-quality gate: the AI must NOT declare the case complete merely
+		// because it finished talking and running tools. A separate evaluator
+		// checks that the original problem was understood, the necessary
+		// investigation happened, and the evidence supports the findings.
+		const verifyRow = (await readRunRows(caseId, rows)).find((row) => row.role === VERIFY_ROLE);
+		const verifyPayload = verifyRow?.findings;
+		const qualityFindings = Array.isArray(verifyPayload)
+			? verifyPayload
+			: verifyPayload && Array.isArray(verifyPayload.findings)
+				? verifyPayload.findings
+				: [];
+		const qualityLimitations =
+			verifyPayload && Array.isArray(verifyPayload.limitations) ? verifyPayload.limitations : [];
+		const quality = await runQualityCheck({
+			runtime,
+			models,
+			caseId,
+			context,
+			findings: qualityFindings,
+			limitations: qualityLimitations,
+		});
+		if (
+			quality.status === "needs_more_discussion" ||
+			quality.status === "needs_more_investigation"
+		) {
+			// Reopen for the buyer and/or another investigation. No report is
+			// delivered and the case is NOT completed. The reasons are stored on
+			// the case row and shown in the workspace.
+			await prisma.supportCase.update({
+				where: { id: caseId },
+				data: { status: "collecting", updated_at: new Date() },
+			});
+			emitCaseStatus(caseId, "collecting");
+			logInfo("case held by the quality gate", {
+				caseId,
+				status: quality.status,
+				reasons: quality.reasons?.length || 0,
+			});
+			return;
+		}
+
 		// The investigation is over: the case waits for its report now. The
 		// update only moves a case that is still `investigating`, so the queue
 		// can never undo a state the case has already left.
@@ -570,7 +622,9 @@ async function runInvestigation(job) {
 		await finalizeInvestigation({ caseId, rows });
 	} catch (error) {
 		logError("investigation failed", error);
-		await failRows(rows, finished, error?.message || String(error));
+		const message = error?.message || String(error);
+		await failRows(rows, finished, message);
+		await escalateFailure(caseId, message);
 		await setTerminalStatus(caseId, "failed");
 	} finally {
 		CANCELLED_CASES.delete(String(caseId));
@@ -1409,6 +1463,86 @@ async function failRows(rows, finished, message) {
  *   rows THIS run created.
  * @returns {Promise<void>}
  */
+/**
+ * Run the case-quality evaluator and record its verdict.
+ *
+ * The evaluator is a SEPARATE pass with its own session and prompt. It takes
+ * the case itself as evidence, not the model's word for its own completeness.
+ * On failure the verdict is `needs_attention` so an infrastructure failure
+ * cannot hold a case open forever; the report says so plainly.
+ *
+ * @returns {Promise<{status: string, reasons: string[], attempts: number}>}
+ */
+async function runQualityCheck({ runtime, models, caseId, context, findings, limitations }) {
+	const found = await getCaseWithMessages(caseId).catch(() => null);
+	const prior = found?.quality && typeof found.quality === "object" ? found.quality : null;
+	const attempts = (Number(prior?.attempts) || 0) + 1;
+	let verdict = {
+		status: "needs_attention",
+		reasons: ["The quality evaluator could not be reached."],
+		checks: {},
+		checkedAt: new Date().toISOString(),
+		attempts,
+	};
+
+	try {
+		const sessionID = await createInvestigationSession({
+			client: runtime.client,
+			title: `quality ${caseId}`,
+			model: models[0],
+			directory: REPOSITORY_ROOT,
+		});
+		const prompt = buildQualityPrompt({
+			subject: context?.caseRow?.subject,
+			summary: context?.caseRow?.summary,
+			brief: context?.caseRow?.brief,
+			conversation: (Array.isArray(context?.caseRow?.messages) ? context.caseRow.messages : [])
+				.slice(-20)
+				.map((message) => `[${message?.role}] ${String(message?.content || "").slice(0, 600)}`)
+				.join("\n"),
+			findings,
+			limitations,
+		});
+		const result = await runAgentPrompt({
+			client: runtime.client,
+			sessionID,
+			text: prompt,
+			timeoutMs: agentTimeoutMs(),
+		});
+		if (!result?.error) {
+			verdict = normalizeQualityVerdict(result.text, attempts);
+		}
+	} catch (error) {
+		logWarn("case quality evaluator failed", {
+			caseId,
+			error: error?.message || String(error),
+		});
+	}
+
+	// The loop guard: after MAX attempts a "needs more" verdict becomes
+	// "needs_attention" so the case can finish with an honest warning.
+	if (verdict.status !== "ready" && attempts >= MAX_QUALITY_ATTEMPTS) {
+		verdict = {
+			...verdict,
+			status: "needs_attention",
+			reasons: [
+				...verdict.reasons,
+				`Quality gate was not satisfied after ${attempts} attempts; finalizing with a warning.`,
+			],
+		};
+	}
+
+	await prisma.supportCase
+		.update({ where: { id: caseId }, data: { quality: verdict, updated_at: new Date() } })
+		.catch((error) => {
+			logWarn("case quality verdict write failed", {
+				caseId,
+				error: error?.message || String(error),
+			});
+		});
+	return verdict;
+}
+
 async function finalizeInvestigation({ caseId, rows }) {
 	const found = await getCaseWithMessages(caseId);
 	const caseRow = found && typeof found === "object" ? found : null;
@@ -1630,6 +1764,24 @@ async function escalate(caseId, findings) {
 		return await delivery.escalateIfNeeded(caseId, findings);
 	} catch (error) {
 		logError("investigation escalation failed", error);
+		return false;
+	}
+}
+
+/**
+ * Escalate a case whose investigation failed (no model, crash, repeated
+ * failures). A failed run has no findings, so the finding-based escalation
+ * cannot fire - and a silent failure is exactly what the owner must see.
+ */
+async function escalateFailure(caseId, reason) {
+	try {
+		const delivery = await loadDeliveryModule();
+		if (typeof delivery?.escalateOnFailure !== "function") {
+			return false;
+		}
+		return await delivery.escalateOnFailure(caseId, reason);
+	} catch (error) {
+		logError("investigation failure escalation failed", error);
 		return false;
 	}
 }

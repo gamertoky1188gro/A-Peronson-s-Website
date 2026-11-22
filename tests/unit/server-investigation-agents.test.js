@@ -35,7 +35,7 @@ describe("investigation agents (server/services/investigation/agents.js)", () =>
 
 	test("the JSON contract is the exact string the parser is promised", () => {
 		expect(JSON_CONTRACT).toBe(
-			"Reply with a single JSON object and nothing else: {summary, findings:[{confidence, detail, evidence:[{file, lines, commit, url}]}], limitations}. confidence is one of confirmed, probable, speculative.",
+			"Reply with a single JSON object and nothing else: {summary, findings:[{confidence, detail, evidence:[{file, lines, commit, url}], nextStep, outcome}], limitations}. confidence is one of confirmed, probable, speculative. nextStep is an optional one-sentence recommended next step for the buyer or the team. outcome is optional and one of identified, proposed - it is what the investigation established, never a claim that a fix was implemented.",
 		);
 	});
 

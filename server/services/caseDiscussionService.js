@@ -27,6 +27,7 @@ import path from "node:path";
 import { CASE_EVENTS, emitCaseEvent } from "../realtime/realtimeBus.js";
 import { readLocalJson, writeLocalJson } from "../utils/localStore.js";
 import { logInfo, logWarn } from "../utils/logger.js";
+import prisma from "../utils/prisma.js";
 import { makeClarificationProvider } from "./clarificationOpencodeProvider.js";
 import { getInvestigationModelConfig } from "./investigation/investigationModelConfigService.js";
 import { REPOSITORY_ROOT } from "./investigation/opencodeRuntime.js";
@@ -34,6 +35,9 @@ import { redactReportSecrets } from "./investigation/redaction.js";
 
 const DISCUSSION_STORE = "support_case_discussion.json";
 const MAX_DISCUSSION_ROUNDS = 10;
+// After this many rounds without a summary, the assistant offers a human.
+// The offer is a suggestion, not a decision: the buyer stays in control.
+const SUGGEST_HUMAN_ROUNDS = 6;
 const MAX_FILE_READS_PER_ROUND = 3;
 const MAX_FILE_CHARS = 12_000;
 // One discussion sub-turn can be a long model turn (measured ~9 min on a
@@ -64,6 +68,84 @@ function safeProse(value, max) {
 // Protocol markers the assistant emits on their own line.
 const READ_MARKER = /^READ:\s*(.+)$/iu;
 const SUMMARY_MARKER = /^SUMMARY:\s*(.+)$/iu;
+// The assistant records the structured problem brief as one JSON object, and
+// flags a genuinely different problem so the buyer can open a new case.
+const BRIEF_MARKER = /^BRIEF:\s*(\{.*\})\s*$/iu;
+const NEW_CASE_MARKER = /^NEW_CASE:\s*(.+)$/iu;
+
+/** The structured brief fields, in the order the buyer sees them. */
+export const BRIEF_FIELDS = [
+	"description",
+	"expected",
+	"actual",
+	"page",
+	"firstSeen",
+	"frequency",
+	"impact",
+	"evidence",
+];
+
+export const BRIEF_FIELD_LABELS = {
+	description: "What happened?",
+	expected: "What should have happened?",
+	actual: "What happened instead?",
+	page: "Affected page or feature",
+	firstSeen: "When did it start?",
+	frequency: "How often?",
+	impact: "Business impact",
+	evidence: "Evidence",
+};
+
+/** Coerce a raw brief object into `{ fields, answered }`. */
+function normalizeBriefFields(raw) {
+	const fields = {};
+	const answered = [];
+	if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+		return { fields, answered };
+	}
+	for (const key of BRIEF_FIELDS) {
+		const value = raw[key];
+		if (key === "evidence" && Array.isArray(value)) {
+			const list = value
+				.map((entry) => String(entry).trim())
+				.filter(Boolean)
+				.slice(0, 10);
+			if (list.length > 0) {
+				fields[key] = list;
+				answered.push(key);
+			}
+			continue;
+		}
+		if (typeof value === "string" && value.trim()) {
+			fields[key] = value.trim().slice(0, 2000);
+			answered.push(key);
+		}
+	}
+	return { fields, answered };
+}
+
+/** Merge an incoming brief into the stored one; a field never disappears. */
+export function mergeBrief(existing, incoming) {
+	const fields = { ...(existing?.fields || {}) };
+	const answered = new Set(Array.isArray(existing?.answered) ? existing.answered : []);
+	for (const [key, value] of Object.entries(incoming?.fields || {})) {
+		fields[key] = value;
+		answered.add(key);
+	}
+	return { fields, answered: [...answered], updatedAt: new Date().toISOString() };
+}
+
+/** Persist the brief to the case row (DB-backed: survives a redeploy). */
+async function persistBrief(caseId, brief) {
+	try {
+		await prisma.supportCase.update({
+			where: { id: String(caseId) },
+			data: { brief },
+		});
+	} catch (error) {
+		logWarn("brief persist failed", { caseId, error: error?.message || String(error) });
+	}
+}
 
 /**
  * Emit one live activity row so the buyer sees every action as it happens,
@@ -211,8 +293,25 @@ function clearDiscussionState(caseId) {
 	return writeDiscussionState(caseId, defaultDiscussionState());
 }
 
+/**
+ * After enough rounds without progress, offer a human. The offer is appended
+ * to the assistant's question and flagged in the result so the UI can show a
+ * "talk to a human" hint. The buyer decides; the assistant never escalates on
+ * its own.
+ */
+function withHumanOffer(text, rounds, state) {
+	const suggestHuman = rounds >= SUGGEST_HUMAN_ROUNDS && !state?.proposedSummary;
+	if (!suggestHuman) {
+		return { text, suggestHuman: false };
+	}
+	return {
+		text: `${text}\n\nWe've been going back and forth for a while now. If you'd prefer, I can bring in a human support representative - just say so.`,
+		suggestHuman: true,
+	};
+}
+
 // Build the discussion prompt: case context, history, file contents, protocol.
-function buildDiscussionPrompt({ subject, history, clientMessage, fileContents } = {}) {
+function buildDiscussionPrompt({ subject, history, clientMessage, fileContents, brief } = {}) {
 	const sections = [];
 	if (subject) {
 		sections.push(`CASE SUBJECT: ${subject}`);
@@ -230,8 +329,27 @@ function buildDiscussionPrompt({ subject, history, clientMessage, fileContents }
 		"- You are discussing a support problem with the client. Ask ONE short clarifying question at a time. Never ask two at once.",
 	);
 	sections.push("- Never ask again for something the client has already told you.");
+	if (brief) {
+		const answered = Object.entries(brief.fields || {})
+			.map(
+				([key, value]) =>
+					`- ${BRIEF_FIELD_LABELS[key] || key}: ${Array.isArray(value) ? value.join(", ") : value}`,
+			)
+			.join("\n");
+		const answeredBlock = answered || "(none answered yet)";
+		sections.push(`PROBLEM BRIEF ANSWERED SO FAR (do NOT ask again for these):\n${answeredBlock}`);
+		sections.push(
+			'- When you learn a new field, record it on its own line as a JSON object: BRIEF: {"description":"...","expected":"...","actual":"...","page":"...","firstSeen":"...","frequency":"always|sometimes|once","impact":"...","evidence":["file.png"]}. Only include the fields you actually learned; omit the rest.',
+		);
+		sections.push(
+			"- Ask for the fields that are still missing, one question at a time. Do not re-ask a field that is already answered above.",
+		);
+	}
 	sections.push(
 		`- If you need to look at code to understand the problem, request a file read on its own line: READ: <file path relative to repo root>. Only one file per line, up to ${MAX_FILE_READS_PER_ROUND} per turn.`,
+	);
+	sections.push(
+		"- When the client describes a DIFFERENT problem from the one this case is about, say so on its own line: NEW_CASE: <one sentence explaining why it looks like a different problem>. Do NOT use this for the same problem described differently.",
 	);
 	sections.push(
 		"- When you understand the problem well enough to investigate, propose a summary on its own line: SUMMARY: <one sentence describing the problem>.",
@@ -248,11 +366,13 @@ function buildDiscussionPrompt({ subject, history, clientMessage, fileContents }
 	return sections.join("\n\n");
 }
 
-// Split an assistant reply into plain text and any READ:/SUMMARY: markers.
+// Split an assistant reply into plain text and any READ:/SUMMARY:/BRIEF:/NEW_CASE: markers.
 function parseAssistantReply(text) {
 	const lines = String(text || "").split("\n");
 	const reads = [];
 	let summary = null;
+	let briefRaw = null;
+	let newCase = null;
 	const spoken = [];
 	for (const line of lines) {
 		const trimmed = line.trim();
@@ -272,12 +392,34 @@ function parseAssistantReply(text) {
 			}
 			continue;
 		}
+		const briefMatch = trimmed.match(BRIEF_MARKER);
+		if (briefMatch) {
+			try {
+				const parsed = JSON.parse(briefMatch[1]);
+				if (parsed && typeof parsed === "object") {
+					briefRaw = parsed;
+				}
+			} catch {
+				// A malformed BRIEF is ignored; the spoken text still answers.
+			}
+			continue;
+		}
+		const newCaseMatch = trimmed.match(NEW_CASE_MARKER);
+		if (newCaseMatch) {
+			const reason = newCaseMatch[1].trim();
+			if (reason && !newCase) {
+				newCase = reason;
+			}
+			continue;
+		}
 		spoken.push(line);
 	}
 	return {
 		spoken: spoken.join("\n").trim(),
 		reads: reads.slice(0, MAX_FILE_READS_PER_ROUND),
 		summary,
+		brief: briefRaw ? normalizeBriefFields(briefRaw) : null,
+		newCase,
 	};
 }
 
@@ -361,6 +503,7 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 
 	const answer = null;
 	let currentMessage = clientMessage;
+	let currentBrief = caseRow?.brief ?? state.brief ?? null;
 	const fileContents = [];
 	const filesReadThisTurn = [];
 
@@ -372,6 +515,7 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 			history,
 			clientMessage: currentMessage,
 			fileContents,
+			brief: currentBrief,
 		});
 
 		// Thinking starts as "running" while the provider works, and flips to
@@ -403,6 +547,38 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 
 		const parsed = parseAssistantReply(reply);
 
+		// Record any structured brief fields the assistant learned this turn.
+		// Merged into the stored brief and persisted to the case row (DB), so
+		// the answers survive a redeploy and are visible in the admin console.
+		if (parsed.brief) {
+			currentBrief = mergeBrief(currentBrief, parsed.brief);
+			state.brief = currentBrief;
+			await persistBrief(id, currentBrief);
+		}
+
+		// The assistant believes this is a genuinely different problem. It must
+		// NOT decide that silently: the buyer is told and chooses.
+		if (parsed.newCase) {
+			const replyText = safeProse(
+				parsed.spoken ||
+					"It sounds like this might be a different problem from the one this case is about.",
+				2000,
+			);
+			const nextState = {
+				...state,
+				rounds,
+				filesRead: [...state.filesRead, ...filesReadThisTurn],
+			};
+			await writeDiscussionState(id, nextState);
+			return {
+				state: "new_problem",
+				reply: replyText,
+				newCaseReason: safeProse(parsed.newCase, 500),
+				rounds,
+				reads: filesReadThisTurn,
+			};
+		}
+
 		if (parsed.summary) {
 			// The assistant proposes a summary. Store it as the editable
 			// problem brief and ask the client to confirm.
@@ -428,6 +604,7 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 				summary,
 				problemBrief: summary,
 				briefStatus: "draft",
+				brief: currentBrief,
 				rounds,
 				reads: filesReadThisTurn,
 			};
@@ -464,9 +641,17 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 		// do NOT emit it here too, or the client merges two copies (one with
 		// an id, one without) and shows the reply twice.
 		const replyText = safeProse(parsed.spoken || reply, 2000);
+		const offered = withHumanOffer(replyText, rounds, state);
 		const nextState = { ...state, rounds, filesRead: [...state.filesRead, ...filesReadThisTurn] };
 		await writeDiscussionState(id, nextState);
-		return { state: "question", reply: replyText, rounds, reads: filesReadThisTurn };
+		return {
+			state: "question",
+			reply: offered.text,
+			rounds,
+			reads: filesReadThisTurn,
+			brief: currentBrief,
+			suggestHuman: offered.suggestHuman,
+		};
 	}
 
 	// Loop cap reached without a summary or question: fall back to a question.
@@ -476,7 +661,15 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 	);
 	const nextState = { ...state, rounds, filesRead: [...state.filesRead, ...filesReadThisTurn] };
 	await writeDiscussionState(id, nextState);
-	return { state: "question", reply: replyText, rounds, reads: filesReadThisTurn };
+	const offeredFallback = withHumanOffer(replyText, rounds, state);
+	return {
+		state: "question",
+		reply: offeredFallback.text,
+		rounds,
+		reads: filesReadThisTurn,
+		brief: currentBrief,
+		suggestHuman: offeredFallback.suggestHuman,
+	};
 }
 
 /**
@@ -487,24 +680,31 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
  * @param {string} params.brief The edited brief text.
  * @returns {Promise<{ ok: boolean, error?: string }>}
  */
-export async function updateProblemBrief({ caseId, brief } = {}) {
+export async function updateProblemBrief({ caseId, brief, fields } = {}) {
 	const id = String(caseId || "");
 	if (!id) {
 		return { ok: false, error: "caseId required" };
 	}
+	const state = await readDiscussionState(id);
 	const text = String(brief ?? "").trim();
-	if (!text) {
+	const incomingFields = fields ? normalizeBriefFields(fields) : null;
+	if (!(text || incomingFields)) {
 		return { ok: false, error: "brief required" };
 	}
-	const state = await readDiscussionState(id);
-	const nextState = {
-		...state,
-		problemBrief: text,
-		briefStatus: "draft",
-	};
-	await writeDiscussionState(id, nextState);
-	logInfo("problem brief updated", { caseId: id });
-	return { ok: true };
+	// Structured fields are merged into the case brief and persisted to the DB.
+	let merged = state.brief ?? null;
+	if (incomingFields) {
+		merged = mergeBrief(merged, incomingFields);
+		state.brief = merged;
+		await persistBrief(id, merged);
+	}
+	if (text) {
+		state.problemBrief = text;
+	}
+	state.briefStatus = "draft";
+	await writeDiscussionState(id, state);
+	logInfo("problem brief updated", { caseId: id, fields: merged?.answered ?? [] });
+	return { ok: true, brief: merged };
 }
 
 /**

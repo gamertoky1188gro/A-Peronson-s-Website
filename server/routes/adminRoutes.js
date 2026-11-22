@@ -111,6 +111,7 @@ import {
 	getCaseWithMessages,
 	listCasesAdmin,
 } from "../services/caseService.js";
+import { getCaseEmailHistory, retryCaseEmails } from "../services/emailService.js";
 import prisma from "../utils/prisma.js";
 import { sanitizeString } from "../utils/validators.js";
 
@@ -230,6 +231,95 @@ async function escalateSupportCaseHandler(req, res) {
 		agent,
 	});
 	return res.json({ ok: true, case: updated });
+}
+
+/**
+ * Staff sets the outcome stage of one finding.
+ *
+ * The AI can only ever reach `identified` or `proposed`. `implemented`,
+ * `verified` and `production-confirmed` describe work outside the
+ * investigation and are set here, by a person - the pipeline never promotes a
+ * finding to them on its own.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ */
+async function setFindingOutcomeHandler(req, res) {
+	const caseId = sanitizeString(String(req.params.caseId || ""), SUPPORT_CASE_ID_MAX);
+	if (!caseId) {
+		return res.status(400).json({ error: "caseId is required" });
+	}
+	const detail = sanitizeString(String(req.body?.detail || ""), 500);
+	const outcome = String(req.body?.outcome || "")
+		.toLowerCase()
+		.trim();
+	const allowed = new Set([
+		"identified",
+		"proposed",
+		"implemented",
+		"verified",
+		"production-confirmed",
+	]);
+	if (!detail) {
+		return res.status(400).json({ error: "detail is required" });
+	}
+	if (!allowed.has(outcome)) {
+		return res.status(400).json({ error: "outcome is invalid" });
+	}
+	const rows = await prisma.supportInvestigation.findMany({ where: { case_id: caseId } });
+	// Prefer the verify row: it holds the final set of findings.
+	const ordered = [...rows].sort((a, b) =>
+		a.role === "verify" ? -1 : b.role === "verify" ? 1 : 0,
+	);
+	for (const row of ordered) {
+		const payload = row.findings;
+		const list = Array.isArray(payload)
+			? payload
+			: Array.isArray(payload?.findings)
+				? payload.findings
+				: null;
+		if (!list) {
+			continue;
+		}
+		const index = list.findIndex((finding) => String(finding?.detail || "") === detail);
+		if (index === -1) {
+			continue;
+		}
+		const next = [...list];
+		next[index] = {
+			...next[index],
+			outcome,
+			outcomeSetAt: new Date().toISOString(),
+			outcomeSetBy: sanitizeString(String(req.user?.id || "admin"), SUPPORT_CASE_ID_MAX),
+		};
+		const data = Array.isArray(payload) ? next : { ...payload, findings: next };
+		const updated = await prisma.supportInvestigation.update({
+			where: { id: row.id },
+			data: { findings: data },
+		});
+		return res.json({ ok: true, investigation: updated });
+	}
+	return res.status(404).json({ error: "Finding not found" });
+}
+
+/** Per-case email delivery history for the admin console. */
+async function getCaseEmailsHandler(req, res) {
+	const caseId = sanitizeString(String(req.params.caseId || ""), SUPPORT_CASE_ID_MAX);
+	if (!caseId) {
+		return res.status(400).json({ error: "caseId is required" });
+	}
+	const rows = await getCaseEmailHistory(caseId).catch(() => []);
+	return res.json({ emails: Array.isArray(rows) ? rows : [] });
+}
+
+/** Retry a case's failed report emails. */
+async function retryCaseEmailsHandler(req, res) {
+	const caseId = sanitizeString(String(req.params.caseId || ""), SUPPORT_CASE_ID_MAX);
+	if (!caseId) {
+		return res.status(400).json({ error: "caseId is required" });
+	}
+	const result = await retryCaseEmails(caseId).catch(() => ({ ok: 0, results: [] }));
+	return res.json({ ok: result.ok, results: result.results || [] });
 }
 
 /**
@@ -486,6 +576,29 @@ router.post(
 	requireAdminStepUp,
 	adminAuditLogger(),
 	escalateSupportCaseHandler,
+);
+router.post(
+	"/support/cases/:caseId/finding-outcome",
+	requireAuth,
+	requireAdminSecurity,
+	requireAdminStepUp,
+	adminAuditLogger(),
+	setFindingOutcomeHandler,
+);
+router.get(
+	"/support/cases/:caseId/emails",
+	requireAuth,
+	requireAdminSecurity,
+	adminAuditLogger(),
+	getCaseEmailsHandler,
+);
+router.post(
+	"/support/cases/:caseId/emails/retry",
+	requireAuth,
+	requireAdminSecurity,
+	requireAdminStepUp,
+	adminAuditLogger(),
+	retryCaseEmailsHandler,
 );
 router.post(
 	"/support/cases/:caseId/rerun",

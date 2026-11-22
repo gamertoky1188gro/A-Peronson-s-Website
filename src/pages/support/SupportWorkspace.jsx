@@ -124,24 +124,46 @@ const RECENT_STATUS_TONE = {
 };
 
 /**
- * The caller's recent cases, each one a link to open it. The current case is
- * highlighted and marked `aria-current="page"`. Hidden entirely while loading
- * or on error; renders "No other cases yet" when the list is empty.
+ * The buyer's case history: searchable list of all their cases, each one a
+ * link to open it. Completed cases are read-only history; opening one shows
+ * its report and conversation. The current case is highlighted.
  */
 function RecentCasesSection({ state, currentCaseId }) {
+	const [query, setQuery] = useState("");
 	if (state === null || state === "error") {
 		return null;
 	}
-	const rows = state;
+	const allRows = Array.isArray(state) ? state : [];
+	const needle = query.trim().toLowerCase();
+	const rows = needle
+		? allRows.filter((entry) => {
+				const id = String(entry?.id || "").toLowerCase();
+				const title = String(entry?.subject || entry?.summary || "").toLowerCase();
+				return id.includes(needle) || title.includes(needle);
+			})
+		: allRows;
+	const completed = allRows.filter(
+		(entry) => String(entry?.status || "").toLowerCase() === "completed",
+	).length;
 	return (
 		<div>
 			<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
-				Recent cases ({rows.length})
+				Case history ({allRows.length} · {completed} completed)
 			</p>
+			<input
+				type="search"
+				value={query}
+				onChange={(e) => setQuery(e.target.value)}
+				placeholder="Search cases by title or ID…"
+				aria-label="Search case history"
+				class="mb-2 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] text-[#f4eeff] placeholder:text-[#6f647d] focus:outline-none focus:border-purple-500/50"
+			/>
 			{rows.length === 0 ? (
-				<p class="text-[11px] text-[#a99bbd]">No other cases yet.</p>
+				<p class="text-[11px] text-[#a99bbd]">
+					{needle ? "No cases match that search." : "No cases yet."}
+				</p>
 			) : (
-				<ul class="space-y-1.5">
+				<ul class="max-h-72 space-y-1.5 overflow-y-auto pr-1" data-lenis-prevent={true}>
 					{rows.map((entry) => {
 						const id = String(entry?.id ?? "");
 						const status = String(entry?.status ?? "collecting").toLowerCase();
@@ -204,6 +226,24 @@ const CONFIDENCE_LABELS = {
 	confirmed: "Confirmed",
 	probable: "Probable",
 	speculative: "Speculative",
+};
+
+// The five outcome stages. The investigation can only ever reach the first
+// two; the rest are set by staff in the admin console and are never promoted
+// automatically.
+const OUTCOME_LABELS = {
+	identified: "Identified",
+	proposed: "Proposed",
+	implemented: "Implemented",
+	verified: "Verified",
+	"production-confirmed": "Production-confirmed",
+};
+const OUTCOME_TONE = {
+	identified: "bg-sky-500/15 text-sky-300",
+	proposed: "bg-violet-500/15 text-violet-300",
+	implemented: "bg-cyan-500/15 text-cyan-300",
+	verified: "bg-emerald-500/15 text-emerald-300",
+	"production-confirmed": "bg-emerald-500/25 text-emerald-200",
 };
 
 // The six capability rows in the right rail. The pills come from
@@ -649,6 +689,9 @@ function FindingsPanel({ findingRows }) {
 					const evidence = Array.isArray(finding.evidence) ? finding.evidence : [];
 					const limitations = Array.isArray(finding.limitations) ? finding.limitations : [];
 					const verified = finding.verified === true;
+					const outcome = String(finding.outcome || "");
+					const nextStep = String(finding.nextStep || "");
+					const isHypothesis = confidence !== "confirmed";
 					let tone = "bg-slate-500/15 text-slate-400";
 					const confidenceLabel = CONFIDENCE_LABELS[confidence] || confidence;
 					if (confidence === "confirmed") {
@@ -662,10 +705,32 @@ function FindingsPanel({ findingRows }) {
 								<span class={cn("rounded-full px-2.5 py-1 text-[11px] font-semibold", tone)}>
 									{confidenceLabel}
 								</span>
+								{isHypothesis ? (
+									<span class="rounded-full bg-white/5 px-2 py-0.5 text-[9px] font-semibold text-[#a99bbd]">
+										Hypothesis
+									</span>
+								) : null}
 								{verified ? (
-									<span class="flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-semibold text-emerald-300">
+									<span
+										class="flex items-center gap-1 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-semibold text-emerald-300"
+										title={
+											finding.verifiedAt
+												? `Verified ${new Date(finding.verifiedAt).toLocaleString()}`
+												: undefined
+										}
+									>
 										<Check class="h-2.5 w-2.5" aria-hidden="true" />
 										Independently verified
+									</span>
+								) : null}
+								{outcome && OUTCOME_LABELS[outcome] ? (
+									<span
+										class={cn(
+											"rounded-full px-2 py-0.5 text-[9px] font-semibold",
+											OUTCOME_TONE[outcome],
+										)}
+									>
+										{OUTCOME_LABELS[outcome]}
 									</span>
 								) : null}
 								{entry?.role ? (
@@ -675,6 +740,11 @@ function FindingsPanel({ findingRows }) {
 								) : null}
 							</div>
 							<p class="mt-2 text-sm leading-6 text-[#f4eeff]">{finding.detail || ""}</p>
+							{nextStep ? (
+								<p class="mt-2 rounded-xl border border-cyan-400/20 bg-cyan-500/5 px-3 py-2 text-xs leading-5 text-cyan-100">
+									<span class="font-semibold text-cyan-300">Recommended next step:</span> {nextStep}
+								</p>
+							) : null}
 							{limitations.length > 0 ? (
 								<div class="mt-2 rounded-xl border border-amber-400/30 bg-amber-500/5 p-2">
 									<p class="mb-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300/90">
@@ -776,6 +846,17 @@ const REPORT_MARKDOWN_COMPONENTS = {
  *
  * Nothing is emailed until the client confirms.
  */
+const BRIEF_FIELD_DEFS = [
+	{ key: "description", label: "What happened?" },
+	{ key: "expected", label: "What should have happened?" },
+	{ key: "actual", label: "What happened instead?" },
+	{ key: "page", label: "Affected page or feature" },
+	{ key: "firstSeen", label: "When did it start?" },
+	{ key: "frequency", label: "How often?" },
+	{ key: "impact", label: "Business impact" },
+	{ key: "evidence", label: "Evidence (file names, comma separated)" },
+];
+
 function DiscussionSummaryPanel({
 	summary,
 	problemBrief,
@@ -783,14 +864,26 @@ function DiscussionSummaryPanel({
 	editingBrief,
 	briefDraft,
 	reads,
+	structuredBrief,
+	editingFields,
+	briefFields,
 	onConfirm,
 	onDeny,
 	onUpdateBrief,
 	onEditBrief,
 	onBriefChange,
+	onUpdateBriefFields,
+	onEditFields,
+	onFieldsChange,
 	confirming,
 }) {
 	const brief = problemBrief || summary;
+	const fields = structuredBrief?.fields || {};
+	const answered = new Set(Object.keys(fields));
+	const missing = BRIEF_FIELD_DEFS.filter((def) => !answered.has(def.key));
+
+	const setField = (key, value) => onFieldsChange?.({ ...briefFields, [key]: value });
+
 	return (
 		<section
 			aria-label="Proposed summary"
@@ -846,6 +939,81 @@ function DiscussionSummaryPanel({
 			) : (
 				<>
 					<p class="mb-3 text-sm leading-6 text-[#f4eeff]">{brief}</p>
+
+					{Object.keys(fields).length > 0 ? (
+						<div class="mb-3 rounded-xl border border-white/10 bg-white/5 p-3">
+							<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+								What we know
+							</p>
+							<dl class="space-y-1.5">
+								{BRIEF_FIELD_DEFS.filter((def) => fields[def.key]).map((def) => (
+									<div key={def.key} class="text-[12px] leading-5">
+										<dt class="inline font-semibold text-[#c9bce0]">{def.label}: </dt>
+										<dd class="inline text-[#f4eeff]">
+											{Array.isArray(fields[def.key])
+												? fields[def.key].join(", ")
+												: fields[def.key]}
+										</dd>
+									</div>
+								))}
+							</dl>
+							{missing.length > 0 ? (
+								<p class="mt-2 text-[11px] text-[#a99bbd]">
+									Still missing: {missing.map((def) => def.label).join(", ")}
+								</p>
+							) : null}
+						</div>
+					) : null}
+
+					{editingFields ? (
+						<div class="mb-3 rounded-xl border border-white/10 bg-white/5 p-3">
+							<p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
+								Problem details
+							</p>
+							<div class="space-y-2">
+								{BRIEF_FIELD_DEFS.map((def) => (
+									<label key={def.key} class="block text-[11px] text-[#c9bce0]">
+										{def.label}
+										<input
+											type="text"
+											value={briefFields[def.key] || ""}
+											onChange={(e) => setField(def.key, e.target.value)}
+											class="mt-0.5 w-full rounded-lg border border-white/15 bg-[#0b0714] px-2.5 py-1.5 text-[12px] text-[#f4eeff] focus:outline-none focus:border-purple-500/50"
+										/>
+									</label>
+								))}
+							</div>
+							<div class="mt-3 flex gap-2">
+								<button
+									type="button"
+									onClick={() => onUpdateBriefFields(briefFields)}
+									disabled={confirming}
+									class="rounded-lg border border-purple-500/30 bg-purple-500/10 px-3 py-1.5 text-[11px] font-semibold text-purple-300 hover:bg-purple-500/20 disabled:opacity-50"
+								>
+									Save details
+								</button>
+								<button
+									type="button"
+									onClick={onEditFields}
+									disabled={confirming}
+									class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-[#a99bbd] hover:bg-white/10 disabled:opacity-50"
+								>
+									Cancel
+								</button>
+							</div>
+						</div>
+					) : (
+						<button
+							type="button"
+							onClick={onEditFields}
+							disabled={confirming}
+							class="mb-3 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-semibold text-[#a99bbd] transition hover:bg-white/10 disabled:opacity-40"
+						>
+							<FilePen class="h-3 w-3" />
+							{Object.keys(fields).length > 0 ? "Edit details" : "Add details"}
+						</button>
+					)}
+
 					{reads && reads.length > 0 && (
 						<div class="mb-3 rounded-xl border border-white/10 bg-white/5 p-2">
 							<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd] mb-1">
@@ -888,7 +1056,7 @@ function DiscussionSummaryPanel({
 								class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-[#a99bbd] transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
 							>
 								<FilePen class="h-3 w-3" />
-								Edit details
+								Edit summary
 							</button>
 							<button
 								type="button"
@@ -1055,6 +1223,9 @@ export default function SupportWorkspace() {
 	// The buyer can edit the proposed problem brief before confirming.
 	const [editingBrief, setEditingBrief] = useState(false);
 	const [briefDraft, setBriefDraft] = useState("");
+	// Structured brief fields (description, expected, actual, page, ...).
+	const [editingFields, setEditingFields] = useState(false);
+	const [briefFields, setBriefFields] = useState({});
 	// null while the capabilities request is in flight; "error" when it fails;
 	// otherwise the envelope from GET /api/support/capabilities.
 	const [capabilities, setCapabilities] = useState(null);
@@ -1137,7 +1308,7 @@ export default function SupportWorkspace() {
 					return;
 				}
 				const rows = Array.isArray(data?.cases) ? data.cases : [];
-				setRecentCases(rows.slice(0, 5));
+				setRecentCases(rows.slice(0, 100));
 			})
 			.catch(() => {
 				if (!cancelled) {
@@ -1167,6 +1338,14 @@ export default function SupportWorkspace() {
 			setEditingBrief(false);
 		}
 	}, [discussion, caseStatus]);
+
+	// Seed the editable field form from the stored structured brief.
+	useEffect(() => {
+		const fields = discussion?.brief?.fields;
+		if (fields && Object.keys(fields).length > 0) {
+			setBriefFields((prev) => ({ ...fields, ...prev }));
+		}
+	}, [discussion?.brief]);
 
 	// Escape closes either mobile drawer.
 	const anyDrawerOpen = leftDrawerOpen || rightDrawerOpen;
@@ -1346,6 +1525,21 @@ export default function SupportWorkspace() {
 		}
 	}
 
+	// The AI thinks the buyer may be describing a different problem. It must not
+	// decide that alone: the buyer chooses between a new case and continuing.
+	async function handleOpenNewCase() {
+		setProblem("");
+		await startCase();
+	}
+
+	async function handleKeepDiscussing() {
+		setProblem("");
+		await handleSend(
+			"No - this is still the same problem. Let's keep investigating this case.",
+			[],
+		);
+	}
+
 	async function handleSend(text, files) {
 		if (!caseId) {
 			setProblem("Open an investigation before sending a message.");
@@ -1461,10 +1655,44 @@ export default function SupportWorkspace() {
 		}
 		setConfirming(true);
 		try {
-			await updateProblemBrief(briefDraft.trim());
+			await updateProblemBrief({ brief: briefDraft.trim() });
 			setDiscussionSummary(briefDraft.trim());
 			setEditingBrief(false);
 			setNotice("Brief updated — confirm when it's right.");
+		} finally {
+			setConfirming(false);
+		}
+	}
+
+	function normalizeFieldsInput(fields) {
+		const out = {};
+		for (const def of BRIEF_FIELD_DEFS) {
+			const value = fields?.[def.key];
+			if (typeof value !== "string" || !value.trim()) {
+				continue;
+			}
+			if (def.key === "evidence") {
+				out.evidence = value
+					.split(",")
+					.map((entry) => entry.trim())
+					.filter(Boolean);
+			} else {
+				out[def.key] = value.trim();
+			}
+		}
+		return out;
+	}
+
+	async function handleUpdateBriefFields(fields) {
+		const normalized = normalizeFieldsInput(fields);
+		if (Object.keys(normalized).length === 0) {
+			return;
+		}
+		setConfirming(true);
+		try {
+			await updateProblemBrief({ fields: normalized });
+			setEditingFields(false);
+			setNotice("Details saved — the investigation will use them.");
 		} finally {
 			setConfirming(false);
 		}
@@ -2033,6 +2261,34 @@ export default function SupportWorkspace() {
 					>
 						{caseId ? (
 							<>
+								{supportCase.caseRow?.quality?.status ? (
+									<div
+										class={cn(
+											"rounded-2xl border p-3",
+											supportCase.caseRow.quality.status === "ready"
+												? "border-emerald-400/25 bg-emerald-500/5"
+												: "border-amber-400/30 bg-amber-500/5",
+										)}
+									>
+										<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+											Quality check · {supportCase.caseRow.quality.status.replaceAll("_", " ")}
+										</p>
+										{Array.isArray(supportCase.caseRow.quality.reasons) &&
+										supportCase.caseRow.quality.reasons.length > 0 ? (
+											<ul class="mt-2 space-y-1">
+												{supportCase.caseRow.quality.reasons.map((reason, i) => (
+													<li key={i} class="text-[12px] leading-5 text-amber-100">
+														• {reason}
+													</li>
+												))}
+											</ul>
+										) : (
+											<p class="mt-1 text-[12px] leading-5 text-[#f4eeff]">
+												The case was checked before finalization.
+											</p>
+										)}
+									</div>
+								) : null}
 								{supportCase.caseRow?.summary ? (
 									<div class="rounded-2xl border border-white/10 bg-white/5 p-3">
 										<p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a99bbd]">
@@ -2202,13 +2458,58 @@ export default function SupportWorkspace() {
 								) : null}
 								{findingRows.length > 0 ? <FindingsPanel findingRows={findingRows} /> : null}
 
+								{discussion?.newCaseReason ? (
+									<section
+										aria-label="Possibly a different problem"
+										class="rounded-2xl border border-amber-400/30 bg-amber-500/5 p-4"
+									>
+										<div class="flex items-center gap-2 mb-2">
+											<AlertTriangle class="h-4 w-4 text-amber-300" aria-hidden="true" />
+											<h3 class="text-sm font-semibold text-[#f4eeff]">
+												This sounds like a different problem
+											</h3>
+										</div>
+										<p class="text-sm leading-6 text-[#f4eeff]">{discussion.newCaseReason}</p>
+										<p class="mt-2 text-[11px] leading-5 text-[#a99bbd]">
+											This case is about:{" "}
+											{supportCase.caseRow?.subject ||
+												discussion?.problemBrief ||
+												"the original problem"}
+											. A different problem should get its own case, its own investigation and its
+											own report.
+										</p>
+										<div class="mt-3 flex flex-wrap gap-2">
+											<button
+												type="button"
+												onClick={handleOpenNewCase}
+												class="inline-flex items-center gap-2 rounded-xl border border-amber-400/30 bg-amber-500/15 px-4 py-2 text-xs font-semibold text-amber-200 transition hover:bg-amber-500/25"
+											>
+												Open a new case
+											</button>
+											<button
+												type="button"
+												onClick={handleKeepDiscussing}
+												class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-[#a99bbd] transition hover:bg-white/10"
+											>
+												No, keep discussing this one
+											</button>
+										</div>
+									</section>
+								) : null}
+
 								{discussionAwaitingConfirm && discussionSummary ? (
 									<DiscussionSummaryPanel
 										summary={discussionSummary}
 										problemBrief={discussion?.problemBrief ?? discussionSummary}
+										structuredBrief={discussion?.brief ?? supportCase.caseRow?.brief ?? null}
 										briefStatus={discussion?.briefStatus}
 										editingBrief={editingBrief}
 										briefDraft={briefDraft}
+										editingFields={editingFields}
+										briefFields={briefFields}
+										onUpdateBriefFields={handleUpdateBriefFields}
+										onEditFields={() => setEditingFields((v) => !v)}
+										onFieldsChange={setBriefFields}
 										reads={discussion?.lastReads}
 										onConfirm={handleConfirmDiscussion}
 										onDeny={handleDenyDiscussion}
@@ -2347,6 +2648,20 @@ export default function SupportWorkspace() {
 					) : null}
 
 					<div class="border-t border-white/10 bg-[#151020]/60 p-3 sm:p-4">
+						{discussion?.suggestHuman ? (
+							<div class="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-400/25 bg-amber-500/10 px-3 py-2">
+								<p class="text-[11px] leading-5 text-amber-100">
+									Still not clear? A human representative can take over this case.
+								</p>
+								<button
+									type="button"
+									onClick={() => setHandoffOpen(true)}
+									class="rounded-lg border border-amber-400/30 bg-amber-500/15 px-3 py-1 text-[11px] font-semibold text-amber-200 hover:bg-amber-500/25"
+								>
+									Talk to a human
+								</button>
+							</div>
+						) : null}
 						<Composer
 							onSend={handleSend}
 							onFiles={handleFiles}

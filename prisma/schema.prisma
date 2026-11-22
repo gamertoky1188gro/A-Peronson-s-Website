@@ -1641,8 +1641,14 @@ model EmailOutbox {
   created_at DateTime @default(now())
   status     String   @default("queued")
   error      String?
+  // The support case this mail belongs to, for per-case delivery history.
+  case_id    String?
+  // Retry tracking: how many send attempts were made, and the last failure.
+  attempts   Int      @default(0)
+  last_error String?
 
   @@index([status, created_at])
+  @@index([case_id])
   @@map("email_outbox")
 }
 
@@ -1669,9 +1675,11 @@ model EmailLog {
   status     String   @default("queued")
   source     String?
   error      String?
+  case_id    String?
   created_at DateTime @default(now())
 
   @@index([status, created_at])
+  @@index([case_id])
   @@index([to])
   @@map("email_logs")
 }
@@ -1726,6 +1734,13 @@ model SupportCase {
   report_delivered_at DateTime?
   retain              Boolean   @default(false)
   model_id            String?
+  // Structured problem brief: { fields: {...}, answered: [...] }, written by
+  // the discussion and editable by the buyer. DB-backed (not a local file) so
+  // it survives a Render redeploy.
+  brief               Json?
+  // Case-quality evaluator verdict: { status, reasons[], checkedAt }. Gates
+  // finalization until it is "ready".
+  quality             Json?
   created_at          DateTime  @default(now())
   updated_at          DateTime  @default(now())
 
