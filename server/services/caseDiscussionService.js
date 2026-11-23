@@ -585,11 +585,16 @@ export async function discuss({ caseId, caseRow, history, clientMessage } = {}) 
 
 		if (parsed.summary) {
 			// The assistant proposes a summary. Store it as the editable
-			// problem brief and ask the client to confirm.
+			// problem brief and ask the client to confirm. `lastAction` and
+			// `lastSummary` are persisted here so the confirm/deny panel
+			// survives a page reload — the UI rehydrates discussion state
+			// from /discuss/state on mount.
 			const summary = safeProse(parsed.summary, 200);
 			const nextState = {
 				...state,
 				rounds,
+				lastAction: "summary_proposed",
+				lastSummary: summary,
 				proposedSummary: summary,
 				problemBrief: summary,
 				briefStatus: "draft",

@@ -833,6 +833,7 @@ export async function getCaseController(req, res) {
 					completed_at: true,
 					tool_log: true,
 					findings: true,
+					report: true,
 				},
 				orderBy: { started_at: "asc" },
 			})
@@ -1390,7 +1391,17 @@ export async function discussCaseController(req, res) {
 		});
 
 		if (result.state === "summary_proposed") {
-			// The assistant proposed a summary. The client must confirm or deny.
+			// The assistant proposed a summary. Persist it as an assistant
+			// message row so it survives a page reload (getCaseWithMessages
+			// rehydrates from DB), not just from the in-memory discussion
+			// state. The client must still confirm or deny.
+			await caseService.appendCaseMessage({
+				caseId,
+				role: "assistant",
+				kind: "summary",
+				content: result.summary,
+				agent: null,
+			});
 			return res.status(200).json({
 				message,
 				action: "summary_proposed",

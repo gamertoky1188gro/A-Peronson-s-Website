@@ -171,6 +171,25 @@ describe("caseDiscussionService", () => {
 		expect(secondPrompt).toContain("checkout() { return 42; }");
 	});
 
+	it("persists lastAction/lastSummary so the confirm panel survives reload", async () => {
+		providerMock.mockResolvedValueOnce(
+			"SUMMARY: The checkout handler returns a constant instead of the cart total.",
+		);
+		await discuss({
+			caseId: CASE_ID,
+			caseRow: { subject: "Checkout broken" },
+			history: [{ role: "client", content: "Checkout is broken" }],
+			clientMessage: "Checkout is broken",
+		});
+
+		// Simulate a page reload: rehydrate discussion state from disk.
+		const state = await getDiscussionState(CASE_ID);
+		expect(state.lastAction).toBe("summary_proposed");
+		expect(state.lastSummary).toContain("checkout handler");
+		expect(state.proposedSummary).toContain("checkout handler");
+		expect(state.briefStatus).toBe("draft");
+	});
+
 	it("refuses to read a file outside the repository or a secret file", async () => {
 		providerMock
 			.mockResolvedValueOnce("READ: ../../etc/passwd")

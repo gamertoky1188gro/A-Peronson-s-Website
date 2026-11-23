@@ -395,6 +395,10 @@ function caseReducer(state, action) {
 				// report events only arrive while the page is open).
 				findings: Array.isArray(action.findings) ? action.findings : [],
 				report: action.report ?? state.report,
+				progress:
+					Array.isArray(action.progress) && action.progress.length > 0
+						? action.progress
+						: state.progress,
 				activity: mergeActivity(
 					state.activity,
 					seedActivityFromInvestigations(action.investigations),
@@ -532,6 +536,23 @@ async function loadCaseAction(caseId, dispatch, supportToken = "") {
 				return findings.map((finding) => ({ role, finding }));
 			},
 		);
+		// Re-hydrate per-role progress from the persisted investigation rows so
+		// a reload shows completed/failed/running correctly instead of every
+		// role appearing "queued" (the live SSE stash is in-memory only).
+		const persistedProgress = (Array.isArray(data?.investigations) ? data.investigations : [])
+			.filter((inv) => inv?.role)
+			.map((inv) => {
+				const status = String(inv?.status || "").toLowerCase();
+				const mapped =
+					status === "completed"
+						? "done"
+						: status === "running"
+							? "running"
+							: status === "failed"
+								? "failed"
+								: "queued";
+				return { role: inv.role, status: mapped, detail: null };
+			});
 		// The redacted report text lives on the verify investigation row.
 		const verifyInv = (Array.isArray(data?.investigations) ? data.investigations : []).find(
 			(inv) => inv?.role === "verify",
@@ -550,6 +571,7 @@ async function loadCaseAction(caseId, dispatch, supportToken = "") {
 			report: persistedReport
 				? { report: persistedReport, reportStatus: data?.case?.report_status ?? null }
 				: null,
+			progress: persistedProgress,
 		});
 		return data?.case ?? null;
 	} catch (err) {
