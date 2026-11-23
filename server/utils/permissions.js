@@ -1,3 +1,5 @@
+import { logError } from "./logger.js";
+
 const OWNER_ADMIN_ROLES = new Set(["owner", "admin"]);
 const MEMBER_MANAGER_ROLES = new Set(["owner", "admin", "buying_house", "factory"]);
 
@@ -18,6 +20,17 @@ export function handleControllerError(res, error) {
 		return deny(res, error?.message || "Access denied");
 	}
 	if (status >= 500) {
+		// Previously this swallowed the error with a generic 500, hiding the
+		// real cause (a missing DB column, a Prisma error) from the logs. Log
+		// the summary + stack so the next failure is diagnosable.
+		logError("Unhandled controller error", {
+			status,
+			path: res?.req?.originalUrl?.split("?")[0] || res?.req?.path,
+			method: res?.req?.method,
+			message: String(error?.message || "").slice(0, 300),
+			code: error?.code,
+			stack: String(error?.stack || "").slice(0, 1200),
+		});
 		return res.status(status).json({ error: "Internal server error" });
 	}
 	return res.status(status).json({ error: error?.message || "Request failed" });
