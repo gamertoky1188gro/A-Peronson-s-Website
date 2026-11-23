@@ -1325,14 +1325,26 @@ function normalizeToolCalls(toolCalls, settledAt = []) {
  */
 async function pickCaseModels(client, caseRow, description = "") {
 	const available = await listAvailableModels(client);
-	const { allowed, buyerSelectEnabled, roleModels, routing } = await getInvestigationModelConfig();
+	const { allowed, buyerSelectEnabled, roleModels, routing, catalog } =
+		await getInvestigationModelConfig();
+	// The runtime's model.list() can return an empty set even though the
+	// built-in "opencode" provider serves free models (the provider is not in
+	// the config file, so the runtime does not advertise it). Fall back to the
+	// public catalog so the investigation can still run.
+	const effectiveAvailable =
+		Array.isArray(available) && available.length > 0
+			? available
+			: (Array.isArray(catalog) ? catalog : []).map((m) => ({
+					id: m.id,
+					providerID: "opencode",
+				}));
 	const caseModelId = effectiveCaseModelId({
 		caseModelId: caseRow?.model_id || null,
 		buyerSelectEnabled,
 		allowed,
 	});
 	return {
-		models: computeCaseModelOrder({ caseModelId, allowed, available }),
+		models: computeCaseModelOrder({ caseModelId, allowed, available: effectiveAvailable }),
 		roleModels: roleModels ?? {},
 		routing: routing ?? [],
 		description: String(description || ""),
